@@ -19,7 +19,7 @@ add_library(MeshCartographyLib STATIC ${SIMULATION_SOURCES})
 target_link_libraries(MeshCartographyLib PUBLIC
     CGAL::CGAL
     Boost::filesystem
-    Eigen3::Eigen
+    CGAL::Eigen3_support
 )
 
 # Add include directories
