@@ -11,6 +11,8 @@ find_package(CGAL REQUIRED)
 find_package(Boost COMPONENTS filesystem REQUIRED)
 find_package(Eigen3 REQUIRED)
 
+include(CGAL_Eigen3_support)
+
 # Add the source files of your library
 file(GLOB SIMULATION_SOURCES src/*.cpp)
 add_library(MeshCartographyLib STATIC ${SIMULATION_SOURCES})
