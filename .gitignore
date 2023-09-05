@@ -39,6 +39,7 @@ CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
 *.mlp
+Makefile
 
 *.csv
 
