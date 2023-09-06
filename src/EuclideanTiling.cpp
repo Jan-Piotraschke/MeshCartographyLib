@@ -1,10 +1,17 @@
-// author: @Jan-Piotraschke
-// date: 2023-Aug-30
-// license: Apache License 2.0
-// version: 0.1.0
+/**
+ * @file        EuclideanTiling.cpp
+ * @brief       Manage the exist and entry of particles on the border of the UV domain based on the euclidean tiling
+ *
+ * @author      Jan-Piotraschke
+ * @date        2023-Aug-30
+ * @version     0.1.0
+ * @license     Apache License 2.0
+ *
+ * @bug         -
+ * @todo        -
+ */
 
-
-#include "EuclideanTiling.h"
+#include <EuclideanTiling.h>
 
 EuclideanTiling::EuclideanTiling(
     SurfaceParametrization& surface_parametrization,
@@ -23,7 +30,7 @@ EuclideanTiling::EuclideanTiling(
 
 
 // ========================================
-// ========= Public Functions =============
+// Public Functions
 // ========================================
 
 /**
@@ -68,7 +75,7 @@ void EuclideanTiling::diagonal_seam_edges_square_border(){
 
 
 // ========================================
-// ========= Private Functions ============
+// Private Functions
 // ========================================
 
 std::tuple<Eigen::Vector2d, double, Eigen::Vector2d> EuclideanTiling::processPoints(

@@ -1,5 +1,4 @@
 // GeodesicDistance.h
-
 #pragma once
 
 #include <string>

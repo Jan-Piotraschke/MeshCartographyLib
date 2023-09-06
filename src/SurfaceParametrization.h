@@ -1,5 +1,4 @@
 // SurfaceParametrization.h
-
 #pragma once
 
 // Standard libraries

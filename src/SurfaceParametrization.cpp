@@ -1,9 +1,16 @@
-// author: @Jan-Piotraschke
-// date: 2023-07-18
-// license: Apache License 2.0
-// version: 0.1.0
+/**
+ * @file        SurfaceParametrization.cpp
+ * @brief       Create the 2D maps based on the 3D mesh
+ *
+ * @author      Jan-Piotraschke
+ * @date        2023-Jul-19
+ * @version     0.1.0
+ * @license     Apache License 2.0
+ *
+ * @bug         -
+ * @todo        improve the find_vertex_by_coordinates function, as we only have to check on the border of the mesh
+ */
 
-#include <IO.h>
 #include <SurfaceParametrization.h>
 
 SurfaceParametrization::SurfaceParametrization(bool& free_boundary)
@@ -12,7 +19,7 @@ SurfaceParametrization::SurfaceParametrization(bool& free_boundary)
 
 
 // ========================================
-// ========= Public Functions =============
+// Public Functions
 // ========================================
 
 /**
@@ -84,7 +91,7 @@ _3D::vertex_descriptor SurfaceParametrization::find_farthest_vertex(
 *
 * @info: Unittested
 *
-* ! The size of the path_list multiplied with 2 is the number of vertices on the border of the UV mesh
+* The size of the path_list multiplied with 2 is the number of vertices on the border of the UV mesh
 *
 * So, if you want something like an inverse 'Poincaré disk' you have to really shorten the path_list
 * The same is true if you reverse the logic: If you create a spiral-like seam edge path, your mesh will results in something like a 'Poincaré disk'
@@ -227,7 +234,7 @@ void SurfaceParametrization::create_kachelmuster() {
 
 
 // ========================================
-// ========= Private Functions ============
+// Private Functions
 // ========================================
 
 /**
@@ -469,9 +476,9 @@ void SurfaceParametrization::extract_polygon_border_edges(
 
 
 
-// ======================================================
-// ========= Tessellation - Public Functions ============
-// ======================================================
+// ========================================
+// Tessellation - Public Functions
+// ========================================
 
 void SurfaceParametrization::Tessellation::create_kachelmuster() {
     analyseSides();
@@ -502,9 +509,9 @@ void SurfaceParametrization::Tessellation::create_kachelmuster() {
 
 
 
-// ======================================================
-// ========= Tessellation - Private Functions ===========
-// ======================================================
+// ========================================
+// Tessellation - Private Functions
+// ========================================
 
 void SurfaceParametrization::Tessellation::analyseSides(){
     // Check each vertex
@@ -587,7 +594,6 @@ Point_3 SurfaceParametrization::Tessellation::get_point_3d(
 }
 
 
-// TODO: we only have to check on the border of the mesh
 _3D::vertex_descriptor SurfaceParametrization::Tessellation::find_vertex_by_coordinates(
     const _3D::Mesh& m,
     const Point_3& pt
@@ -620,7 +626,7 @@ void SurfaceParametrization::Tessellation::add_mesh(
             border_list = left;
         }
         auto pt_3d = get_point_3d(mesh, v, border_list);
-    
+
         _3D::vertex_descriptor shifted_v;
         // Check if the vertex already exists in the mesh
         _3D::vertex_descriptor existing_v = find_vertex_by_coordinates(mesh_original, pt_3d);
@@ -643,7 +649,7 @@ void SurfaceParametrization::Tessellation::add_mesh(
         //     // Switch the vertices, that will form the border of the mesh
         //     shifted_v = parent.polygon_v[target_index];
         // }
-        // TODO: remove duplicated vertice coordinates like on the border
+
         reindexed_vertices[v] = shifted_v;
     }
 
@@ -661,7 +667,7 @@ void SurfaceParametrization::Tessellation::add_mesh(
 void SurfaceParametrization::Tessellation::find_vertex_index(const Point_2& target) {
     for (size_t i = 0; i < parent.polygon.size(); ++i) {
 
-        if (are_almost_equal(parent.polygon.vertex(i).x(), target.x()) && 
+        if (are_almost_equal(parent.polygon.vertex(i).x(), target.x()) &&
             are_almost_equal(parent.polygon.vertex(i).y(), target.y())) {
             target_index = i;
             break;

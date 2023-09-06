@@ -1,5 +1,4 @@
 // EuclideanTiling.h
-
 #pragma once
 
 #include <tuple>

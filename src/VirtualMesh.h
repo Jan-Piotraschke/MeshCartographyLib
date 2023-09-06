@@ -1,5 +1,4 @@
 // VirtualMesh.h
-
 #pragma once
 
 #include <map>

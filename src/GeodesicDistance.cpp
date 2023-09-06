@@ -1,7 +1,15 @@
-// author: @Jan-Piotraschke
-// date: 2023-Aug-30
-// license: Apache License 2.0
-// version: 0.1.0
+/**
+ * @file        GeodesicDistance.cpp
+ * @brief       Calculate the distance between mesh vertices
+ *
+ * @author      Jan-Piotraschke
+ * @date        2023-Aug-30
+ * @version     0.1.0
+ * @license     Apache License 2.0
+ *
+ * @bug         -
+ * @todo        -
+ */
 
 #include <GeodesicDistance.h>
 
@@ -26,7 +34,7 @@ GeodesicDistance::GeodesicDistance(std::string mesh_path_input)
 
 
 // ========================================
-// ========= Public Functions =============
+// Public Functions
 // ========================================
 
 /**
@@ -101,7 +109,7 @@ void GeodesicDistance::calculate_edge_distances(
 
 
 // ========================================
-// ========= Private Functions ============
+// Private Functions
 // ========================================
 
 /**

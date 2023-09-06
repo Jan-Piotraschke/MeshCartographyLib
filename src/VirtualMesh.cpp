@@ -1,7 +1,15 @@
-// author: @Jan-Piotraschke
-// date: 2023-07-31
-// license: Apache License 2.0
-// version: 0.1.1
+/**
+ * @file        VirtualMesh.cpp
+ * @brief       Map between the two UV meshes
+ *
+ * @author      Jan-Piotraschke
+ * @date        2023-Jul-31
+ * @version     0.1.1
+ * @license     Apache License 2.0
+ *
+ * @bug         -
+ * @todo        improve the performance of the get_r2d() function
+ */
 
 #include <VirtualMesh.h>
 
@@ -44,7 +52,7 @@ VirtualMesh::VirtualMesh(
 
 
 // ========================================
-// ========= Public Functions =============
+// Public Functions
 // ========================================
 
 Eigen::Vector2d VirtualMesh::init_north_pole(){
@@ -85,7 +93,6 @@ void VirtualMesh::prepare_virtual_mesh(int mesh_id) {
     // Find the next UV map
     change_UV_map(mesh_id);
 
-    // ! todo: diese zwei Schritte dauern ZU lang!
     // Add the particles to the new map
     r_UV = cell_helper.get_r2d();
     assign_particle_orientation(northPole_virtual, n_pole);
@@ -100,6 +107,7 @@ Eigen::VectorXi VirtualMesh::get_n_orientation(
     return compass.assign_n(position_, pole_coordinate, n_pole_);
 }
 
+
 void VirtualMesh::assign_particle_orientation(
     Eigen::Vector2d pole_coordinate,
     Eigen::VectorXi n_pole_
@@ -107,9 +115,11 @@ void VirtualMesh::assign_particle_orientation(
     n = compass.assign_n(r_UV, pole_coordinate, n_pole_);
 }
 
+
 Eigen::VectorXi VirtualMesh::get_relative_orientation(){
     return compass.calculate_n_pole(r_UV, n);
 }
+
 
 void VirtualMesh::change_UV_map(int mesh_id) {
     auto it = vertices_2DTissue_map.find(mesh_id);
