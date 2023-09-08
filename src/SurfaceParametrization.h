@@ -50,7 +50,7 @@ using Polygon_2 = CGAL::Polygon_2<Kernel>;
 using Triangle_mesh = CGAL::Surface_mesh<Point_3>;
 using vertex_descriptor = boost::graph_traits<Triangle_mesh>::vertex_descriptor;
 using Vertex_distance_map = Triangle_mesh::Property_map<vertex_descriptor, double>;
-const fs::path PROJECT_PATH_ = PROJECT_SOURCE_DIR;
+const fs::path PROJECT_PATH_ = MeshCartographyLib_SOURCE_DIR;
 const fs::path MESH_FOLDER = PROJECT_PATH_  / "meshes";
 const unsigned int PARAMETERIZATION_ITERATIONS = 9;
 

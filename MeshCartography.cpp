@@ -16,7 +16,7 @@
 
 #include <SurfaceParametrization.h>
 
-const boost::filesystem::path PROJECT_PATH = PROJECT_SOURCE_DIR;
+const boost::filesystem::path PROJECT_PATH = MeshCartographyLib_SOURCE_DIR;
 
 int main()
 {

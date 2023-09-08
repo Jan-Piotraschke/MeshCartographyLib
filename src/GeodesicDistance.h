@@ -14,7 +14,7 @@
 #include <boost/property_map/property_map.hpp>
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
-const fs::path PROJECT_PATH_GD = PROJECT_SOURCE_DIR;
+const fs::path PROJECT_PATH_GD = MeshCartographyLib_SOURCE_DIR;
 
 // Boost libraries
 #include <boost/filesystem.hpp>
