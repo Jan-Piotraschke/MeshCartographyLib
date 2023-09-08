@@ -30,7 +30,7 @@ target_link_libraries(MeshCartographyLib PUBLIC
 target_include_directories(MeshCartographyLib PUBLIC src)
 
 # Add C++ source files
-add_executable(main main.cpp)
-target_link_libraries(main PUBLIC
+add_executable(MeshCartography MeshCartography.cpp)
+target_link_libraries(MeshCartography PUBLIC
         MeshCartographyLib
 )
