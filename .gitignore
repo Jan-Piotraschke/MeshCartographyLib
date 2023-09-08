@@ -41,6 +41,9 @@ cmake_install.cmake
 *.mlp
 Makefile
 
+# uv meshes
+*_uv*.off
+
 *.csv
 
 vscode.yaml
