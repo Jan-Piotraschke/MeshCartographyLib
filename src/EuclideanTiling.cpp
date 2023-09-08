@@ -8,7 +8,7 @@
  * @license     Apache License 2.0
  *
  * @bug         -
- * @todo        -
+ * @todo        diagonal_seam_edges_square_border() entschlacken: Normalvektor des Kantenschnittpunkts beim Austritt entspricht der Winkelveränderung der Flugbahn beim Eintritt in das UV Mesh
  */
 
 #include <EuclideanTiling.h>
