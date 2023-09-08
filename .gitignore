@@ -39,7 +39,9 @@ CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
 *.mlp
-Makefile
+
+# uv meshes
+*_uv*.off
 
 *.csv
 

@@ -2,9 +2,11 @@ cmake_minimum_required(VERSION 3.22)
 
 project(MeshCartographyLib VERSION 1.0)
 
+# Make the project foulder path available to the source code
+add_definitions("-DPROJECT_SOURCE_DIR=\"${PROJECT_SOURCE_DIR}\"")
+
 # Specify the required C++ standard
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Find required packages
 find_package(CGAL REQUIRED)
@@ -26,3 +28,9 @@ target_link_libraries(MeshCartographyLib PUBLIC
 
 # Add include directories
 target_include_directories(MeshCartographyLib PUBLIC src)
+
+# Add C++ source files
+add_executable(main main.cpp)
+target_link_libraries(main PUBLIC
+        MeshCartographyLib
+)
