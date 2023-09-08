@@ -12,8 +12,10 @@ set(CMAKE_CXX_STANDARD 20)
 find_package(CGAL REQUIRED)
 find_package(Boost COMPONENTS filesystem REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(GTest REQUIRED)
 
 include(CGAL_Eigen3_support)
+include_directories(${GTEST_INCLUDE_DIRS})
 
 # Add the source files of your library
 file(GLOB SIMULATION_SOURCES src/*.cpp)
@@ -34,3 +36,12 @@ add_executable(MeshCartography MeshCartography.cpp)
 target_link_libraries(MeshCartography PUBLIC
         MeshCartographyLib
 )
+
+# Collect all test source files
+file(GLOB TEST_SOURCES tests/*.cpp)
+
+# Create a test executable for all available tests
+add_executable(all_tests ${TEST_SOURCES})
+
+# Link your libraries to the test executable
+target_link_libraries(all_tests PRIVATE MeshCartographyLib ${GTEST_BOTH_LIBRARIES} pthread)
