@@ -25,6 +25,14 @@ int main()
 
     SurfaceParametrization surface_parametrization(free_boundary);
     auto result = surface_parametrization.create_uv_surface(mesh_path, 0);
+    auto mesh_UV_path = std::get<3>(result);
+
+    auto mesh_UV_name = surface_parametrization.get_mesh_name(mesh_UV_path);
+
+    // Create the tessellation mesh
+    surface_parametrization.create_kachelmuster();
+
+    auto result_virtual = surface_parametrization.get_virtual_mesh();
 
     return 0;
 }
