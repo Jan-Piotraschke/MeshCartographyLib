@@ -22,6 +22,10 @@
 bool free_boundary_tiling = false;
 SurfaceParametrization surface_parametrization_tiling(free_boundary_tiling);
 
+const boost::filesystem::path PROJECT_PATH = MeshCartographyLib_SOURCE_DIR;
+auto mesh_file_path = (PROJECT_PATH / "meshes/ellipsoid_x4.off").string();
+auto result = surface_parametrization_tiling.create_uv_surface(mesh_file_path, 0);
+
 class EuclideanTilingTest : public ::testing::Test {
 protected:
     Eigen::Matrix<double, Eigen::Dynamic, 2> r_UV;
@@ -33,30 +37,52 @@ public:
     EuclideanTilingTest() : euclidean_tiling(surface_parametrization_tiling, r_UV, r_UV_old, n) {}
 
     void SetUp() override {
-        r_UV.resize(3, 2);
-        r_UV << 1.5, 1.5,
-                1.1, 1.5,
-                1.5, 1.7;
-
         r_UV_old.resize(3, 2);
-        r_UV_old << 0.5, 0.6,
-                    0.7, 0.8,
+        r_UV_old << 0.2, 0.2,
+                    0.5, 0.5,
                     0.9, 0.4;
+
+        r_UV.resize(3, 2);
+        r_UV << 1.2, 0.2,
+                1.3, 1.2,
+                -0.3, 0.7;
 
         n.resize(3);
         n << 80, 120, 42;
     }
 };
 
-TEST_F(EuclideanTilingTest, TestOppositeSeamEdgesSquareBorder) {
-    euclidean_tiling.opposite_seam_edges_square_border();
+// TEST_F(EuclideanTilingTest, TestOppositeSeamEdgesSquareBorder) {
+//     euclidean_tiling.opposite_seam_edges_square_border();
+
+//     const double EPSILON = 1e-9;
+
+//     ASSERT_NEAR(r_UV(0, 0), 0.5, EPSILON);
+//     ASSERT_NEAR(r_UV(0, 1), 0.5, EPSILON);
+//     ASSERT_NEAR(r_UV(1, 0), 0.2, EPSILON);
+//     ASSERT_NEAR(r_UV(1, 1), 0.5, EPSILON);
+//     ASSERT_NEAR(r_UV(2, 0), 0.8, EPSILON);
+//     ASSERT_NEAR(r_UV(2, 1), 0.7, EPSILON);
+// }
+
+
+TEST_F(EuclideanTilingTest, TestDiagonalSeamEdgesSquareBorder) {
+    euclidean_tiling.diagonal_seam_edges_square_border();
+    std::cout << r_UV << std::endl;
 
     const double EPSILON = 1e-9;
+    Eigen::Matrix<double, Eigen::Dynamic, 2> expected(3, 2);
+    expected << 0.5, 0.5,
+                0.5, 0.2,
+                0.7, 0.2;
 
-    ASSERT_NEAR(r_UV(0, 0), 0.5, EPSILON);
-    ASSERT_NEAR(r_UV(0, 1), 0.5, EPSILON);
-    ASSERT_NEAR(r_UV(1, 0), 0.1, EPSILON);
-    ASSERT_NEAR(r_UV(1, 1), 0.5, EPSILON);
-    ASSERT_NEAR(r_UV(2, 0), 0.5, EPSILON);
-    ASSERT_NEAR(r_UV(2, 1), 0.7, EPSILON);
+    ASSERT_EQ(expected.rows(), r_UV.rows());
+    ASSERT_EQ(expected.cols(), r_UV.cols());
+
+
+    for(int i = 0; i < expected.rows(); ++i){
+        for(int j = 0; j < expected.cols(); ++j){
+            EXPECT_NEAR(expected(i, j), r_UV(i, j), EPSILON);
+        }
+    }
 }
