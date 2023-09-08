@@ -20,7 +20,7 @@ else ifeq ($(OS), Linux)
 endif
 
 .PHONY: all
-all: check_submodule
+all: check_submodule build
 
 .PHONY: check_submodule
 check_submodule:
@@ -42,3 +42,25 @@ install_cgal:
 	@echo "Installing CGAL..."; \
 	mkdir -p build/cgal; \
 	cd build/cgal && $(CMAKE_CMD) $(PROJECT_DIR)/cgal -DCMAKE_BUILD_TYPE=Release -DCGAL_HEADER_ONLY=OFF && make && sudo make install;
+
+.PHONY: build
+build:
+	echo "Building for platform: $(PLATFORM)"; \
+	$(CMAKE_CMD) -S $(PROJECT_DIR) \
+			-B $(PROJECT_DIR)/build \
+			-DCMAKE_BUILD_TYPE=Release \
+			-DCMAKE_C_COMPILER=$(C_COMPILER) \
+			-DCMAKE_CXX_COMPILER=$(CXX_COMPILER) \
+			-DCMAKE_CXX_STANDARD=20 \
+			-DCMAKE_OSX_ARCHITECTURES=$(ARCHITECTURE) \
+			-GNinja
+ifeq ($(OS), Darwin)
+	ninja -C $(PROJECT_DIR)/build -j $(shell sysctl -n hw.logicalcpu)
+else ifeq ($(OS), Linux)
+	ninja -C $(PROJECT_DIR)/build -j $(shell nproc)
+endif
+
+# Cleaning
+.PHONY: clean
+clean:
+	rm -rf $(PROJECT_DIR)/build

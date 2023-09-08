@@ -42,9 +42,6 @@ namespace fs = boost::filesystem;
 #include <CGAL/Surface_mesh_parameterization/ARAP_parameterizer_3.h>
 namespace SMP = CGAL::Surface_mesh_parameterization;
 
-// Custom includes
-#include "IO.h"
-
 // Basic type definitions and constants
 using Kernel = CGAL::Simple_cartesian<double>;
 using Point_2 = Kernel::Point_2;
