@@ -8,7 +8,7 @@
  * @license     Apache License 2.0
  *
  * @bug         -
- * @todo        diagonal_seam_edges_square_border() entschlacken: Normalvektor des Kantenschnittpunkts beim Austritt entspricht der Winkelveränderung der Flugbahn beim Eintritt in das UV Mesh
+ * @todo        diagonal_seam_edges_square_border() entschlacken: Die benötigte Rotation des Mesh des Kachelmusters von einer Seam Kante zu ihrem Zwilling entspricht der Änderung der Flugbahn.
  */
 
 #include <EuclideanTiling.h>
@@ -91,7 +91,9 @@ std::tuple<Eigen::Vector2d, double, Eigen::Vector2d> EuclideanTiling::processPoi
     auto steepness = delta_y / delta_x;
     int steepness_switch = calculateSteepnessSwitch(steepness);
 
-    if (point_outside[0] < 0 || point_outside[0] > 1 || point_outside[1] < 0 || point_outside[1] > 1) {
+    // Check, wether the point is outside the boundaries
+    if (!surface_parametrization.check_point_in_polygon(point_outside, true)) {
+
         // oben oder rechts
         if (delta_x >= 0 && delta_y >= 0){
             double x = 1;
