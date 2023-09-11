@@ -52,29 +52,29 @@ public:
     }
 };
 
-// TEST_F(EuclideanTilingTest, TestOppositeSeamEdgesSquareBorder) {
-//     euclidean_tiling.opposite_seam_edges_square_border();
+TEST_F(EuclideanTilingTest, TestOppositeSeamEdgesSquareBorder) {
+    euclidean_tiling.opposite_seam_edges_square_border();
 
-//     const double EPSILON = 1e-9;
+    const double EPSILON = 1e-9;
 
-//     ASSERT_NEAR(r_UV(0, 0), 0.5, EPSILON);
-//     ASSERT_NEAR(r_UV(0, 1), 0.5, EPSILON);
-//     ASSERT_NEAR(r_UV(1, 0), 0.2, EPSILON);
-//     ASSERT_NEAR(r_UV(1, 1), 0.5, EPSILON);
-//     ASSERT_NEAR(r_UV(2, 0), 0.8, EPSILON);
-//     ASSERT_NEAR(r_UV(2, 1), 0.7, EPSILON);
-// }
+    ASSERT_NEAR(r_UV(0, 0), 0.2, EPSILON);
+    ASSERT_NEAR(r_UV(0, 1), 0.2, EPSILON);
+    ASSERT_NEAR(r_UV(1, 0), 0.3, EPSILON);
+    ASSERT_NEAR(r_UV(1, 1), 0.2, EPSILON);
+    ASSERT_NEAR(r_UV(2, 0), 0.7, EPSILON);
+    ASSERT_NEAR(r_UV(2, 1), 0.7, EPSILON);
+}
 
 
 TEST_F(EuclideanTilingTest, TestDiagonalSeamEdgesSquareBorder) {
+    surface_parametrization_tiling.create_kachelmuster();
     euclidean_tiling.diagonal_seam_edges_square_border();
-    std::cout << r_UV << std::endl;
 
     const double EPSILON = 1e-9;
     Eigen::Matrix<double, Eigen::Dynamic, 2> expected(3, 2);
-    expected << 0.5, 0.5,
-                0.5, 0.2,
-                0.7, 0.2;
+    expected << 0.2, 0.8,
+                0.7, 0.8,
+                0.7, 0.3;
 
     ASSERT_EQ(expected.rows(), r_UV.rows());
     ASSERT_EQ(expected.cols(), r_UV.cols());
