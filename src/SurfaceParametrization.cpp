@@ -229,6 +229,11 @@ std::tuple<std::vector<int64_t>, Eigen::MatrixXd, Eigen::MatrixXd, std::string> 
 void SurfaceParametrization::create_kachelmuster() {
     Tessellation tessellation(*this);  // Pass the current instance of SurfaceParametrization
     tessellation.create_kachelmuster();
+    auto result = tessellation.get_sides();
+    left = std::get<0>(result);
+    right = std::get<1>(result);
+    up = std::get<2>(result);
+    down = std::get<3>(result);
 }
 
 

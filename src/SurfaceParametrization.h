@@ -124,6 +124,17 @@ public:
     );
     void create_kachelmuster();
 
+    std::vector<_3D::vertex_descriptor> left, right, up, down;
+
+    std::tuple<
+        std::vector<_3D::vertex_descriptor>,
+        std::vector<_3D::vertex_descriptor>,
+        std::vector<_3D::vertex_descriptor>,
+        std::vector<_3D::vertex_descriptor>
+    > get_tessellation_sides(){
+        return {left, right, up, down};
+    };
+
 private:
     MeshMeta meshmeta;
     int combine_key;
@@ -134,6 +145,15 @@ private:
 
             void analyseSides();
             void create_kachelmuster();
+            std::tuple<
+                std::vector<_3D::vertex_descriptor>,
+                std::vector<_3D::vertex_descriptor>,
+                std::vector<_3D::vertex_descriptor>,
+                std::vector<_3D::vertex_descriptor>
+            > get_sides(){
+                return {left, right, up, down};
+            };
+            friend class SurfaceParametrization;
 
         private:
             SurfaceParametrization& parent;
