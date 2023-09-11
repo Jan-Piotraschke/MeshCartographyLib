@@ -41,7 +41,7 @@ target_link_libraries(MeshCartography PUBLIC
 file(GLOB TEST_SOURCES tests/*.cpp)
 
 # Create a test executable for all available tests
-add_executable(all_tests ${TEST_SOURCES})
+add_executable(MeshCartography_test ${TEST_SOURCES})
 
 # Link your libraries to the test executable
-target_link_libraries(all_tests PRIVATE MeshCartographyLib ${GTEST_BOTH_LIBRARIES} pthread)
+target_link_libraries(MeshCartography_test PRIVATE MeshCartographyLib ${GTEST_BOTH_LIBRARIES} pthread)
