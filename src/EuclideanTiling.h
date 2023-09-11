@@ -45,6 +45,6 @@ private:
         double x
     );
 
+    static constexpr double KACHEL_ROTATION = 90.0;
     static constexpr double EPSILON = 0.0001;
-    static constexpr double QUARTER_CIRCLE = 90.0;
 };

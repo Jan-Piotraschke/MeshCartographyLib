@@ -91,6 +91,14 @@ std::tuple<Eigen::Vector2d, double, Eigen::Vector2d> EuclideanTiling::processPoi
     auto steepness = delta_y / delta_x;
     int steepness_switch = calculateSteepnessSwitch(steepness);
 
+    auto result = surface_parametrization.get_tessellation_sides();
+    auto left_border = std::get<0>(result);
+    auto right_border = std::get<1>(result);
+    auto up_border = std::get<2>(result);
+    auto down_border = std::get<3>(result);
+    auto polygon = std::get<4>(result);
+    auto polygon_v = std::get<5>(result);
+
     // Check, wether the point is outside the boundaries
     if (!surface_parametrization.check_point_in_polygon(point_outside, true)) {
 
@@ -109,7 +117,7 @@ std::tuple<Eigen::Vector2d, double, Eigen::Vector2d> EuclideanTiling::processPoi
                 entry_angle.row(0) *= steepness_switch;  // has to be variable
                 Eigen::Vector2d rotated_displacement = displacement.array() * entry_angle.array();
                 new_point = entry_point - rotated_displacement;
-                n -= QUARTER_CIRCLE;
+                n -= KACHEL_ROTATION;
             }
             // obere Grenze passiert
             else {
@@ -125,7 +133,7 @@ std::tuple<Eigen::Vector2d, double, Eigen::Vector2d> EuclideanTiling::processPoi
 
                 Eigen::Vector2d rotated_displacement = displacement.array() * entry_angle.array();
                 new_point = entry_point - rotated_displacement;
-                n += QUARTER_CIRCLE;
+                n += KACHEL_ROTATION;
             }
         }
         // unten oder rechts
@@ -145,7 +153,7 @@ std::tuple<Eigen::Vector2d, double, Eigen::Vector2d> EuclideanTiling::processPoi
                 entry_angle.row(0) *= steepness_switch;
                 Eigen::Vector2d rotated_displacement = displacement.array()  * entry_angle.array();
                 new_point = entry_point - rotated_displacement;
-                n -= QUARTER_CIRCLE;
+                n -= KACHEL_ROTATION;
             }
             // unten Grenze passiert
             else {
@@ -162,7 +170,7 @@ std::tuple<Eigen::Vector2d, double, Eigen::Vector2d> EuclideanTiling::processPoi
 
                 Eigen::Vector2d rotated_displacement = displacement.array() * entry_angle.array();
                 new_point = entry_point + rotated_displacement;
-                n += QUARTER_CIRCLE;
+                n += KACHEL_ROTATION;
             }
         }
         // oben oder links
@@ -181,7 +189,7 @@ std::tuple<Eigen::Vector2d, double, Eigen::Vector2d> EuclideanTiling::processPoi
                 entry_angle.row(0) *= steepness_switch;
                 Eigen::Vector2d rotated_displacement = displacement.array() * entry_angle.array();
                 new_point = entry_point + rotated_displacement;
-                n -= QUARTER_CIRCLE;
+                n -= KACHEL_ROTATION;
             }
             // obere Grenze passiert
             else {
@@ -197,7 +205,7 @@ std::tuple<Eigen::Vector2d, double, Eigen::Vector2d> EuclideanTiling::processPoi
                 entry_angle.row(1) *= steepness_switch;
                 Eigen::Vector2d rotated_displacement = displacement.array() * entry_angle.array();
                 new_point = entry_point - rotated_displacement;
-                n += QUARTER_CIRCLE;
+                n += KACHEL_ROTATION;
             }
         }
         // unten oder links
@@ -218,7 +226,7 @@ std::tuple<Eigen::Vector2d, double, Eigen::Vector2d> EuclideanTiling::processPoi
 
                 Eigen::Vector2d rotated_displacement = displacement.array() * entry_angle.array();
                 new_point = entry_point + rotated_displacement;
-                n -= QUARTER_CIRCLE;
+                n -= KACHEL_ROTATION;
             }
             // unten Grenze passiert
             else {
@@ -234,9 +242,12 @@ std::tuple<Eigen::Vector2d, double, Eigen::Vector2d> EuclideanTiling::processPoi
                 entry_angle.row(1) *= steepness_switch;
                 Eigen::Vector2d rotated_displacement = displacement.array() * entry_angle.array();
                 new_point = entry_point + rotated_displacement;
-                n += QUARTER_CIRCLE;
+                n += KACHEL_ROTATION;
             }
         }
+
+        // Rotate n +- KACHEL_ROTATION depending on the exist side
+
     }
     else {
         new_point = point_outside;

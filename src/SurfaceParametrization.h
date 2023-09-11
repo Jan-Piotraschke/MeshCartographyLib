@@ -130,9 +130,17 @@ public:
         std::vector<_3D::vertex_descriptor>,
         std::vector<_3D::vertex_descriptor>,
         std::vector<_3D::vertex_descriptor>,
+        std::vector<_3D::vertex_descriptor>,
+        std::vector<std::pair<double, double>>,
         std::vector<_3D::vertex_descriptor>
     > get_tessellation_sides(){
-        return {left, right, up, down};
+        std::vector<std::pair<double, double>> polygon_coord;
+        polygon_coord.reserve(polygon.size());
+        for (auto& v : polygon) {
+            polygon_coord.emplace_back(v.x(), v.y());
+        }
+
+        return {left, right, up, down, polygon_coord, polygon_v};
     };
 
 private:
