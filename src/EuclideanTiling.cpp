@@ -7,7 +7,7 @@
  * @version     0.1.0
  * @license     Apache License 2.0
  *
- * @bug         -
+ * @bug         fix processPoints() because sometimes the mapping does not work and ends in an infinite loop
  * @todo        generalize process_points() due to the fact, that we need the entry_point coordinates if the particle leaves a more complex 2D mesh form, because then the old start and the new_point intersect multiple borders
  */
 
