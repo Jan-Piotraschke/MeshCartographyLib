@@ -8,7 +8,7 @@
  * @license     Apache License 2.0
  *
  * @bug         -
- * @todo        -
+ * @todo        Heat distance method depending on edge length
  */
 
 #include <GeodesicDistance.h>

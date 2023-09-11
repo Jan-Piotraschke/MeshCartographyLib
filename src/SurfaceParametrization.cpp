@@ -229,6 +229,37 @@ std::tuple<std::vector<int64_t>, Eigen::MatrixXd, Eigen::MatrixXd, std::string> 
 void SurfaceParametrization::create_kachelmuster() {
     Tessellation tessellation(*this);  // Pass the current instance of SurfaceParametrization
     tessellation.create_kachelmuster();
+    auto result = tessellation.get_sides();
+    left = std::get<0>(result);
+    right = std::get<1>(result);
+    up = std::get<2>(result);
+    down = std::get<3>(result);
+}
+
+
+std::string SurfaceParametrization::check_border_crossings(
+    const Eigen::Vector2d& start_eigen,
+    const Eigen::Vector2d& end_eigen
+) {
+    Point_2 start(start_eigen[0], start_eigen[1]);
+    Point_2 end(end_eigen[0], end_eigen[1]);
+    Segment_2 line(start, end);
+
+    const std::vector<std::pair<std::string, std::vector<_3D::vertex_descriptor>>> borders = {
+        {"left", left},
+        {"right", right},
+        {"up", up},
+        {"down", down}
+    };
+
+    for (const auto& [name, border_indices] : borders) {
+        auto border = create_border_line(border_indices);
+        if (is_intersecting(line, border)) {
+            return name;
+        }
+    }
+
+    return "no intersection";
 }
 
 
@@ -316,6 +347,33 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     }
 
     return h_v_mapping_vector;
+}
+
+
+std::vector<Point_2> SurfaceParametrization::create_border_line(const std::vector<_3D::vertex_descriptor>& indices) {
+    std::vector<Point_2> border;
+    for (auto i : indices) {
+        auto it = std::find(polygon_v.begin(), polygon_v.end(), i);
+        int index = std::distance(polygon_v.begin(), it);
+        border.emplace_back(polygon[index].x(), polygon[index].y());
+    }
+    return border;
+}
+
+
+bool SurfaceParametrization::is_intersecting(const Segment_2& line, const std::vector<Point_2>& border) {
+    for (size_t i = 0; i < border.size() - 1; ++i) {
+        Segment_2 seg(border[i], border[i+1]);
+        if (check_intersection(line, seg)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+bool SurfaceParametrization::check_intersection(const Segment_2& seg1, const Segment_2& seg2) {
+    return CGAL::do_intersect(seg1, seg2);
 }
 
 

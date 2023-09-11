@@ -23,6 +23,8 @@
 namespace fs = boost::filesystem;
 
 // CGAL libraries
+#include <CGAL/Segment_2.h>
+#include <CGAL/intersections.h>
 #include <CGAL/Aff_transformation_2.h>
 #include <CGAL/IO/read_off_points.h>
 #include <CGAL/Polygon_2.h>
@@ -44,6 +46,7 @@ namespace SMP = CGAL::Surface_mesh_parameterization;
 
 // Basic type definitions and constants
 using Kernel = CGAL::Simple_cartesian<double>;
+using Segment_2 = Kernel::Segment_2;
 using Point_2 = Kernel::Point_2;
 using Point_3 = Kernel::Point_3;
 using Polygon_2 = CGAL::Polygon_2<Kernel>;
@@ -124,6 +127,13 @@ public:
     );
     void create_kachelmuster();
 
+    std::vector<_3D::vertex_descriptor> left, right, up, down;
+
+    std::string check_border_crossings(
+        const Eigen::Vector2d& start_eigen,
+        const Eigen::Vector2d& end_eigen
+    );
+
 private:
     MeshMeta meshmeta;
     int combine_key;
@@ -134,6 +144,15 @@ private:
 
             void analyseSides();
             void create_kachelmuster();
+            std::tuple<
+                std::vector<_3D::vertex_descriptor>,
+                std::vector<_3D::vertex_descriptor>,
+                std::vector<_3D::vertex_descriptor>,
+                std::vector<_3D::vertex_descriptor>
+            > get_sides(){
+                return {left, right, up, down};
+            };
+            friend class SurfaceParametrization;
 
         private:
             SurfaceParametrization& parent;
@@ -177,6 +196,10 @@ private:
         UV::halfedge_descriptor bhd,
         _3D::UV_pmap uvmap
     );
+
+    std::vector<Point_2> create_border_line(const std::vector<_3D::vertex_descriptor>& indices);
+    bool is_intersecting(const Segment_2& line, const std::vector<Point_2>& border);
+    bool check_intersection(const Segment_2& seg1, const Segment_2& seg2);
 
     UV::Mesh create_UV_mesh(
         _3D::Mesh& mesh,
