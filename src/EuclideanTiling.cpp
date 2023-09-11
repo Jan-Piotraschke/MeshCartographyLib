@@ -8,7 +8,7 @@
  * @license     Apache License 2.0
  *
  * @bug         -
- * @todo        diagonal_seam_edges_square_border() entschlacken: Die benötigte Rotation des Mesh des Kachelmusters von einer Seam Kante zu ihrem Zwilling entspricht der Änderung der Flugbahn.
+ * @todo        generalize process_points() due to the fact, that we need the entry_point coordinates if the particle leaves a more complex 2D mesh form, because then the old start and the new_point intersect multiple borders
  */
 
 #include <EuclideanTiling.h>
@@ -57,13 +57,11 @@ void EuclideanTiling::diagonal_seam_edges_square_border(){
             auto results = processPoints(pointA, point_outside, n_double);
             Eigen::Vector2d new_point = std::get<0>(results);
             n(i) = std::get<1>(results);
-            auto entry_point = std::get<2>(results);
 
             // Check, wether the new point is inside the boundaries
             if (surface_parametrization.check_point_in_polygon(new_point, original_mesh)) {
                 r_UV.row(i).head<2>().noalias() = new_point;
             } else {
-                r_UV_old.row(i).head<2>() = entry_point;
                 r_UV.row(i).head<2>().noalias() = new_point;
                 valid = false;
                 break;
@@ -78,223 +76,32 @@ void EuclideanTiling::diagonal_seam_edges_square_border(){
 // Private Functions
 // ========================================
 
-std::tuple<Eigen::Vector2d, double, Eigen::Vector2d> EuclideanTiling::processPoints(
+std::pair<Eigen::Vector2d, double> EuclideanTiling::processPoints(
     const Eigen::Vector2d& pointA,
     const Eigen::Vector2d& point_outside,
     double n
 ) {
-    Eigen::Vector2d entry_angle(1, 1);
-    Eigen::Vector2d entry_point(1, 1);
     Eigen::Vector2d new_point(2, 1);
-    auto delta_x = point_outside[0] - pointA[0];
-    auto delta_y = point_outside[1] - pointA[1];
-    auto steepness = delta_y / delta_x;
-    int steepness_switch = calculateSteepnessSwitch(steepness);
-
-    auto result = surface_parametrization.get_tessellation_sides();
-    auto left_border = std::get<0>(result);
-    auto right_border = std::get<1>(result);
-    auto up_border = std::get<2>(result);
-    auto down_border = std::get<3>(result);
-    auto polygon = std::get<4>(result);
-    auto polygon_v = std::get<5>(result);
 
     // Check, wether the point is outside the boundaries
     if (!surface_parametrization.check_point_in_polygon(point_outside, true)) {
-
-        // oben oder rechts
-        if (delta_x >= 0 && delta_y >= 0){
-            double x = 1;
-            double y = interpolateY(pointA, point_outside, x);
-
-            // rechte Grenze passiert
-            if (y < 1 && y > 0){
-                Eigen::Vector2d exit_point(1, y);
-                Eigen::Vector2d entry_point(y, 1);
-                Eigen::Vector2d displacement = (point_outside - exit_point).cwiseAbs();
-                // switch values of x and y, because we also switched the entry coordinates before
-                displacement = Eigen::Vector2d(displacement[1], displacement[0]);
-                entry_angle.row(0) *= steepness_switch;  // has to be variable
-                Eigen::Vector2d rotated_displacement = displacement.array() * entry_angle.array();
-                new_point = entry_point - rotated_displacement;
-                n -= KACHEL_ROTATION;
-            }
-            // obere Grenze passiert
-            else {
-                double y_back = 1;
-                double x_back = interpolateX(pointA, point_outside, y_back);
-
-                Eigen::Vector2d exit_point(x_back, 1);
-                Eigen::Vector2d entry_point(1, x_back);
-                Eigen::Vector2d displacement = (point_outside - exit_point).cwiseAbs();
-                displacement = Eigen::Vector2d(displacement[1], displacement[0]);
-
-                entry_angle.row(1) *= steepness_switch;
-
-                Eigen::Vector2d rotated_displacement = displacement.array() * entry_angle.array();
-                new_point = entry_point - rotated_displacement;
-                n += KACHEL_ROTATION;
-            }
+        auto crossed_border = surface_parametrization.check_border_crossings(pointA, point_outside);
+        if (crossed_border == "left") {
+            new_point = Eigen::Vector2d(point_outside[1], -point_outside[0]);
+            n -= KACHEL_ROTATION;
+        } else if (crossed_border == "right") {
+            new_point = Eigen::Vector2d(point_outside[1], 2-point_outside[0]);
+            n -= KACHEL_ROTATION;
+        } else if (crossed_border == "up") {
+            new_point = Eigen::Vector2d(2-point_outside[1], point_outside[0]);
+            n += KACHEL_ROTATION;
+        } else {
+            new_point = Eigen::Vector2d(-point_outside[1], point_outside[0]);
+            n += KACHEL_ROTATION;
         }
-        // unten oder rechts
-        else if (delta_x > 0 && delta_y < 0){
-            double x = 1;
-            double y = interpolateY(pointA, point_outside, x);
-
-            // rechte Grenze passiert
-            if (y < 1 && y > 0){
-
-                Eigen::Vector2d exit_point(1, y);
-                Eigen::Vector2d entry_point(y, 1);
-                Eigen::Vector2d displacement = (point_outside - exit_point).cwiseAbs();
-                // switch values of x and y
-                displacement = Eigen::Vector2d(displacement[1], displacement[0]);
-
-                entry_angle.row(0) *= steepness_switch;
-                Eigen::Vector2d rotated_displacement = displacement.array()  * entry_angle.array();
-                new_point = entry_point - rotated_displacement;
-                n -= KACHEL_ROTATION;
-            }
-            // unten Grenze passiert
-            else {
-                double y_back_neg = 0;
-                double x_back_neg = interpolateX(pointA, point_outside, y_back_neg);
-
-                Eigen::Vector2d exit_point(x_back_neg, 0);
-                Eigen::Vector2d entry_point(0, x_back_neg);
-
-                Eigen::Vector2d displacement = (point_outside - exit_point).cwiseAbs();
-                // switch values of x and y
-                displacement = Eigen::Vector2d(displacement[1], displacement[0]);
-                entry_angle.row(1) *= steepness_switch;
-
-                Eigen::Vector2d rotated_displacement = displacement.array() * entry_angle.array();
-                new_point = entry_point + rotated_displacement;
-                n += KACHEL_ROTATION;
-            }
-        }
-        // oben oder links
-        else if (delta_x < 0 && delta_y > 0){
-            double x = 0;
-            double y = interpolateY(pointA, point_outside, x);
-
-            // linke Grenze passiert
-            if (y < 1 && y > 0){
-                Eigen::Vector2d exit_point(0, y);
-                Eigen::Vector2d entry_point(y, 0);
-
-                Eigen::Vector2d displacement = (point_outside - exit_point).cwiseAbs();
-                // switch values of x and y
-                displacement = Eigen::Vector2d(displacement[1], displacement[0]);
-                entry_angle.row(0) *= steepness_switch;
-                Eigen::Vector2d rotated_displacement = displacement.array() * entry_angle.array();
-                new_point = entry_point + rotated_displacement;
-                n -= KACHEL_ROTATION;
-            }
-            // obere Grenze passiert
-            else {
-                double y_back = 1;
-                double x_back = interpolateX(pointA, point_outside, y_back);
-
-                Eigen::Vector2d exit_point(x_back, 1);
-                Eigen::Vector2d entry_point(1, x_back);
-
-                Eigen::Vector2d displacement = (point_outside - exit_point).cwiseAbs();
-                // switch values of x and y
-                displacement = Eigen::Vector2d(displacement[1], displacement[0]);
-                entry_angle.row(1) *= steepness_switch;
-                Eigen::Vector2d rotated_displacement = displacement.array() * entry_angle.array();
-                new_point = entry_point - rotated_displacement;
-                n += KACHEL_ROTATION;
-            }
-        }
-        // unten oder links
-        else {
-            double x = 0;
-            double y = interpolateY(pointA, point_outside, x);
-
-            // linke Grenze passiert
-            if (y < 1 && y > 0){
-                Eigen::Vector2d exit_point(0, y);
-                Eigen::Vector2d entry_point(y, 0);
-                Eigen::Vector2d displacement = (point_outside - exit_point).cwiseAbs();
-
-                // switch values of x and y
-                displacement = Eigen::Vector2d(displacement[1], displacement[0]);
-
-                entry_angle.row(0) *= steepness_switch;
-
-                Eigen::Vector2d rotated_displacement = displacement.array() * entry_angle.array();
-                new_point = entry_point + rotated_displacement;
-                n -= KACHEL_ROTATION;
-            }
-            // unten Grenze passiert
-            else {
-                double y_back_neg = 0;
-                double x_back_neg = interpolateX(pointA, point_outside, y_back_neg);
-
-                Eigen::Vector2d exit_point(x_back_neg, 0);
-                Eigen::Vector2d entry_point(0, x_back_neg);
-
-                Eigen::Vector2d displacement = (point_outside - exit_point).cwiseAbs();
-                // switch values of x and y
-                displacement = Eigen::Vector2d(displacement[1], displacement[0]);
-                entry_angle.row(1) *= steepness_switch;
-                Eigen::Vector2d rotated_displacement = displacement.array() * entry_angle.array();
-                new_point = entry_point + rotated_displacement;
-                n += KACHEL_ROTATION;
-            }
-        }
-
-        // Rotate n +- KACHEL_ROTATION depending on the exist side
-
-    }
-    else {
+    } else {
         new_point = point_outside;
     }
-    return std::tuple(new_point, n, entry_point);
-}
 
-
-// Function to calculate steepness switch
-int EuclideanTiling::calculateSteepnessSwitch(double steepness) {
-    if (steepness > 0) return -1;
-    else if (steepness < 0) return 1;
-    return 0;
-}
-
-
-// function to calculate x given y
-double EuclideanTiling::interpolateX(
-    const Eigen::Vector2d& pointA,
-    const Eigen::Vector2d& pointB,
-    double y
-) {
-    double x = pointA[0] + ((y - pointA[1]) * (pointB[0] - pointA[0])) / (pointB[1] - pointA[1]);
-    // For the case that the point is on the edge
-    if (x == 1) {
-        x -= EPSILON;
-    }
-    else if (x == 0) {
-        x += EPSILON;
-    }
-    return x;
-}
-
-
-// function to calculate y given x
-double EuclideanTiling::interpolateY(
-    const Eigen::Vector2d& pointA,
-    const Eigen::Vector2d& pointB,
-    double x
-) {
-    double y = pointA[1] + ((x - pointA[0]) * (pointB[1] - pointA[1])) / (pointB[0] - pointA[0]);
-    // For the case that the point is on the edge
-    if (y == 1) {
-        y -= EPSILON;
-    }
-    else if (y == 0) {
-        y += EPSILON;
-    }
-    return y;
+    return {new_point, n};
 }

@@ -27,24 +27,11 @@ private:
 
     const bool original_mesh;
 
-    std::tuple<Eigen::Vector2d, double, Eigen::Vector2d> processPoints(
+    std::pair<Eigen::Vector2d, double> processPoints(
         const Eigen::Vector2d& pointA,
         const Eigen::Vector2d& point_outside,
         double n
     );
 
-    int calculateSteepnessSwitch(double steepness);
-    double interpolateX(
-        const Eigen::Vector2d& pointA,
-        const Eigen::Vector2d& pointB,
-        double y
-    );
-    double interpolateY(
-        const Eigen::Vector2d& pointA,
-        const Eigen::Vector2d& pointB,
-        double x
-    );
-
     static constexpr double KACHEL_ROTATION = 90.0;
-    static constexpr double EPSILON = 0.0001;
 };
