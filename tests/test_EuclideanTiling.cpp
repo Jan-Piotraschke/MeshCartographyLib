@@ -7,7 +7,7 @@
  * @version     0.1.0
  * @license     Apache License 2.0
  *
- * @bug         -
+ * @bug         A too big r_UV value results in an infinite loop inside processPoints()
  * @todo        -
  */
 
@@ -43,7 +43,7 @@ public:
                     0.9, 0.4;
 
         r_UV.resize(3, 2);
-        r_UV << 1.2, 0.2,
+        r_UV << 2.2, 3.2,  // ! Here is the problem, because the value is too big
                 1.3, 1.2,
                 -0.3, 0.7;
 
