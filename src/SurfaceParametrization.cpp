@@ -368,9 +368,8 @@ boost::optional<Point_2> SurfaceParametrization::intersection_point(const Segmen
     for (size_t i = 0; i < border.size() - 1; ++i) {
         Segment_2 seg(border[i], border[i+1]);
         if (auto intersection = CGAL::intersection(line, seg)) {
-            if (const Point_2* pt = std::get_if<Point_2>(&*intersection)) {
-                return *pt;
-            }
+            Point_2 pt = std::get<Point_2>(*intersection);
+            return pt;
         }
     }
     return {};
