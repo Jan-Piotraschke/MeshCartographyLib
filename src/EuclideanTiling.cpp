@@ -8,7 +8,8 @@
  * @license     Apache License 2.0
  *
  * @bug         fix processPoints() because sometimes the mapping does not work and ends in an infinite loop
- * @todo        generalize process_points() due to the fact, that we need the entry_point coordinates if the particle leaves a more complex 2D mesh form, because then the old start and the new_point intersect multiple borders
+ * @todo        - generalize process_points() due to the fact, that we need the entry_point coordinates if the particle leaves a more complex 2D mesh form, because then the old start and the new_point intersect multiple borders
+ *              - check the rotation of 'n' inside process_points()
  */
 
 #include <EuclideanTiling.h>
@@ -76,6 +77,11 @@ void EuclideanTiling::diagonal_seam_edges_square_border(){
 // Private Functions
 // ========================================
 
+/**
+ * @brief Process the points, which are outside the boundaries of the UV domain
+ *
+ * The rotation of 'n' got directly taken from the rotation within create_kachelmuster()
+*/
 std::pair<Eigen::Vector2d, double> EuclideanTiling::processPoints(
     const Eigen::Vector2d& pointA,
     const Eigen::Vector2d& point_outside,
@@ -88,16 +94,16 @@ std::pair<Eigen::Vector2d, double> EuclideanTiling::processPoints(
         auto crossed_border = surface_parametrization.check_border_crossings(pointA, point_outside);
         if (crossed_border == "left") {
             new_point = Eigen::Vector2d(point_outside[1], -point_outside[0]);
-            n -= KACHEL_ROTATION;
+            n -= 90.0;
         } else if (crossed_border == "right") {
             new_point = Eigen::Vector2d(point_outside[1], 2-point_outside[0]);
-            n -= KACHEL_ROTATION;
+            n -= 90.0;
         } else if (crossed_border == "up") {
             new_point = Eigen::Vector2d(2-point_outside[1], point_outside[0]);
-            n += KACHEL_ROTATION;
+            n -= 270.0;
         } else {
             new_point = Eigen::Vector2d(-point_outside[1], point_outside[0]);
-            n += KACHEL_ROTATION;
+            n -= 270.0;
         }
     } else {
         new_point = point_outside;
