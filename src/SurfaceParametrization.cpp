@@ -606,22 +606,33 @@ void SurfaceParametrization::Tessellation::create_kachelmuster() {
 // Tessellation - Private Functions
 // ========================================
 
-void SurfaceParametrization::Tessellation::analyseSides(){
+void SurfaceParametrization::Tessellation::analyseSides() {
     // Check each vertex
     for(std::size_t i = 0; i < parent.polygon.size(); ++i) {
         auto vertex = parent.polygon.vertex(i);
 
-        if(CGAL::abs(vertex.x()) < 1e-9) { // left side
+        // Check for left side
+        if(CGAL::abs(vertex.x()) < 1e-9) {
             left.push_back(parent.polygon_v[i]);
-        } else if(CGAL::abs(vertex.x() - 1) < 1e-9) { // right side
+        }
+
+        // Check for right side
+        if(CGAL::abs(vertex.x() - 1) < 1e-9) {
             right.push_back(parent.polygon_v[i]);
-        } else if(CGAL::abs(vertex.y()) < 1e-9) { // bottom side
+        }
+
+        // Check for bottom side
+        if(CGAL::abs(vertex.y()) < 1e-9) {
             down.push_back(parent.polygon_v[i]);
-        } else if(CGAL::abs(vertex.y() - 1) < 1e-9) { // top side
+        }
+
+        // Check for top side
+        if(CGAL::abs(vertex.y() - 1) < 1e-9) {
             up.push_back(parent.polygon_v[i]);
         }
     }
 }
+
 
 
 void SurfaceParametrization::Tessellation::process_mesh(
