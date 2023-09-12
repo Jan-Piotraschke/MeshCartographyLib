@@ -91,7 +91,10 @@ std::pair<Eigen::Vector2d, double> EuclideanTiling::processPoints(
 
     // Check, wether the point is outside the boundaries
     if (!surface_parametrization.check_point_in_polygon(point_outside, true)) {
-        auto crossed_border = surface_parametrization.check_border_crossings(pointA, point_outside);
+        auto results = surface_parametrization.check_border_crossings(pointA, point_outside);
+        auto crossed_border = std::get<0>(results);
+        auto exit_point = std::get<1>(results);
+
         if (crossed_border == "left") {
             new_point = Eigen::Vector2d(point_outside[1], -point_outside[0]);
             n -= 90.0;

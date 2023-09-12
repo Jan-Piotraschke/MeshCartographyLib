@@ -237,7 +237,7 @@ void SurfaceParametrization::create_kachelmuster() {
 }
 
 
-std::string SurfaceParametrization::check_border_crossings(
+std::pair<std::string, Eigen::Vector2d> SurfaceParametrization::check_border_crossings(
     const Eigen::Vector2d& start_eigen,
     const Eigen::Vector2d& end_eigen
 ) {
@@ -254,12 +254,15 @@ std::string SurfaceParametrization::check_border_crossings(
 
     for (const auto& [name, border_indices] : borders) {
         auto border = create_border_line(border_indices);
-        if (is_intersecting(line, border)) {
-            return name;
+        auto border_intersection = intersection_point(line, border);
+        if (border_intersection) {
+            const Point_2& point = *border_intersection;
+            auto exit_point = Eigen::Vector2d(CGAL::to_double(point.x()), CGAL::to_double(point.y()));
+            return {name, exit_point};
         }
     }
 
-    return "no intersection";
+    return {"no intersection", start_eigen};
 }
 
 
@@ -361,19 +364,16 @@ std::vector<Point_2> SurfaceParametrization::create_border_line(const std::vecto
 }
 
 
-bool SurfaceParametrization::is_intersecting(const Segment_2& line, const std::vector<Point_2>& border) {
+boost::optional<Point_2> SurfaceParametrization::intersection_point(const Segment_2& line, const std::vector<Point_2>& border) {
     for (size_t i = 0; i < border.size() - 1; ++i) {
         Segment_2 seg(border[i], border[i+1]);
-        if (check_intersection(line, seg)) {
-            return true;
+        if (auto intersection = CGAL::intersection(line, seg)) {
+            if (const Point_2* pt = std::get_if<Point_2>(&*intersection)) {
+                return *pt;
+            }
         }
     }
-    return false;
-}
-
-
-bool SurfaceParametrization::check_intersection(const Segment_2& seg1, const Segment_2& seg2) {
-    return CGAL::do_intersect(seg1, seg2);
+    return {};
 }
 
 
