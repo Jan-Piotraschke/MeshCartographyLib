@@ -256,7 +256,7 @@ std::pair<std::string, Eigen::Vector2d> SurfaceParametrization::check_border_cro
         auto border = create_border_line(border_indices);
         auto border_intersection = intersection_point(line, border);
         if (border_intersection) {
-            const Point_2& point = *border_intersection;
+            const Point_2 point = *border_intersection;
             auto exit_point = Eigen::Vector2d(CGAL::to_double(point.x()), CGAL::to_double(point.y()));
             return {name, exit_point};
         }
@@ -364,9 +364,27 @@ std::vector<Point_2> SurfaceParametrization::create_border_line(const std::vecto
 }
 
 
+bool SurfaceParametrization::is_point_on_segment(const Point_2& P, const Point_2& A, const Point_2& B) {
+    // Check if P lies within bounding box of AB
+    if (P.x() < std::min(A.x(), B.x()) || P.x() > std::max(A.x(), B.x()) ||
+        P.y() < std::min(A.y(), B.y()) || P.y() > std::max(A.y(), B.y())) {
+        return false;
+    }
+
+    // Check if cross product of PA and PB is close to 0
+    double crossProduct = (P.x() - A.x()) * (B.y() - A.y()) - (P.y() - A.y()) * (B.x() - A.x());
+    return fabs(crossProduct) < 1e-9;
+}
+
+
 boost::optional<Point_2> SurfaceParametrization::intersection_point(const Segment_2& line, const std::vector<Point_2>& border) {
     for (size_t i = 0; i < border.size() - 1; ++i) {
         Segment_2 seg(border[i], border[i+1]);
+
+        // Check if the start of the line is on the current border segment
+        if (is_point_on_segment(line.source(), seg.source(), seg.target())) {
+            continue;  // Skip to the next iteration without checking for intersections
+        }
 
         // Compute the intersection
         Point_2 A = line.source();

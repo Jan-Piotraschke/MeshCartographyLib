@@ -200,6 +200,7 @@ private:
     );
 
     std::vector<Point_2> create_border_line(const std::vector<_3D::vertex_descriptor>& indices);
+    bool is_point_on_segment(const Point_2& P, const Point_2& A, const Point_2& B);
     boost::optional<Point_2> intersection_point(const Segment_2& line, const std::vector<Point_2>& border);
 
     UV::Mesh create_UV_mesh(

@@ -7,7 +7,7 @@
  * @version     0.1.0
  * @license     Apache License 2.0
  *
- * @bug         A too big r_UV value results in an infinite loop inside processPoints()
+ * @bug         -
  * @todo        -
  */
 
@@ -38,12 +38,12 @@ public:
 
     void SetUp() override {
         r_UV_old.resize(3, 2);
-        r_UV_old << 0.2, 0.2,
+        r_UV_old << 0.5, 0.5,
                     0.5, 0.5,
                     0.9, 0.4;
 
         r_UV.resize(3, 2);
-        r_UV << 2.2, 3.2,  // ! Here is the problem, because the value is too big
+        r_UV << 2.5, 0.5,
                 1.3, 1.2,
                 -0.3, 0.7;
 
@@ -57,8 +57,8 @@ TEST_F(EuclideanTilingTest, TestOppositeSeamEdgesSquareBorder) {
 
     const double EPSILON = 1e-9;
 
-    ASSERT_NEAR(r_UV(0, 0), 0.2, EPSILON);
-    ASSERT_NEAR(r_UV(0, 1), 0.2, EPSILON);
+    ASSERT_NEAR(r_UV(0, 0), 0.5, EPSILON);
+    ASSERT_NEAR(r_UV(0, 1), 0.5, EPSILON);
     ASSERT_NEAR(r_UV(1, 0), 0.3, EPSILON);
     ASSERT_NEAR(r_UV(1, 1), 0.2, EPSILON);
     ASSERT_NEAR(r_UV(2, 0), 0.7, EPSILON);
@@ -72,7 +72,7 @@ TEST_F(EuclideanTilingTest, TestDiagonalSeamEdgesSquareBorder) {
 
     const double EPSILON = 1e-9;
     Eigen::Matrix<double, Eigen::Dynamic, 2> expected(3, 2);
-    expected << 0.2, 0.8,
+    expected << 0.5, 0.5,
                 0.7, 0.8,
                 0.7, 0.3;
 

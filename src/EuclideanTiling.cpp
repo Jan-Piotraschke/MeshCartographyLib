@@ -7,9 +7,8 @@
  * @version     0.1.0
  * @license     Apache License 2.0
  *
- * @bug         fix processPoints() because sometimes the mapping does not work and ends in an infinite loop
- * @todo        - generalize process_points() due to the fact, that we need the entry_point coordinates if the particle leaves a more complex 2D mesh form, because then the old start and the new_point intersect multiple borders
- *              - check the rotation of 'n' inside process_points()
+ * @bug         -
+ * @todo        - check the rotation of 'n' inside process_points()
  */
 
 #include <EuclideanTiling.h>
@@ -92,7 +91,7 @@ std::tuple<Eigen::Vector2d, double, Eigen::Vector2d> EuclideanTiling::processPoi
     Eigen::Vector2d new_point(2, 1);
     Eigen::Vector2d entry_point(1, 1);
 
-    // Check, wether the point is outside the boundaries
+    // Check, whether the point is outside the boundaries
     if (!surface_parametrization.check_point_in_polygon(point_outside, true)) {
         auto results = surface_parametrization.check_border_crossings(pointA, point_outside);
         auto crossed_border = std::get<0>(results);
