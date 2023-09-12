@@ -367,9 +367,27 @@ std::vector<Point_2> SurfaceParametrization::create_border_line(const std::vecto
 boost::optional<Point_2> SurfaceParametrization::intersection_point(const Segment_2& line, const std::vector<Point_2>& border) {
     for (size_t i = 0; i < border.size() - 1; ++i) {
         Segment_2 seg(border[i], border[i+1]);
-        if (auto intersection = CGAL::intersection(line, seg)) {
-            Point_2 pt = std::get<Point_2>(*intersection);
-            return pt;
+
+        // Compute the intersection
+        Point_2 A = line.source();
+        Point_2 B = line.target();
+        Point_2 C = seg.source();
+        Point_2 D = seg.target();
+
+        double det = (B.x() - A.x()) * (D.y() - C.y()) - (B.y() - A.y()) * (D.x() - C.x());
+
+        // Check if lines are parallel
+        if (fabs(det) < 1e-9) {
+            continue;
+        }
+
+        double t = ((C.x() - A.x()) * (D.y() - C.y()) - (C.y() - A.y()) * (D.x() - C.x())) / det;
+        double s = ((C.x() - A.x()) * (B.y() - A.y()) - (C.y() - A.y()) * (B.x() - A.x())) / det;
+
+        if (t >= 0 && t <= 1 && s >= 0 && s <= 1) {
+            double x = A.x() + t * (B.x() - A.x());
+            double y = A.y() + t * (B.y() - A.y());
+            return Point_2(x, y);
         }
     }
     return {};

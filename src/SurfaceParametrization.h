@@ -16,6 +16,7 @@
 #include <Eigen/Dense>
 
 // Boost libraries
+#include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/graph/adjacency_list.hpp>
