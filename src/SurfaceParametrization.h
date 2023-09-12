@@ -16,6 +16,7 @@
 #include <Eigen/Dense>
 
 // Boost libraries
+#include <boost/optional/optional_io.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graph_traits.hpp>
@@ -129,7 +130,7 @@ public:
 
     std::vector<_3D::vertex_descriptor> left, right, up, down;
 
-    std::string check_border_crossings(
+    std::pair<std::string, Eigen::Vector2d> check_border_crossings(
         const Eigen::Vector2d& start_eigen,
         const Eigen::Vector2d& end_eigen
     );
@@ -198,8 +199,7 @@ private:
     );
 
     std::vector<Point_2> create_border_line(const std::vector<_3D::vertex_descriptor>& indices);
-    bool is_intersecting(const Segment_2& line, const std::vector<Point_2>& border);
-    bool check_intersection(const Segment_2& seg1, const Segment_2& seg2);
+    boost::optional<Point_2> intersection_point(const Segment_2& line, const std::vector<Point_2>& border);
 
     UV::Mesh create_UV_mesh(
         _3D::Mesh& mesh,
