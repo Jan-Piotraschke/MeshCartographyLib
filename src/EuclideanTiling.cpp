@@ -58,11 +58,13 @@ void EuclideanTiling::diagonal_seam_edges_square_border(){
             auto results = processPoints(pointA, point_outside, n_double);
             Eigen::Vector2d new_point = std::get<0>(results);
             n(i) = std::get<1>(results);
+            auto entry_point = std::get<2>(results);
 
             // Check, wether the new point is inside the boundaries
             if (surface_parametrization.check_point_in_polygon(new_point, original_mesh)) {
                 r_UV.row(i).head<2>().noalias() = new_point;
             } else {
+                r_UV_old.row(i).head<2>() = entry_point;
                 r_UV.row(i).head<2>().noalias() = new_point;
                 valid = false;
                 break;
@@ -82,18 +84,21 @@ void EuclideanTiling::diagonal_seam_edges_square_border(){
  *
  * The rotation of 'n' got directly taken from the rotation within create_kachelmuster()
 */
-std::pair<Eigen::Vector2d, double> EuclideanTiling::processPoints(
+std::tuple<Eigen::Vector2d, double, Eigen::Vector2d> EuclideanTiling::processPoints(
     const Eigen::Vector2d& pointA,
     const Eigen::Vector2d& point_outside,
     double n
 ) {
     Eigen::Vector2d new_point(2, 1);
+    Eigen::Vector2d entry_point(1, 1);
 
     // Check, wether the point is outside the boundaries
     if (!surface_parametrization.check_point_in_polygon(point_outside, true)) {
         auto results = surface_parametrization.check_border_crossings(pointA, point_outside);
         auto crossed_border = std::get<0>(results);
         auto exit_point = std::get<1>(results);
+
+        entry_point = Eigen::Vector2d(exit_point[1], exit_point[0]);
 
         if (crossed_border == "left") {
             new_point = Eigen::Vector2d(point_outside[1], -point_outside[0]);
@@ -112,5 +117,5 @@ std::pair<Eigen::Vector2d, double> EuclideanTiling::processPoints(
         new_point = point_outside;
     }
 
-    return {new_point, n};
+    return {new_point, n, entry_point};
 }
