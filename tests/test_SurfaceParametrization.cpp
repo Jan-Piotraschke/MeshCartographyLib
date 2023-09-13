@@ -24,14 +24,14 @@ const boost::filesystem::path PROJECT_PATH = MeshCartographyLib_SOURCE_DIR;
 
 class SurfaceParametrizationTest : public ::testing::Test {
 protected:
-    _3D::Mesh mesh;
-    _3D::vertex_descriptor start_node;
-    std::vector<_3D::vertex_descriptor> predecessor_pmap;
-    std::vector<int> distance;
-    _3D::vertex_descriptor target_node;
-    std::string mesh_file_path;
+    static _3D::Mesh mesh;
+    static _3D::vertex_descriptor start_node;
+    static std::vector<_3D::vertex_descriptor> predecessor_pmap;
+    static std::vector<int> distance;
+    static _3D::vertex_descriptor target_node;
+    static std::string mesh_file_path;
 
-    void SetUp() override {
+    static void SetUpTestCase() {
         mesh_file_path = (PROJECT_PATH / "meshes/ellipsoid_x4.off").string();
 
         // Load the 3D mesh
@@ -50,8 +50,27 @@ protected:
 
         // Find the farthest vertex from the start node
         target_node = surface_parametrization.find_farthest_vertex(mesh, start_node, distance);
+
+        auto result = surface_parametrization.create_uv_surface(mesh_file_path, 0);
+        auto mesh_UV_path = std::get<3>(result);
+
+        auto mesh_UV_name = surface_parametrization.get_mesh_name(mesh_UV_path);
+
+        // Create the tessellation mesh
+        surface_parametrization.create_kachelmuster();
     }
+
+    // If you need any per-test setup
+    void SetUp() override {}
 };
+
+// Static members initialization
+_3D::Mesh SurfaceParametrizationTest::mesh;
+_3D::vertex_descriptor SurfaceParametrizationTest::start_node;
+std::vector<_3D::vertex_descriptor> SurfaceParametrizationTest::predecessor_pmap;
+std::vector<int> SurfaceParametrizationTest::distance;
+_3D::vertex_descriptor SurfaceParametrizationTest::target_node;
+std::string SurfaceParametrizationTest::mesh_file_path;
 
 
 TEST_F(SurfaceParametrizationTest, MeshNameTestNormalFileName) {
