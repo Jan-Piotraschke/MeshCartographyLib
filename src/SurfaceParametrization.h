@@ -59,6 +59,19 @@ const fs::path PROJECT_PATH_ = MeshCartographyLib_SOURCE_DIR;
 const fs::path MESH_FOLDER = PROJECT_PATH_  / "meshes";
 const unsigned int PARAMETERIZATION_ITERATIONS = 9;
 
+using Point_2_eigen = Eigen::Vector2d;
+
+class Segment_2_eigen {
+private:
+    Point_2_eigen source_point, target_point;
+public:
+    Segment_2_eigen(const Point_2_eigen& s, const Point_2_eigen& t)
+        : source_point(s), target_point(t) {}
+
+    Point_2_eigen source() const { return source_point; }
+    Point_2_eigen target() const { return target_point; }
+};
+
 // 3D definitions
 namespace _3D {
     using Mesh = CGAL::Surface_mesh<Point_3>;
@@ -124,18 +137,19 @@ public:
     std::tuple<std::vector<int64_t>, Eigen::MatrixXd, Eigen::MatrixXd, std::string> get_virtual_mesh();
 
     bool check_point_in_polygon(
-        const Eigen::Vector2d& point,
+        const Point_2_eigen& point,
         bool is_original_mesh
     );
     void create_kachelmuster();
 
-    std::vector<_3D::vertex_descriptor> left, right, up, down;
-
-    std::pair<std::string, Eigen::Vector2d> check_border_crossings(
-        const Eigen::Vector2d& start_eigen,
-        const Eigen::Vector2d& end_eigen
-    );
-
+    std::vector<Point_2_eigen> left, right, up, down;
+    std::tuple<std::vector<Point_2_eigen>,
+                std::vector<Point_2_eigen>,
+                std::vector<Point_2_eigen>,
+                std::vector<Point_2_eigen>
+            > get_borders(){
+                return {left, right, up, down};
+            };
 private:
     MeshMeta meshmeta;
     int combine_key;
@@ -147,12 +161,12 @@ private:
             void analyseSides();
             void create_kachelmuster();
             std::tuple<
-                std::vector<_3D::vertex_descriptor>,
-                std::vector<_3D::vertex_descriptor>,
-                std::vector<_3D::vertex_descriptor>,
-                std::vector<_3D::vertex_descriptor>
+                std::vector<Point_2_eigen>,
+                std::vector<Point_2_eigen>,
+                std::vector<Point_2_eigen>,
+                std::vector<Point_2_eigen>
             > get_sides(){
-                return {left, right, up, down};
+                return {left_border, right_border, up_border, down_border};
             };
             friend class SurfaceParametrization;
 
@@ -177,6 +191,7 @@ private:
                 const Point_3& pt
             );
             std::vector<_3D::vertex_descriptor> left, right, up, down;
+            std::vector<Point_2_eigen> left_border, right_border, up_border, down_border;
 
             static constexpr double EPSILON = 1e-6;
 
@@ -198,10 +213,6 @@ private:
         UV::halfedge_descriptor bhd,
         _3D::UV_pmap uvmap
     );
-
-    std::vector<Point_2> create_border_line(const std::vector<_3D::vertex_descriptor>& indices);
-    bool is_point_on_segment(const Point_2& P, const Point_2& A, const Point_2& B);
-    boost::optional<Point_2> intersection_point(const Segment_2& line, const std::vector<Point_2>& border);
 
     UV::Mesh create_UV_mesh(
         _3D::Mesh& mesh,

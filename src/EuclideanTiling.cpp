@@ -22,12 +22,8 @@ EuclideanTiling::EuclideanTiling(
     : surface_parametrization(surface_parametrization),
       r_UV(r_UV),
       r_UV_old(r_UV_old),
-      n(n),
-      original_mesh(true)
-{
-
-}
-
+      n(n)
+{}
 
 // ========================================
 // Public Functions
@@ -42,10 +38,14 @@ void EuclideanTiling::opposite_seam_edges_square_border(){
 }
 
 
-/**
- * @brief By using the '&' we pass the reference of the variable to the function, so we can change the value of the variable inside the function
-*/
 void EuclideanTiling::diagonal_seam_edges_square_border(){
+    // Get borders
+    auto result = surface_parametrization.get_borders();
+    left = std::get<0>(result);
+    right = std::get<1>(result);
+    up = std::get<2>(result);
+    down = std::get<3>(result);
+
     bool valid;
     do {
         valid = true;
@@ -73,6 +73,34 @@ void EuclideanTiling::diagonal_seam_edges_square_border(){
 }
 
 
+std::pair<std::string, Point_2_eigen> EuclideanTiling::check_border_crossings(
+    const Point_2_eigen& start_eigen,
+    const Point_2_eigen& end_eigen
+) {
+    Point_2_eigen start(start_eigen[0], start_eigen[1]);
+    Point_2_eigen end(end_eigen[0], end_eigen[1]);
+    Segment_2_eigen line(start, end);
+
+    const std::vector<std::pair<std::string, std::vector<Point_2_eigen>>> borders = {
+        {"left", left},
+        {"right", right},
+        {"up", up},
+        {"down", down}
+    };
+
+    for (const auto& [name, border] : borders) {
+        auto border_intersection = intersection_point(line, border);
+        if (border_intersection) {
+            const Point_2_eigen point = *border_intersection;
+            auto exit_point = Point_2_eigen(CGAL::to_double(point.x()), CGAL::to_double(point.y()));
+            return {name, exit_point};
+        }
+    }
+
+    return {"no intersection", start_eigen};
+}
+
+
 
 // ========================================
 // Private Functions
@@ -93,7 +121,7 @@ std::tuple<Eigen::Vector2d, double, Eigen::Vector2d> EuclideanTiling::processPoi
 
     // Check, whether the point is outside the boundaries
     if (!surface_parametrization.check_point_in_polygon(point_outside, true)) {
-        auto results = surface_parametrization.check_border_crossings(pointA, point_outside);
+        auto results = check_border_crossings(pointA, point_outside);
         auto crossed_border = std::get<0>(results);
         auto exit_point = std::get<1>(results);
 
@@ -117,4 +145,52 @@ std::tuple<Eigen::Vector2d, double, Eigen::Vector2d> EuclideanTiling::processPoi
     }
 
     return {new_point, n, entry_point};
+}
+
+
+bool EuclideanTiling::is_point_on_segment(const Point_2_eigen& P, const Point_2_eigen& A, const Point_2_eigen& B) {
+    // Check if P lies within bounding box of AB
+    if (P.x() < std::min(A.x(), B.x()) || P.x() > std::max(A.x(), B.x()) ||
+        P.y() < std::min(A.y(), B.y()) || P.y() > std::max(A.y(), B.y())) {
+        return false;
+    }
+
+    // Check if cross product of PA and PB is close to 0
+    double crossProduct = (P.x() - A.x()) * (B.y() - A.y()) - (P.y() - A.y()) * (B.x() - A.x());
+    return fabs(crossProduct) < 1e-9;
+}
+
+
+boost::optional<Point_2_eigen> EuclideanTiling::intersection_point(const Segment_2_eigen& line, const std::vector<Point_2_eigen>& border) {
+    for (size_t i = 0; i < border.size() - 1; ++i) {
+        Segment_2_eigen seg(border[i], border[i+1]);
+
+        // Check if the start of the line is on the current border segment
+        if (is_point_on_segment(line.source(), seg.source(), seg.target())) {
+            continue;  // Skip to the next iteration without checking for intersections
+        }
+
+        // Compute the intersection
+        Point_2_eigen A = line.source();
+        Point_2_eigen B = line.target();
+        Point_2_eigen C = seg.source();
+        Point_2_eigen D = seg.target();
+
+        double det = (B.x() - A.x()) * (D.y() - C.y()) - (B.y() - A.y()) * (D.x() - C.x());
+
+        // Check if lines are parallel
+        if (fabs(det) < 1e-9) {
+            continue;
+        }
+
+        double t = ((C.x() - A.x()) * (D.y() - C.y()) - (C.y() - A.y()) * (D.x() - C.x())) / det;
+        double s = ((C.x() - A.x()) * (B.y() - A.y()) - (C.y() - A.y()) * (B.x() - A.x())) / det;
+
+        if (t >= 0 && t <= 1 && s >= 0 && s <= 1) {
+            double x = A.x() + t * (B.x() - A.x());
+            double y = A.y() + t * (B.y() - A.y());
+            return Point_2_eigen(x, y);
+        }
+    }
+    return {};
 }

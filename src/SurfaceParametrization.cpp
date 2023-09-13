@@ -191,7 +191,7 @@ std::tuple<std::vector<int64_t>, Eigen::MatrixXd, Eigen::MatrixXd, std::string> 
  * @brief Check if a given point is inside our polygon border
 */
 bool SurfaceParametrization::check_point_in_polygon(
-    const Eigen::Vector2d& point,
+    const Point_2_eigen& point,
     bool is_original_mesh
 ){
     Point_2 cgal_point(point[0], point[1]);
@@ -234,35 +234,6 @@ void SurfaceParametrization::create_kachelmuster() {
     right = std::get<1>(result);
     up = std::get<2>(result);
     down = std::get<3>(result);
-}
-
-
-std::pair<std::string, Eigen::Vector2d> SurfaceParametrization::check_border_crossings(
-    const Eigen::Vector2d& start_eigen,
-    const Eigen::Vector2d& end_eigen
-) {
-    Point_2 start(start_eigen[0], start_eigen[1]);
-    Point_2 end(end_eigen[0], end_eigen[1]);
-    Segment_2 line(start, end);
-
-    const std::vector<std::pair<std::string, std::vector<_3D::vertex_descriptor>>> borders = {
-        {"left", left},
-        {"right", right},
-        {"up", up},
-        {"down", down}
-    };
-
-    for (const auto& [name, border_indices] : borders) {
-        auto border = create_border_line(border_indices);
-        auto border_intersection = intersection_point(line, border);
-        if (border_intersection) {
-            const Point_2 point = *border_intersection;
-            auto exit_point = Eigen::Vector2d(CGAL::to_double(point.x()), CGAL::to_double(point.y()));
-            return {name, exit_point};
-        }
-    }
-
-    return {"no intersection", start_eigen};
 }
 
 
@@ -350,65 +321,6 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     }
 
     return h_v_mapping_vector;
-}
-
-
-std::vector<Point_2> SurfaceParametrization::create_border_line(const std::vector<_3D::vertex_descriptor>& indices) {
-    std::vector<Point_2> border;
-    for (auto i : indices) {
-        auto it = std::find(polygon_v.begin(), polygon_v.end(), i);
-        int index = std::distance(polygon_v.begin(), it);
-        border.emplace_back(polygon[index].x(), polygon[index].y());
-    }
-    return border;
-}
-
-
-bool SurfaceParametrization::is_point_on_segment(const Point_2& P, const Point_2& A, const Point_2& B) {
-    // Check if P lies within bounding box of AB
-    if (P.x() < std::min(A.x(), B.x()) || P.x() > std::max(A.x(), B.x()) ||
-        P.y() < std::min(A.y(), B.y()) || P.y() > std::max(A.y(), B.y())) {
-        return false;
-    }
-
-    // Check if cross product of PA and PB is close to 0
-    double crossProduct = (P.x() - A.x()) * (B.y() - A.y()) - (P.y() - A.y()) * (B.x() - A.x());
-    return fabs(crossProduct) < 1e-9;
-}
-
-
-boost::optional<Point_2> SurfaceParametrization::intersection_point(const Segment_2& line, const std::vector<Point_2>& border) {
-    for (size_t i = 0; i < border.size() - 1; ++i) {
-        Segment_2 seg(border[i], border[i+1]);
-
-        // Check if the start of the line is on the current border segment
-        if (is_point_on_segment(line.source(), seg.source(), seg.target())) {
-            continue;  // Skip to the next iteration without checking for intersections
-        }
-
-        // Compute the intersection
-        Point_2 A = line.source();
-        Point_2 B = line.target();
-        Point_2 C = seg.source();
-        Point_2 D = seg.target();
-
-        double det = (B.x() - A.x()) * (D.y() - C.y()) - (B.y() - A.y()) * (D.x() - C.x());
-
-        // Check if lines are parallel
-        if (fabs(det) < 1e-9) {
-            continue;
-        }
-
-        double t = ((C.x() - A.x()) * (D.y() - C.y()) - (C.y() - A.y()) * (D.x() - C.x())) / det;
-        double s = ((C.x() - A.x()) * (B.y() - A.y()) - (C.y() - A.y()) * (B.x() - A.x())) / det;
-
-        if (t >= 0 && t <= 1 && s >= 0 && s <= 1) {
-            double x = A.x() + t * (B.x() - A.x());
-            double y = A.y() + t * (B.y() - A.y());
-            return Point_2(x, y);
-        }
-    }
-    return {};
 }
 
 
@@ -610,25 +522,30 @@ void SurfaceParametrization::Tessellation::analyseSides() {
     // Check each vertex
     for(std::size_t i = 0; i < parent.polygon.size(); ++i) {
         auto vertex = parent.polygon.vertex(i);
+        auto eigen_point = Eigen::Vector2d(parent.polygon[i].x(), parent.polygon[i].y()) ;
 
         // Check for left side
         if(CGAL::abs(vertex.x()) < 1e-9) {
             left.push_back(parent.polygon_v[i]);
+            left_border.push_back(eigen_point);
         }
 
         // Check for right side
         if(CGAL::abs(vertex.x() - 1) < 1e-9) {
             right.push_back(parent.polygon_v[i]);
+            right_border.push_back(eigen_point);
         }
 
         // Check for bottom side
         if(CGAL::abs(vertex.y()) < 1e-9) {
             down.push_back(parent.polygon_v[i]);
+            down_border.push_back(eigen_point);
         }
 
         // Check for top side
         if(CGAL::abs(vertex.y() - 1) < 1e-9) {
             up.push_back(parent.polygon_v[i]);
+            up_border.push_back(eigen_point);
         }
     }
 }
