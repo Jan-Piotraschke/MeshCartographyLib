@@ -142,7 +142,7 @@ public:
     );
     void create_kachelmuster();
 
-    std::vector<Point_2> left, right, up, down;
+    std::vector<Point_2_eigen> left, right, up, down;
 
     std::pair<std::string, Point_2_eigen> check_border_crossings(
         const Point_2_eigen& start_eigen,
@@ -160,10 +160,10 @@ private:
             void analyseSides();
             void create_kachelmuster();
             std::tuple<
-                std::vector<Point_2>,
-                std::vector<Point_2>,
-                std::vector<Point_2>,
-                std::vector<Point_2>
+                std::vector<Point_2_eigen>,
+                std::vector<Point_2_eigen>,
+                std::vector<Point_2_eigen>,
+                std::vector<Point_2_eigen>
             > get_sides(){
                 return {left_border, right_border, up_border, down_border};
             };
@@ -190,7 +190,7 @@ private:
                 const Point_3& pt
             );
             std::vector<_3D::vertex_descriptor> left, right, up, down;
-            std::vector<Point_2> left_border, right_border, up_border, down_border;
+            std::vector<Point_2_eigen> left_border, right_border, up_border, down_border;
 
             static constexpr double EPSILON = 1e-6;
 
@@ -213,9 +213,8 @@ private:
         _3D::UV_pmap uvmap
     );
 
-    std::vector<Point_2_eigen> convertToEigen(const std::vector<Point_2>& cgal_points);
     bool is_point_on_segment(const Point_2_eigen& P, const Point_2_eigen& A, const Point_2_eigen& B);
-    boost::optional<Point_2_eigen> intersection_point(const Segment_2_eigen& line, const std::vector<Point_2>& border);
+    boost::optional<Point_2_eigen> intersection_point(const Segment_2_eigen& line, const std::vector<Point_2_eigen>& border);
 
     UV::Mesh create_UV_mesh(
         _3D::Mesh& mesh,

@@ -245,7 +245,7 @@ std::pair<std::string, Point_2_eigen> SurfaceParametrization::check_border_cross
     Point_2_eigen end(end_eigen[0], end_eigen[1]);
     Segment_2_eigen line(start, end);
 
-    const std::vector<std::pair<std::string, std::vector<Point_2>>> borders = {
+    const std::vector<std::pair<std::string, std::vector<Point_2_eigen>>> borders = {
         {"left", left},
         {"right", right},
         {"up", up},
@@ -283,22 +283,7 @@ bool SurfaceParametrization::is_point_on_segment(const Point_2_eigen& P, const P
 }
 
 
-std::vector<Point_2_eigen> SurfaceParametrization::convertToEigen(const std::vector<Point_2>& cgal_points) {
-    std::vector<Point_2_eigen> eigen_points;
-    eigen_points.reserve(cgal_points.size());
-
-    for (const auto& pt : cgal_points) {
-        eigen_points.emplace_back(pt.x(), pt.y());
-    }
-
-    return eigen_points;
-}
-
-
-boost::optional<Point_2_eigen> SurfaceParametrization::intersection_point(const Segment_2_eigen& line, const std::vector<Point_2>& cgal_border) {
-    // ! TEMP:
-    std::vector<Point_2_eigen> border = convertToEigen(cgal_border);
-
+boost::optional<Point_2_eigen> SurfaceParametrization::intersection_point(const Segment_2_eigen& line, const std::vector<Point_2_eigen>& border) {
     for (size_t i = 0; i < border.size() - 1; ++i) {
         Segment_2_eigen seg(border[i], border[i+1]);
 
@@ -613,29 +598,30 @@ void SurfaceParametrization::Tessellation::analyseSides() {
     // Check each vertex
     for(std::size_t i = 0; i < parent.polygon.size(); ++i) {
         auto vertex = parent.polygon.vertex(i);
+        auto eigen_point = Eigen::Vector2d(parent.polygon[i].x(), parent.polygon[i].y()) ;
 
         // Check for left side
         if(CGAL::abs(vertex.x()) < 1e-9) {
             left.push_back(parent.polygon_v[i]);
-            left_border.push_back(parent.polygon[i]);
+            left_border.push_back(eigen_point);
         }
 
         // Check for right side
         if(CGAL::abs(vertex.x() - 1) < 1e-9) {
             right.push_back(parent.polygon_v[i]);
-            right_border.push_back(parent.polygon[i]);
+            right_border.push_back(eigen_point);
         }
 
         // Check for bottom side
         if(CGAL::abs(vertex.y()) < 1e-9) {
             down.push_back(parent.polygon_v[i]);
-            down_border.push_back(parent.polygon[i]);
+            down_border.push_back(eigen_point);
         }
 
         // Check for top side
         if(CGAL::abs(vertex.y() - 1) < 1e-9) {
             up.push_back(parent.polygon_v[i]);
-            up_border.push_back(parent.polygon[i]);
+            up_border.push_back(eigen_point);
         }
     }
 }
