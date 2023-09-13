@@ -22,12 +22,8 @@ EuclideanTiling::EuclideanTiling(
     : surface_parametrization(surface_parametrization),
       r_UV(r_UV),
       r_UV_old(r_UV_old),
-      n(n),
-      original_mesh(true)
-{
-
-}
-
+      n(n)
+{}
 
 // ========================================
 // Public Functions
@@ -42,10 +38,8 @@ void EuclideanTiling::opposite_seam_edges_square_border(){
 }
 
 
-/**
- * @brief By using the '&' we pass the reference of the variable to the function, so we can change the value of the variable inside the function
-*/
 void EuclideanTiling::diagonal_seam_edges_square_border(){
+    // Get borders
     auto result = surface_parametrization.get_borders();
     left = std::get<0>(result);
     right = std::get<1>(result);
