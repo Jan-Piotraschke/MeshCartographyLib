@@ -182,7 +182,7 @@ TEST_F(SurfaceParametrizationTest, CheckPointOnBoundary) {
 
 TEST_F(SurfaceParametrizationTest, CheckPointInPolygonGrid) {
     // 4. Grid of points covering the region
-    double step = 0.01; // you can adjust this as needed
+    double step = 0.01;
     for (double x = -0.2; x <= 1.2; x += step) {
         for (double y = -0.2; y <= 1.2; y += step) {
             bool is_inside = (x >= 0 && x <= 1 && y >= 0 && y <= 1);
