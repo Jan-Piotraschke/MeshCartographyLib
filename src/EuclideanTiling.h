@@ -41,4 +41,5 @@ private:
 
     // Constants
     static constexpr double KACHEL_ROTATION = 90.0;
+    static constexpr double BORDER_THRESHOLD = 1e-3;
 };

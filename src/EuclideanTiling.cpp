@@ -93,6 +93,13 @@ std::pair<std::string, Point_2_eigen> EuclideanTiling::check_border_crossings(
         if (border_intersection) {
             const Point_2_eigen point = *border_intersection;
             auto exit_point = Point_2_eigen(CGAL::to_double(point.x()), CGAL::to_double(point.y()));
+            if (std::abs(exit_point[0]) < BORDER_THRESHOLD) {
+                exit_point[0] = 0.0;
+            }
+
+            if (std::abs(exit_point[1]) < BORDER_THRESHOLD) {
+                exit_point[1] = 0.0;
+            }
             return {name, exit_point};
         }
     }

@@ -249,4 +249,6 @@ private:
         const std::string& mesh_uv_path,
         bool is_original_mesh
     );
+
+friend class SurfaceParametrizationTest;
 };
