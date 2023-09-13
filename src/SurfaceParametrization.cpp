@@ -237,86 +237,10 @@ void SurfaceParametrization::create_kachelmuster() {
 }
 
 
-std::pair<std::string, Point_2_eigen> SurfaceParametrization::check_border_crossings(
-    const Point_2_eigen& start_eigen,
-    const Point_2_eigen& end_eigen
-) {
-    Point_2_eigen start(start_eigen[0], start_eigen[1]);
-    Point_2_eigen end(end_eigen[0], end_eigen[1]);
-    Segment_2_eigen line(start, end);
-
-    const std::vector<std::pair<std::string, std::vector<Point_2_eigen>>> borders = {
-        {"left", left},
-        {"right", right},
-        {"up", up},
-        {"down", down}
-    };
-
-    for (const auto& [name, border] : borders) {
-        auto border_intersection = intersection_point(line, border);
-        if (border_intersection) {
-            const Point_2_eigen point = *border_intersection;
-            auto exit_point = Point_2_eigen(CGAL::to_double(point.x()), CGAL::to_double(point.y()));
-            return {name, exit_point};
-        }
-    }
-
-    return {"no intersection", start_eigen};
-}
-
-
 
 // ========================================
 // Private Functions
 // ========================================
-
-bool SurfaceParametrization::is_point_on_segment(const Point_2_eigen& P, const Point_2_eigen& A, const Point_2_eigen& B) {
-    // Check if P lies within bounding box of AB
-    if (P.x() < std::min(A.x(), B.x()) || P.x() > std::max(A.x(), B.x()) ||
-        P.y() < std::min(A.y(), B.y()) || P.y() > std::max(A.y(), B.y())) {
-        return false;
-    }
-
-    // Check if cross product of PA and PB is close to 0
-    double crossProduct = (P.x() - A.x()) * (B.y() - A.y()) - (P.y() - A.y()) * (B.x() - A.x());
-    return fabs(crossProduct) < 1e-9;
-}
-
-
-boost::optional<Point_2_eigen> SurfaceParametrization::intersection_point(const Segment_2_eigen& line, const std::vector<Point_2_eigen>& border) {
-    for (size_t i = 0; i < border.size() - 1; ++i) {
-        Segment_2_eigen seg(border[i], border[i+1]);
-
-        // Check if the start of the line is on the current border segment
-        if (is_point_on_segment(line.source(), seg.source(), seg.target())) {
-            continue;  // Skip to the next iteration without checking for intersections
-        }
-
-        // Compute the intersection
-        Point_2_eigen A = line.source();
-        Point_2_eigen B = line.target();
-        Point_2_eigen C = seg.source();
-        Point_2_eigen D = seg.target();
-
-        double det = (B.x() - A.x()) * (D.y() - C.y()) - (B.y() - A.y()) * (D.x() - C.x());
-
-        // Check if lines are parallel
-        if (fabs(det) < 1e-9) {
-            continue;
-        }
-
-        double t = ((C.x() - A.x()) * (D.y() - C.y()) - (C.y() - A.y()) * (D.x() - C.x())) / det;
-        double s = ((C.x() - A.x()) * (B.y() - A.y()) - (C.y() - A.y()) * (B.x() - A.x())) / det;
-
-        if (t >= 0 && t <= 1 && s >= 0 && s <= 1) {
-            double x = A.x() + t * (B.x() - A.x());
-            double y = A.y() + t * (B.y() - A.y());
-            return Point_2_eigen(x, y);
-        }
-    }
-    return {};
-}
-
 
 /**
  * @brief Calculate the UV coordinates of the 3D mesh and also return their mapping to the 3D coordinates

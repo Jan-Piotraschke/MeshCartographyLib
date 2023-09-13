@@ -143,12 +143,13 @@ public:
     void create_kachelmuster();
 
     std::vector<Point_2_eigen> left, right, up, down;
-
-    std::pair<std::string, Point_2_eigen> check_border_crossings(
-        const Point_2_eigen& start_eigen,
-        const Point_2_eigen& end_eigen
-    );
-
+    std::tuple<std::vector<Point_2_eigen>,
+                std::vector<Point_2_eigen>,
+                std::vector<Point_2_eigen>,
+                std::vector<Point_2_eigen>
+            > get_borders(){
+                return {left, right, up, down};
+            };
 private:
     MeshMeta meshmeta;
     int combine_key;
@@ -212,9 +213,6 @@ private:
         UV::halfedge_descriptor bhd,
         _3D::UV_pmap uvmap
     );
-
-    bool is_point_on_segment(const Point_2_eigen& P, const Point_2_eigen& A, const Point_2_eigen& B);
-    boost::optional<Point_2_eigen> intersection_point(const Segment_2_eigen& line, const std::vector<Point_2_eigen>& border);
 
     UV::Mesh create_UV_mesh(
         _3D::Mesh& mesh,
