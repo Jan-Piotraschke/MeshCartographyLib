@@ -137,16 +137,16 @@ public:
     std::tuple<std::vector<int64_t>, Eigen::MatrixXd, Eigen::MatrixXd, std::string> get_virtual_mesh();
 
     bool check_point_in_polygon(
-        const Eigen::Vector2d& point,
+        const Point_2_eigen& point,
         bool is_original_mesh
     );
     void create_kachelmuster();
 
     std::vector<_3D::vertex_descriptor> left, right, up, down;
 
-    std::pair<std::string, Eigen::Vector2d> check_border_crossings(
-        const Eigen::Vector2d& start_eigen,
-        const Eigen::Vector2d& end_eigen
+    std::pair<std::string, Point_2_eigen> check_border_crossings(
+        const Point_2_eigen& start_eigen,
+        const Point_2_eigen& end_eigen
     );
 
 private:

@@ -191,7 +191,7 @@ std::tuple<std::vector<int64_t>, Eigen::MatrixXd, Eigen::MatrixXd, std::string> 
  * @brief Check if a given point is inside our polygon border
 */
 bool SurfaceParametrization::check_point_in_polygon(
-    const Eigen::Vector2d& point,
+    const Point_2_eigen& point,
     bool is_original_mesh
 ){
     Point_2 cgal_point(point[0], point[1]);
@@ -237,9 +237,9 @@ void SurfaceParametrization::create_kachelmuster() {
 }
 
 
-std::pair<std::string, Eigen::Vector2d> SurfaceParametrization::check_border_crossings(
-    const Eigen::Vector2d& start_eigen,
-    const Eigen::Vector2d& end_eigen
+std::pair<std::string, Point_2_eigen> SurfaceParametrization::check_border_crossings(
+    const Point_2_eigen& start_eigen,
+    const Point_2_eigen& end_eigen
 ) {
     Point_2_eigen start(start_eigen[0], start_eigen[1]);
     Point_2_eigen end(end_eigen[0], end_eigen[1]);
@@ -257,7 +257,7 @@ std::pair<std::string, Eigen::Vector2d> SurfaceParametrization::check_border_cro
         auto border_intersection = intersection_point(line, border);
         if (border_intersection) {
             const Point_2_eigen point = *border_intersection;
-            auto exit_point = Eigen::Vector2d(CGAL::to_double(point.x()), CGAL::to_double(point.y()));
+            auto exit_point = Point_2_eigen(CGAL::to_double(point.x()), CGAL::to_double(point.y()));
             return {name, exit_point};
         }
     }
