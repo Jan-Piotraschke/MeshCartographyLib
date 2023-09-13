@@ -59,6 +59,19 @@ const fs::path PROJECT_PATH_ = MeshCartographyLib_SOURCE_DIR;
 const fs::path MESH_FOLDER = PROJECT_PATH_  / "meshes";
 const unsigned int PARAMETERIZATION_ITERATIONS = 9;
 
+using Point_2_eigen = Eigen::Vector2d;
+
+class Segment_2_eigen {
+private:
+    Point_2_eigen source_point, target_point;
+public:
+    Segment_2_eigen(const Point_2_eigen& s, const Point_2_eigen& t)
+        : source_point(s), target_point(t) {}
+
+    Point_2_eigen source() const { return source_point; }
+    Point_2_eigen target() const { return target_point; }
+};
+
 // 3D definitions
 namespace _3D {
     using Mesh = CGAL::Surface_mesh<Point_3>;
@@ -199,9 +212,10 @@ private:
         _3D::UV_pmap uvmap
     );
 
+    std::vector<Point_2_eigen> convertToEigen(const std::vector<Point_2>& cgal_points);
     std::vector<Point_2> create_border_line(const std::vector<_3D::vertex_descriptor>& indices);
-    bool is_point_on_segment(const Point_2& P, const Point_2& A, const Point_2& B);
-    boost::optional<Point_2> intersection_point(const Segment_2& line, const std::vector<Point_2>& border);
+    bool is_point_on_segment(const Point_2_eigen& P, const Point_2_eigen& A, const Point_2_eigen& B);
+    boost::optional<Point_2_eigen> intersection_point(const Segment_2_eigen& line, const std::vector<Point_2>& border);
 
     UV::Mesh create_UV_mesh(
         _3D::Mesh& mesh,
