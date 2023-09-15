@@ -4,14 +4,13 @@
  *
  * @author      Jan-Piotraschke
  * @date        2023-Aug-30
- * @version     0.1.0
  * @license     Apache License 2.0
  *
  * @bug         -
  * @todo        Heat distance method depending on edge length
  */
 
-#include <GeodesicDistance.h>
+#include "GeodesicDistance.h"
 
 using Triangle_mesh = CGAL::Surface_mesh<Point_3>;
 using vertex_descriptor = boost::graph_traits<Triangle_mesh>::vertex_descriptor;

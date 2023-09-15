@@ -18,7 +18,7 @@ include(CGAL_Eigen3_support)
 include_directories(${GTEST_INCLUDE_DIRS})
 
 # Add the source files of your library
-file(GLOB SIMULATION_SOURCES src/*.cpp)
+file(GLOB_RECURSE SIMULATION_SOURCES src/*.cpp)
 add_library(MeshCartographyLib STATIC ${SIMULATION_SOURCES})
 
 # Link the library with the required packages
@@ -38,7 +38,7 @@ target_link_libraries(MeshCartography PUBLIC
 )
 
 # Collect all test source files
-file(GLOB TEST_SOURCES tests/*.cpp)
+file(GLOB_RECURSE TEST_SOURCES tests/*.cpp)
 
 # Create a test executable for all available tests
 add_executable(MeshCartography_test ${TEST_SOURCES})
