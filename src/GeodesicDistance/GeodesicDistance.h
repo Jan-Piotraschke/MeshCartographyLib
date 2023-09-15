@@ -56,7 +56,6 @@ public:
         std::string mesh_path_input
     );
 
-    void get_all_distances();
     void calculate_tessellation_distance();
     void calculate_edge_distances(
         _3D::Mesh mesh,
@@ -85,13 +84,4 @@ private:
         file.close();
         std::cout << "saved" << std::endl;
     };
-
-    void fill_distance_matrix(
-        Eigen::MatrixXd& distance_matrix,
-        int closest_vertice
-    );
-
-    std::vector<double> geo_distance(
-        int32_t start_node = 0
-    );
 };

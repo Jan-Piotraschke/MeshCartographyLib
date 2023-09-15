@@ -4,14 +4,13 @@
  *
  * @author      Jan-Piotraschke
  * @date        2023-Aug-30
- * @version     0.1.0
  * @license     Apache License 2.0
  *
  * @bug         -
  * @todo        Heat distance method depending on edge length
  */
 
-#include <GeodesicDistance.h>
+#include "GeodesicDistance.h"
 
 using Triangle_mesh = CGAL::Surface_mesh<Point_3>;
 using vertex_descriptor = boost::graph_traits<Triangle_mesh>::vertex_descriptor;
@@ -36,26 +35,6 @@ GeodesicDistance::GeodesicDistance(std::string mesh_path_input)
 // ========================================
 // Public Functions
 // ========================================
-
-/**
- * @brief Calculate the distance using the Heat Method
-*/
-void GeodesicDistance::get_all_distances(){
-    mesh_path = mesh_path_3D;
-    Triangle_mesh mesh;
-    std::ifstream filename(CGAL::data_file_path(mesh_path));
-    filename >> mesh;
-
-    Eigen::MatrixXd distance_matrix_v(num_vertices(mesh), num_vertices(mesh));
-
-    // loop over all vertices and fill the distance matrix
-    for (auto vi = vertices(mesh).first; vi != vertices(mesh).second; ++vi) {
-        fill_distance_matrix(distance_matrix_v, *vi);
-    }
-
-    save_distance_matrix(distance_matrix_v);
-}
-
 
 void GeodesicDistance::calculate_tessellation_distance(){
     mesh_path = mesh_path_UV;
@@ -104,52 +83,4 @@ void GeodesicDistance::calculate_edge_distances(
     );
 
     boost::breadth_first_search(mesh, start_node, visitor(vis));
-}
-
-
-
-// ========================================
-// Private Functions
-// ========================================
-
-/**
- * @brief Variable to keep track of the current index of the vector of distances, and each thread processes a
- * different index until all the distances have been added to the distance matrix.
-*/
-void GeodesicDistance::fill_distance_matrix(
-    Eigen::MatrixXd& distance_matrix,
-    int closest_vertice
-){
-    if (distance_matrix.row(closest_vertice).head(2).isZero()) {
-        // get the distance of all vertices to all other vertices
-        std::vector<double> vertices_3D_distance_map = geo_distance(closest_vertice);
-        distance_matrix.row(closest_vertice) = Eigen::Map<Eigen::VectorXd>(vertices_3D_distance_map.data(), vertices_3D_distance_map.size());
-    }
-}
-
-
-std::vector<double> GeodesicDistance::geo_distance(
-    int32_t start_node
-){
-    Triangle_mesh tm;
-    std::ifstream filename(CGAL::data_file_path(mesh_path));
-    filename >> tm;
-
-    //property map for the distance values to the source set
-    Vertex_distance_map vertex_distance = tm.add_property_map<vertex_descriptor, double>("v:distance", 0).first;
-
-    //pass in the idt object and its vertex_distance_map
-    Heat_method hm_idt(tm);
-
-    //add the first vertex as the source set
-    vertex_descriptor source = *(vertices(tm).first + start_node);
-    hm_idt.add_source(source);
-    hm_idt.estimate_geodesic_distances(vertex_distance);
-
-    std::vector<double> distances_list;
-    for (vertex_descriptor vd : vertices(tm)) {
-        distances_list.push_back(get(vertex_distance, vd));
-    }
-
-    return distances_list;
 }
