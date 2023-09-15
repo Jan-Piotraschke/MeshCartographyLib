@@ -37,6 +37,9 @@ GeodesicDistance::GeodesicDistance(std::string mesh_path_input)
 // Public Functions
 // ========================================
 
+
+
+
 /**
  * @brief Calculate the distance using the Heat Method
 */
