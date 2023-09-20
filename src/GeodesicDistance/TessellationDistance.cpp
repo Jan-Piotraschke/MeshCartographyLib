@@ -10,7 +10,7 @@
  * @todo        Heat distance method depending on edge length
  */
 
-#include "GeodesicDistance.h"
+#include "TessellationDistance.h"
 
 using Triangle_mesh = CGAL::Surface_mesh<Point_3>;
 using vertex_descriptor = boost::graph_traits<Triangle_mesh>::vertex_descriptor;
@@ -20,7 +20,7 @@ using Vertex_distance_map = Triangle_mesh::Property_map<vertex_descriptor, doubl
 using Heat_method_idt = CGAL::Heat_method_3::Surface_mesh_geodesic_distances_3<Triangle_mesh, CGAL::Heat_method_3::Direct>;
 using Heat_method = CGAL::Heat_method_3::Surface_mesh_geodesic_distances_3<Triangle_mesh>;
 
-GeodesicDistance::GeodesicDistance(std::string mesh_path_input)
+TessellationDistance::TessellationDistance(std::string mesh_path_input)
 : mesh_path(mesh_path_input)
 {
     mesh_path_3D = mesh_path;
@@ -36,7 +36,7 @@ GeodesicDistance::GeodesicDistance(std::string mesh_path_input)
 // Public Functions
 // ========================================
 
-void GeodesicDistance::calculate_tessellation_distance(){
+void TessellationDistance::calculate_tessellation_distance(){
     mesh_path = mesh_path_UV;
     mesh_name = mesh_name_UV;
 
@@ -66,7 +66,7 @@ void GeodesicDistance::calculate_tessellation_distance(){
  * @brief Calculate the distances from a given start vertex to all other vertices
  * Breadth-First Search (BFS): for unweighted grid or mesh
 */
-void GeodesicDistance::calculate_edge_distances(
+void TessellationDistance::calculate_edge_distances(
     _3D::Mesh mesh,
     _3D::vertex_descriptor start_node,
     std::vector<_3D::vertex_descriptor>& predecessor_pmap,

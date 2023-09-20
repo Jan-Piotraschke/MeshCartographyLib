@@ -1,4 +1,4 @@
-// GeodesicDistance.h
+// TessellationDistance.h
 #pragma once
 
 #include <string>
@@ -50,9 +50,9 @@ namespace _3D {
     using UV_pmap = Mesh::Property_map<halfedge_descriptor, Point_2>;
 }
 
-class GeodesicDistance {
+class TessellationDistance {
 public:
-    GeodesicDistance(
+    TessellationDistance(
         std::string mesh_path_input
     );
 
