@@ -17,6 +17,7 @@
 #include <memory>
 #include <Eigen/Dense>
 #include "SurfaceParametrization/SurfaceParametrization.h"
+#include "SurfaceParametrization/TessellationHelper.h"
 #include <EuclideanTiling.h>
 
 SurfaceParametrization surface_parametrization_tiling;
@@ -24,6 +25,7 @@ SurfaceParametrization surface_parametrization_tiling;
 const boost::filesystem::path PROJECT_PATH = MeshCartographyLib_SOURCE_DIR;
 auto mesh_file_path = (PROJECT_PATH / "meshes/ellipsoid_x4.off").string();
 auto result = surface_parametrization_tiling.create_uv_surface(mesh_file_path, 0);
+Tessellation tessellation_helper(surface_parametrization_tiling);
 
 class EuclideanTilingTest : public ::testing::Test {
 protected:
@@ -66,7 +68,7 @@ TEST_F(EuclideanTilingTest, TestOppositeSeamEdgesSquareBorder) {
 
 
 TEST_F(EuclideanTilingTest, TestDiagonalSeamEdgesSquareBorder) {
-    surface_parametrization_tiling.create_kachelmuster();
+    tessellation_helper.create_kachelmuster();
     euclidean_tiling.diagonal_seam_edges_square_border();
 
     const double EPSILON = 1e-9;

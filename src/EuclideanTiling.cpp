@@ -12,6 +12,7 @@
  */
 
 #include <EuclideanTiling.h>
+#include "SurfaceParametrization/TessellationHelper.h"
 
 EuclideanTiling::EuclideanTiling(
     SurfaceParametrization& surface_parametrization,
@@ -40,7 +41,8 @@ void EuclideanTiling::opposite_seam_edges_square_border(){
 
 void EuclideanTiling::diagonal_seam_edges_square_border(){
     // Get borders
-    auto result = surface_parametrization.get_borders();
+    Tessellation tessellation(surface_parametrization);
+    auto result = tessellation.get_borders();
     left = std::get<0>(result);
     right = std::get<1>(result);
     up = std::get<2>(result);
