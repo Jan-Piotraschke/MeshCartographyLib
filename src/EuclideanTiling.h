@@ -2,7 +2,7 @@
 
 #include <tuple>
 #include <Eigen/Dense>
-#include "SurfaceParametrization.h"
+#include "SurfaceParametrization/SurfaceParametrization.h"
 
 class EuclideanTiling {
 public:
