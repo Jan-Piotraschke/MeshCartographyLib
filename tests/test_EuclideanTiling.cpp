@@ -16,7 +16,7 @@
 #include <boost/filesystem.hpp>
 #include <memory>
 #include <Eigen/Dense>
-#include <SurfaceParametrization.h>
+#include "SurfaceParametrization/SurfaceParametrization.h"
 #include <EuclideanTiling.h>
 
 bool free_boundary_tiling = false;

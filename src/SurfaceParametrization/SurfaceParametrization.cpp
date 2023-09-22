@@ -11,7 +11,7 @@
  * @todo        improve the find_vertex_by_coordinates function, as we only have to check on the border of the mesh
  */
 
-#include <SurfaceParametrization.h>
+#include "SurfaceParametrization.h"
 
 #include "SurfaceParametrization/CutLineHelper.h"
 #include "SurfaceParametrization/FreeBorderParametrizationHelper.h"
