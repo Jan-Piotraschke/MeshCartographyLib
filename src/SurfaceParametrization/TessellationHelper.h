@@ -22,6 +22,7 @@ public:
     > get_borders(){
         return {left_border, right_border, up_border, down_border};
     };
+    std::vector<Point_2_eigen> left_border, right_border, up_border, down_border;
 
 private:
     SurfaceParametrization& parent;
@@ -45,7 +46,8 @@ private:
     );
     void analyseSides();
     std::vector<_3D::vertex_descriptor> left, right, up, down;
-    std::vector<Point_2_eigen> left_border, right_border, up_border, down_border;
 
     static constexpr double EPSILON = 1e-6;
+
+friend class SurfaceParametrization;
 };

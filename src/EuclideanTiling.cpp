@@ -16,11 +16,13 @@
 
 EuclideanTiling::EuclideanTiling(
     SurfaceParametrization& surface_parametrization,
+    Tessellation& tessellation,
     Eigen::Matrix<double, Eigen::Dynamic, 2>& r_UV,
     Eigen::Matrix<double, Eigen::Dynamic, 2>& r_UV_old,
     Eigen::VectorXi& n
 )
     : surface_parametrization(surface_parametrization),
+        tessellation(tessellation),
       r_UV(r_UV),
       r_UV_old(r_UV_old),
       n(n)
@@ -41,7 +43,6 @@ void EuclideanTiling::opposite_seam_edges_square_border(){
 
 void EuclideanTiling::diagonal_seam_edges_square_border(){
     // Get borders
-    Tessellation tessellation(surface_parametrization);
     auto result = tessellation.get_borders();
     left = std::get<0>(result);
     right = std::get<1>(result);

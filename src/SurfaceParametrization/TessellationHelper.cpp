@@ -82,7 +82,6 @@ void Tessellation::analyseSides() {
 }
 
 
-
 void Tessellation::process_mesh(
     const std::string& mesh_path,
     _3D::Mesh& mesh_original,

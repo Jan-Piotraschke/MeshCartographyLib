@@ -3,11 +3,13 @@
 #include <tuple>
 #include <Eigen/Dense>
 #include "SurfaceParametrization/SurfaceParametrization.h"
+#include "SurfaceParametrization/TessellationHelper.h"
 
 class EuclideanTiling {
 public:
     EuclideanTiling(
         SurfaceParametrization& surface_parametrization,
+        Tessellation& tessellation,
         Eigen::Matrix<double, Eigen::Dynamic, 2>& r_UV,
         Eigen::Matrix<double, Eigen::Dynamic, 2>& r_UV_old,
         Eigen::VectorXi& n
@@ -23,6 +25,7 @@ public:
 private:
     // Member variables
     SurfaceParametrization& surface_parametrization;
+    Tessellation& tessellation;
     Eigen::Matrix<double, Eigen::Dynamic, 2>& r_UV;
     Eigen::Matrix<double, Eigen::Dynamic, 2>& r_UV_old;
     Eigen::VectorXi& n;
