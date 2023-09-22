@@ -8,7 +8,7 @@
  * @license     Apache License 2.0
  *
  * @bug         -
- * @todo        improve the find_vertex_by_coordinates function, as we only have to check on the border of the mesh
+ * @todo        -
  */
 
 #include "SurfaceParametrization.h"
