@@ -15,6 +15,7 @@
 #include <boost/filesystem.hpp>
 
 #include "SurfaceParametrization/SurfaceParametrization.h"
+#include "SurfaceParametrization/TessellationHelper.h"
 
 const boost::filesystem::path PROJECT_PATH = MeshCartographyLib_SOURCE_DIR;
 
@@ -30,7 +31,8 @@ int main()
     auto mesh_UV_name = surface_parametrization.get_mesh_name(mesh_UV_path);
 
     // Create the tessellation mesh
-    surface_parametrization.create_kachelmuster();
+    Tessellation tessellation(surface_parametrization);
+    tessellation.create_kachelmuster();
 
     return 0;
 }
