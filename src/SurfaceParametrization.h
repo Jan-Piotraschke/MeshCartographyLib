@@ -124,12 +124,6 @@ private:
     std::vector<int64_t> h_v_mapping_vector_virtual;
     std::string mesh_3D_file_path;
 
-    SMP::Error_code parameterize_UV_mesh(
-        UV::Mesh mesh,
-        UV::halfedge_descriptor bhd,
-        _3D::UV_pmap uvmap
-    );
-
     UV::Mesh create_UV_mesh(
         _3D::Mesh& mesh,
         const std::vector<_3D::edge_descriptor> calc_edges

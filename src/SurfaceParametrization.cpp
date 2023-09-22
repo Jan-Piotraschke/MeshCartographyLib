@@ -14,6 +14,8 @@
 #include <SurfaceParametrization.h>
 
 #include "SurfaceParametrization/CutLineHelper.h"
+#include "SurfaceParametrization/FreeBorderParametrizationHelper.h"
+#include "SurfaceParametrization/SquareBorderParametrizationHelper.h"
 
 SurfaceParametrization::SurfaceParametrization(bool& free_boundary)
     : free_boundary(free_boundary){
@@ -107,7 +109,7 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
 
     // Set the border edges of the UV mesh
     CutLineHelper helper = CutLineHelper(mesh_3D_file_path, start_node);
-    SurfaceParametrizationHelperInterface& cutline_helper = helper;
+    CutLineHelperInterface& cutline_helper = helper;
     auto [virtual_border_edges, border_edges] = cutline_helper.set_UV_border_edges();
 
     _3D::Mesh sm, sm_for_virtual;
@@ -126,8 +128,25 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     UV::halfedge_descriptor bhd_virtual = CGAL::Polygon_mesh_processing::longest_border(mesh_virtual).first;
 
     // Perform parameterization
-    parameterize_UV_mesh(mesh, bhd, uvmap);
-    parameterize_UV_mesh(mesh_virtual, bhd_virtual, uvmap_virtual);
+    if (free_boundary) {
+        FreeBorderParametrizationHelper helper = FreeBorderParametrizationHelper(mesh, bhd, uvmap);
+        ParametrizationHelperInterface& free_border_parametrization_helper = helper;
+        free_border_parametrization_helper.parameterize_UV_mesh();
+    } else {
+        SquareBorderParametrizationHelper helper = SquareBorderParametrizationHelper(mesh, bhd, uvmap);
+        ParametrizationHelperInterface& square_border_parametrization_helper = helper;
+        square_border_parametrization_helper.parameterize_UV_mesh();
+    }
+
+    if (free_boundary) {
+        FreeBorderParametrizationHelper helper = FreeBorderParametrizationHelper(mesh_virtual, bhd_virtual, uvmap_virtual);
+        ParametrizationHelperInterface& free_border_parametrization_helper = helper;
+        free_border_parametrization_helper.parameterize_UV_mesh();
+    } else {
+        SquareBorderParametrizationHelper helper = SquareBorderParametrizationHelper(mesh_virtual, bhd_virtual, uvmap_virtual);
+        ParametrizationHelperInterface& square_border_parametrization_helper = helper;
+        square_border_parametrization_helper.parameterize_UV_mesh();
+    }
 
     // Save the uv mesh
     save_UV_mesh(mesh, bhd, uvmap, mesh_3D_file_path, 0);
@@ -204,42 +223,6 @@ std::tuple<Point_3, Point_2, int64_t> SurfaceParametrization::getMeshData(
     Point_3 point_3D = sm.point(target(vd, sm));
     Point_2 uv = get(_uvmap, halfedge(vd, mesh));
     return {point_3D, uv, target_vertice};
-}
-
-
-/**
- * @brief Perform UV parameterization
-*
-* Computes a one-to-one mapping from a 3D triangle surface mesh to a simple 2D domain.
-* The mapping is piecewise linear on the triangle mesh. The result is a pair (U,V) of parameter coordinates for each vertex of the input mesh.
-*/
-SMP::Error_code SurfaceParametrization::parameterize_UV_mesh(
-    UV::Mesh mesh,
-    UV::halfedge_descriptor bhd,
-    _3D::UV_pmap uvmap
-){
-    // Choose the border type of the uv parametrisation
-    using Border_parameterizer = SMP::Square_border_uniform_parameterizer_3<UV::Mesh>;
-    Border_parameterizer border_parameterizer;
-
-    if (free_boundary) {
-        // ARAP parameterization
-        using Parameterizer = SMP::ARAP_parameterizer_3<UV::Mesh, Border_parameterizer>;
-
-        // Specify lambda value and other optional parameters
-        int lambda = 1000;
-        unsigned int iterations = 50;
-        double tolerance = 1e-6;
-        Parameterizer parameterizer(border_parameterizer, Parameterizer::Solver_traits(), lambda, iterations, tolerance);
-
-        return SMP::parameterize(mesh, parameterizer, bhd, uvmap);
-    } else {
-        // Minimize Angle Distortion: Discrete Conformal Map Parameterization
-        // from https://doi.org/10.1145/218380.218440
-        using Parameterizer = SMP::Discrete_conformal_map_parameterizer_3<UV::Mesh, Border_parameterizer>;
-
-        return SMP::parameterize(mesh, Parameterizer(), bhd, uvmap);
-    }
 }
 
 
