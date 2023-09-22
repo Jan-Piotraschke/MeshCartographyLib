@@ -1,6 +1,6 @@
 /**
  * @file        CutLineHelper.cpp
- * @brief
+ * @brief       Calculate the cut line of the mesh
  *
  * @author      Jan-Piotraschke
  * @date        2023-Sep-22

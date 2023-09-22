@@ -8,7 +8,7 @@
 
 #include "SurfaceParametrizationHelperInterface.h"
 
-class CutLineHelper : public SurfaceParametrizationHelperInterface {
+class CutLineHelper : public CutLineHelperInterface {
 public:
     CutLineHelper(
         const std::string mesh_3D_file_path,
