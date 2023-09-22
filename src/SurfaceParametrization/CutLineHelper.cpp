@@ -11,7 +11,6 @@
  */
 
 #include "CutLineHelper.h"
-#include <iostream>
 
 CutLineHelper::CutLineHelper(
     const std::string mesh_3D_file_path,
@@ -54,7 +53,7 @@ std::pair<std::vector<_3D::edge_descriptor>, std::vector<_3D::edge_descriptor>> 
 
     // Find the target node (farthest from the start node)
     _3D::vertex_descriptor target_node = find_farthest_vertex(mesh, start_node, distance);
-    std::cout << "testing the new library " << std::endl;
+
     // Get the edges of the path between the start and the target node
     auto results = get_cut_line(mesh, start_node, target_node, predecessor_pmap, true);
     std::vector<_3D::edge_descriptor> path_list = results.first;
