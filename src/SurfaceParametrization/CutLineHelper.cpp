@@ -25,24 +25,15 @@ CutLineHelper::CutLineHelper(
 // ========================================
 
 /**
-* @brief Calculate the virtual border of the mesh
+* @brief Calculate the border of the mesh
 *
 * @info: Unittested
 */
-std::pair<std::vector<_3D::edge_descriptor>, std::vector<_3D::edge_descriptor>> CutLineHelper::set_UV_border_edges(){
+std::vector<_3D::edge_descriptor> CutLineHelper::set_UV_border_edges(){
     // Load the mesh from the file
     _3D::Mesh mesh;
     std::ifstream in(CGAL::data_file_path(mesh_3D_file_path));
     in >> mesh;
-
-    int north_pole_int = 1;
-    int south_pole_int = mesh.number_of_vertices();
-    _3D::vertex_descriptor north_pole(north_pole_int);
-    _3D::vertex_descriptor south_pole(south_pole_int);
-
-    // Remove the poles from the mesh that they are never part of the border
-    mesh.remove_vertex(north_pole);
-    mesh.remove_vertex(south_pole);
 
     // Create vectors to store the predecessors (p) and the distances from the root (d)
     std::vector<_3D::vertex_descriptor> predecessor_pmap(num_vertices(mesh));  // record the predecessor of each vertex
@@ -55,18 +46,9 @@ std::pair<std::vector<_3D::edge_descriptor>, std::vector<_3D::edge_descriptor>> 
     _3D::vertex_descriptor target_node = find_farthest_vertex(mesh, start_node, distance);
 
     // Get the edges of the path between the start and the target node
-    auto results = get_cut_line(mesh, start_node, target_node, predecessor_pmap, true);
-    std::vector<_3D::edge_descriptor> path_list = results.first;
-    _3D::vertex_descriptor virtual_mesh_start = results.second;
+    std::vector<_3D::edge_descriptor> path_list = get_cut_line(mesh, start_node, target_node, predecessor_pmap);
 
-    // Find the cut line for the virtual mesh
-    calculate_distances(mesh, virtual_mesh_start, predecessor_pmap, distance);
-    _3D::vertex_descriptor virtual_target_node = find_farthest_vertex(mesh, virtual_mesh_start, distance);
-
-    auto results_virtual = get_cut_line(mesh, virtual_mesh_start, virtual_target_node, predecessor_pmap, false);
-    auto virtual_path_mod = results_virtual.first;
-
-    return {virtual_path_mod, path_list};
+    return path_list;
 }
 
 
@@ -85,12 +67,11 @@ std::pair<std::vector<_3D::edge_descriptor>, std::vector<_3D::edge_descriptor>> 
 * So, if you want something like an inverse 'Poincaré disk' you have to really shorten the path_list
 * The same is true if you reverse the logic: If you create a spiral-like seam edge path, your mesh will results in something like a 'Poincaré disk'
 */
-std::pair<std::vector<_3D::edge_descriptor>, _3D::vertex_descriptor> CutLineHelper::get_cut_line(
+std::vector<_3D::edge_descriptor> CutLineHelper::get_cut_line(
     const _3D::Mesh mesh,
     const _3D::vertex_descriptor start_node,
     _3D::vertex_descriptor current,
-    const std::vector<_3D::vertex_descriptor> predecessor_pmap,
-    const bool bool_reverse
+    const std::vector<_3D::vertex_descriptor> predecessor_pmap
 ){
     std::vector<_3D::edge_descriptor> path_list;
 
@@ -99,13 +80,6 @@ std::pair<std::vector<_3D::edge_descriptor>, _3D::vertex_descriptor> CutLineHelp
         std::pair<_3D::edge_descriptor, bool> edge_pair = edge(predecessor, current, mesh);
         path_list.push_back(edge_pair.first);
         current = predecessor;
-    }
-
-    _3D::vertex_descriptor virtual_mesh_start = target(path_list[path_list.size() - 2], mesh);
-
-    // Temp: We reverse the ordering for the virtual mesh
-    if (bool_reverse) {
-        std::reverse(path_list.begin(), path_list.end());
     }
 
     std::vector<_3D::edge_descriptor> longest_mod_two;
@@ -118,7 +92,7 @@ std::pair<std::vector<_3D::edge_descriptor>, _3D::vertex_descriptor> CutLineHelp
     //     std::cout << mesh.point(source(edge, mesh)) << std::endl;
     // }
 
-    return {longest_mod_two, virtual_mesh_start};
+    return longest_mod_two;
 }
 
 

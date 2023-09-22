@@ -23,7 +23,7 @@ int main()
     std::string mesh_path = PROJECT_PATH.string() + "/meshes/ellipsoid_x4.off";
     bool free_boundary = false;
 
-    SurfaceParametrization surface_parametrization(free_boundary);
+    SurfaceParametrization surface_parametrization;
     auto result = surface_parametrization.create_uv_surface(mesh_path, 0);
     auto mesh_UV_path = std::get<3>(result);
 
@@ -31,8 +31,6 @@ int main()
 
     // Create the tessellation mesh
     surface_parametrization.create_kachelmuster();
-
-    auto result_virtual = surface_parametrization.get_virtual_mesh();
 
     return 0;
 }

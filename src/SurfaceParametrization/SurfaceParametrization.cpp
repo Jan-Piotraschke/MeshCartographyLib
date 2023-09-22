@@ -13,13 +13,10 @@
 
 #include "SurfaceParametrization.h"
 
-#include "SurfaceParametrization/CutLineHelper.h"
-#include "SurfaceParametrization/FreeBorderParametrizationHelper.h"
-#include "SurfaceParametrization/SquareBorderParametrizationHelper.h"
+#include "CutLineHelper.h"
+#include "SquareBorderParametrizationHelper.h"
 
-SurfaceParametrization::SurfaceParametrization(bool& free_boundary)
-    : free_boundary(free_boundary){
-}
+SurfaceParametrization::SurfaceParametrization(){}
 
 
 // ========================================
@@ -39,11 +36,6 @@ std::string SurfaceParametrization::get_mesh_name(
 }
 
 
-std::tuple<std::vector<int64_t>, Eigen::MatrixXd, Eigen::MatrixXd, std::string> SurfaceParametrization::get_virtual_mesh(){
-    return {h_v_mapping_vector_virtual, vertices_UV_virtual, vertices_3D_virtual, meshmeta.mesh_path_virtual};
-}
-
-
 /**
  * @brief Check if a given point is inside our polygon border
 */
@@ -53,8 +45,7 @@ bool SurfaceParametrization::check_point_in_polygon(
 ){
     Point_2 cgal_point(point[0], point[1]);
 
-    auto polygon_iter = is_original_mesh ? polygon : polygon_virtual;
-    auto result = CGAL::bounded_side_2(polygon_iter.vertices_begin(), polygon_iter.vertices_end(), cgal_point, Kernel());
+    auto result = CGAL::bounded_side_2(polygon.vertices_begin(), polygon.vertices_end(), cgal_point, Kernel());
 
     return result == CGAL::ON_BOUNDED_SIDE || result == CGAL::ON_BOUNDARY;
 }
@@ -69,12 +60,11 @@ std::tuple<std::vector<int64_t>, Eigen::MatrixXd, Eigen::MatrixXd, std::string> 
 ){
     _3D::vertex_descriptor start_node(start_node_int);
     mesh_3D_file_path = mesh_path;
-    auto h_v_mapping_vector = calculate_uv_surface(start_node, start_node_int);
+    auto h_v_mapping_vector = calculate_uv_surface(start_node);
 
     std::string mesh_uv_file_path = meshmeta.mesh_path;
 
-    extract_polygon_border_edges(mesh_uv_file_path, true);
-    extract_polygon_border_edges(meshmeta.mesh_path_virtual, false);
+    extract_polygon_border_edges(mesh_uv_file_path);
 
     return {h_v_mapping_vector, vertice_UV, vertice_3D, mesh_uv_file_path};
 }
@@ -103,83 +93,41 @@ void SurfaceParametrization::create_kachelmuster() {
  * @brief Calculate the UV coordinates of the 3D mesh and also return their mapping to the 3D coordinates
 */
 std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
-    _3D::vertex_descriptor start_node,
-    int uv_mesh_number
+    _3D::vertex_descriptor start_node
 ){
 
     // Set the border edges of the UV mesh
     CutLineHelper helper = CutLineHelper(mesh_3D_file_path, start_node);
     CutLineHelperInterface& cutline_helper = helper;
-    auto [virtual_border_edges, border_edges] = cutline_helper.set_UV_border_edges();
+    auto border_edges = cutline_helper.set_UV_border_edges();
 
-    _3D::Mesh sm, sm_for_virtual;
-    load3DMeshes(mesh_3D_file_path, sm, sm_for_virtual);
+    _3D::Mesh sm;
+    std::ifstream in(CGAL::data_file_path(mesh_3D_file_path));
+    in >> sm;
 
     // Canonical Halfedges Representing a Vertex
     _3D::UV_pmap uvmap = sm.add_property_map<_3D::halfedge_descriptor, Point_2>("h:uv").first;
-    _3D::UV_pmap uvmap_virtual = sm_for_virtual.add_property_map<_3D::halfedge_descriptor, Point_2>("h:uv").first;
 
     // Create the seam mesh
     UV::Mesh mesh = create_UV_mesh(sm, border_edges);
-    UV::Mesh mesh_virtual = create_UV_mesh(sm_for_virtual, virtual_border_edges);
 
-    // Choose a halfedge on the (possibly virtual) border
+    // Choose a halfedge on the border
     UV::halfedge_descriptor bhd = CGAL::Polygon_mesh_processing::longest_border(mesh).first;
-    UV::halfedge_descriptor bhd_virtual = CGAL::Polygon_mesh_processing::longest_border(mesh_virtual).first;
 
     // Perform parameterization
-    if (free_boundary) {
-        FreeBorderParametrizationHelper helper = FreeBorderParametrizationHelper(mesh, bhd, uvmap);
-        ParametrizationHelperInterface& free_border_parametrization_helper = helper;
-        free_border_parametrization_helper.parameterize_UV_mesh();
-    } else {
-        SquareBorderParametrizationHelper helper = SquareBorderParametrizationHelper(mesh, bhd, uvmap);
-        ParametrizationHelperInterface& square_border_parametrization_helper = helper;
-        square_border_parametrization_helper.parameterize_UV_mesh();
-    }
-
-    if (free_boundary) {
-        FreeBorderParametrizationHelper helper = FreeBorderParametrizationHelper(mesh_virtual, bhd_virtual, uvmap_virtual);
-        ParametrizationHelperInterface& free_border_parametrization_helper = helper;
-        free_border_parametrization_helper.parameterize_UV_mesh();
-    } else {
-        SquareBorderParametrizationHelper helper = SquareBorderParametrizationHelper(mesh_virtual, bhd_virtual, uvmap_virtual);
-        ParametrizationHelperInterface& square_border_parametrization_helper = helper;
-        square_border_parametrization_helper.parameterize_UV_mesh();
-    }
+    SquareBorderParametrizationHelper square_helper = SquareBorderParametrizationHelper(mesh, bhd, uvmap);
+    ParametrizationHelperInterface& square_border_parametrization_helper = square_helper;
+    square_border_parametrization_helper.parameterize_UV_mesh();
 
     // Save the uv mesh
-    save_UV_mesh(mesh, bhd, uvmap, mesh_3D_file_path, 0);
-    save_UV_mesh(mesh_virtual, bhd_virtual, uvmap_virtual, mesh_3D_file_path, 1);
-
-    int number_of_virtual = size(vertices(mesh_virtual));
-    vertices_UV_virtual.resize(number_of_virtual, 3);
-    vertices_3D_virtual.resize(number_of_virtual, 3);
-
-    int i = 0;
-    for (UV::vertex_descriptor vd : vertices(mesh_virtual)) {
-        auto [point_3D, uv, target_vertice] = getMeshData(vd, mesh_virtual, sm_for_virtual, uvmap_virtual);
-
-        h_v_mapping_vector_virtual.push_back(target_vertice);
-
-        // Get the points
-        vertices_3D_virtual(i, 0) = point_3D.x();
-        vertices_3D_virtual(i, 1) = point_3D.y();
-        vertices_3D_virtual(i, 2) = point_3D.z();
-
-        // Get the uv points
-        vertices_UV_virtual(i, 0) = uv.x();
-        vertices_UV_virtual(i, 1) = uv.y();
-        vertices_UV_virtual(i, 2) = 0;
-        i++;
-    }
+    save_UV_mesh(mesh, bhd, uvmap, mesh_3D_file_path);
 
     std::vector<int64_t> h_v_mapping_vector;
     int number_of_vertices = size(vertices(mesh));
     vertice_3D.resize(number_of_vertices, 3);
     vertice_UV.resize(number_of_vertices, 3);
 
-    i = 0;
+    int i = 0;
     for (UV::vertex_descriptor vd : vertices(mesh)) {
         auto [point_3D, uv, target_vertice] = getMeshData(vd, mesh, sm, uvmap);
 
@@ -198,18 +146,6 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     }
 
     return h_v_mapping_vector;
-}
-
-
-void SurfaceParametrization::load3DMeshes(
-    const std::string& path,
-    _3D::Mesh& sm,
-    _3D::Mesh& sm_virtual
-){
-    std::ifstream in(CGAL::data_file_path(path));
-    std::ifstream in_virtual(CGAL::data_file_path(path));
-    in >> sm;
-    in_virtual >> sm_virtual;
 }
 
 
@@ -254,8 +190,7 @@ void SurfaceParametrization::save_UV_mesh(
     UV::Mesh _mesh,
     UV::halfedge_descriptor _bhd,
     _3D::UV_pmap _uvmap,
-    const std::string mesh_path,
-    int uv_mesh_number
+    const std::string mesh_path
 ){
     // Get the mesh name without the extension
     auto mesh_3D_name = get_mesh_name(mesh_path);
@@ -264,15 +199,9 @@ void SurfaceParametrization::save_UV_mesh(
     fs::path output_file_path;
     std::string output_file_path_str;
 
-    if (uv_mesh_number == 0) {
-        output_file_path = MESH_FOLDER / (mesh_3D_name + "_uv.off");
-        output_file_path_str = output_file_path.string();
-        meshmeta.mesh_path = output_file_path_str;
-    } else {
-        output_file_path = MESH_FOLDER / (mesh_3D_name + "_uv_" + std::to_string(uv_mesh_number) + ".off");
-        output_file_path_str = output_file_path.string();
-        meshmeta.mesh_path_virtual = output_file_path_str;
-    }
+    output_file_path = MESH_FOLDER / (mesh_3D_name + "_uv.off");
+    output_file_path_str = output_file_path.string();
+    meshmeta.mesh_path = output_file_path_str;
 
     std::ofstream out(output_file_path_str);
     SMP::IO::output_uvmap_to_off(_mesh, _bhd, _uvmap, out);
@@ -280,8 +209,7 @@ void SurfaceParametrization::save_UV_mesh(
 
 
 void SurfaceParametrization::extract_polygon_border_edges(
-    const std::string& mesh_uv_path,
-    bool is_original_mesh
+    const std::string& mesh_uv_path
 ){
     std::ifstream input(CGAL::data_file_path(mesh_uv_path));
     _3D::Mesh mesh;
@@ -301,12 +229,8 @@ void SurfaceParametrization::extract_polygon_border_edges(
     std::unordered_set<_3D::vertex_descriptor> visited;
     _3D::vertex_descriptor v = mesh.source(border_edges[0]);
     for (std::size_t i = 0; i < border_edges.size(); i++) {
-        if (is_original_mesh) {
-            polygon_v.push_back(v);
-            polygon.push_back(Point_2(mesh.point(v).x(), mesh.point(v).y()));
-        } else {
-            polygon_virtual.push_back(Point_2(mesh.point(v).x(), mesh.point(v).y()));
-        }
+        polygon_v.push_back(v);
+        polygon.push_back(Point_2(mesh.point(v).x(), mesh.point(v).y()));
 
         visited.insert(v);
 

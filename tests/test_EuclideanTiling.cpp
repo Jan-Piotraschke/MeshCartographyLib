@@ -19,8 +19,7 @@
 #include "SurfaceParametrization/SurfaceParametrization.h"
 #include <EuclideanTiling.h>
 
-bool free_boundary_tiling = false;
-SurfaceParametrization surface_parametrization_tiling(free_boundary_tiling);
+SurfaceParametrization surface_parametrization_tiling;
 
 const boost::filesystem::path PROJECT_PATH = MeshCartographyLib_SOURCE_DIR;
 auto mesh_file_path = (PROJECT_PATH / "meshes/ellipsoid_x4.off").string();
