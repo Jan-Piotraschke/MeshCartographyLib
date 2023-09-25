@@ -7,7 +7,7 @@
  * @license     Apache License 2.0
  *
  * @bug         -
- * @todo        replace calculate_distances() with a function within the GeodesicDistance class
+ * @todo        -
  */
 
 #include "CutLineHelper.h"
