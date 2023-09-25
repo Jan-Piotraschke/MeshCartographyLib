@@ -43,7 +43,6 @@ std::vector<_3D::edge_descriptor> CutLineHelper::set_UV_border_edges(){
     pmp::geodesics(mesh_pmp, seeds);
 
 
-
     // Create vectors to store the predecessors (p) and the distances from the root (d)
     std::vector<_3D::vertex_descriptor> predecessor_pmap(num_vertices(mesh));  // record the predecessor of each vertex
     std::vector<int> distance(num_vertices(mesh));  // record the distance from the root
@@ -58,10 +57,36 @@ std::vector<_3D::edge_descriptor> CutLineHelper::set_UV_border_edges(){
     _3D::vertex_descriptor target_node(target_node_pmp.idx());
 
 
+    pmp::VertexProperty<pmp::Scalar> distance_pmp = mesh_pmp.get_vertex_property<pmp::Scalar>("geodesic:distance");
+    pmp::Vertex start_vertex = seeds[0];
+
+    std::vector<pmp::Vertex> path;
+    pmp::Vertex current_vertex = target_node_pmp;
+
+    while (current_vertex != start_vertex) {
+        path.push_back(current_vertex);
+
+        double min_distance = std::numeric_limits<double>::infinity();
+        pmp::Vertex next_vertex;
+
+        for (auto neighbor_vertex : mesh_pmp.vertices(current_vertex)) {
+            double d = distance_pmp[neighbor_vertex];
+            if (d < min_distance) {
+                min_distance = d;
+                next_vertex = neighbor_vertex;
+            }
+        }
+
+        current_vertex = next_vertex;
+    }
+
+    path.push_back(start_vertex);
+    std::cout << "Path length: " << path.size() << std::endl;
+
 
     // Get the edges of the path between the start and the target node
     std::vector<_3D::edge_descriptor> path_list = get_cut_line(mesh, start_node, target_node, predecessor_pmap);
-
+    std::cout << "Path length: " << path_list.size() << std::endl;
     return path_list;
 }
 
