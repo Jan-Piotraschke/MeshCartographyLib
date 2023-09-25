@@ -1,5 +1,5 @@
 /**
- * @file        GeodesicDistance.cpp
+ * @file        TessellationDistanceHelper.cpp
  * @brief       Calculate the distance between mesh vertices
  *
  * @author      Jan-Piotraschke
@@ -10,7 +10,7 @@
  * @todo        Heat distance method depending on edge length
  */
 
-#include "TessellationDistance.h"
+#include "TessellationDistanceHelper.h"
 
 using Triangle_mesh = CGAL::Surface_mesh<Point_3>;
 using vertex_descriptor = boost::graph_traits<Triangle_mesh>::vertex_descriptor;
