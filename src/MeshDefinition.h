@@ -29,6 +29,23 @@
 #include <CGAL/Surface_mesh_parameterization/ARAP_parameterizer_3.h>
 namespace SMP = CGAL::Surface_mesh_parameterization;
 
+// PMP libraries
+#include <pmp/surface_mesh.h>
+using Scalar = double;
+using Point_2_pmp = pmp::vec2;
+using Point_3_pmp = pmp::vec3;
+using Triangle_mesh_pmp = pmp::SurfaceMesh;
+using vertex_descriptor_pmp = pmp::Vertex;
+using edge_descriptor_pmp = pmp::Edge;
+using halfedge_descriptor_pmp = pmp::Halfedge;
+
+namespace _3D_pmp {
+    using Mesh = pmp::SurfaceMesh;
+    using vertex_descriptor = pmp::Vertex;
+    using halfedge_descriptor = pmp::Halfedge;
+    using edge_descriptor = pmp::Edge;
+}
+
 // Basic type definitions and constants
 using Kernel = CGAL::Simple_cartesian<double>;
 using Segment_2 = Kernel::Segment_2;
