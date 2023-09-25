@@ -80,9 +80,9 @@ std::tuple<std::vector<int64_t>, Eigen::MatrixXd, Eigen::MatrixXd, std::string> 
 std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     _3D::vertex_descriptor start_node
 ){
-
+    pmp::Vertex start_vertex(start_node.idx());
     // Set the border edges of the UV mesh
-    CutLineHelper helper = CutLineHelper(mesh_3D_file_path, start_node);
+    CutLineHelper helper = CutLineHelper(mesh_3D_file_path, start_vertex);
     CutLineHelperInterface& cutline_helper = helper;
     auto border_edges = cutline_helper.set_UV_border_edges();
 

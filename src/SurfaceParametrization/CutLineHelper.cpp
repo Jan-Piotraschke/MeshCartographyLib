@@ -14,10 +14,10 @@
 
 CutLineHelper::CutLineHelper(
     const std::string mesh_3D_file_path,
-    _3D::vertex_descriptor start_node
+    pmp::Vertex start_vertex
 )
     : mesh_3D_file_path(mesh_3D_file_path),
-    start_node(start_node)
+    start_vertex(start_vertex)
 {};
 
 // ========================================
@@ -30,19 +30,18 @@ CutLineHelper::CutLineHelper(
 * @info: Unittested
 */
 std::vector<_3D::edge_descriptor> CutLineHelper::set_UV_border_edges(){
-    _3D_pmp::Mesh mesh_pmp;
+    pmp::SurfaceMesh mesh_pmp;
     pmp::read_off(mesh_pmp, mesh_3D_file_path);
 
     // Compute geodesic distance from first vertex using breadth first search
-    std::vector<pmp::Vertex> seeds{pmp::Vertex(0)};
+    std::vector<pmp::Vertex> seeds{start_vertex};
     pmp::geodesics(mesh_pmp, seeds);
 
     // Find the target node (farthest from the start node)
     pmp::Vertex target_node = find_farthest_vertex(mesh_pmp);
-    pmp::Vertex start_vertex = seeds[0];
 
     // Get the edges of the path between the start and the target node
-    std::vector<pmp::Edge> path_list = get_cut_line(mesh_pmp, start_vertex, target_node);
+    std::vector<pmp::Edge> path_list = get_cut_line(mesh_pmp, target_node);
 
     // ! Temp: convert path_list to _3D::edge_descriptor
     _3D::Mesh mesh;
@@ -76,8 +75,7 @@ std::vector<_3D::edge_descriptor> CutLineHelper::set_UV_border_edges(){
 * The same is true if you reverse the logic: If you create a spiral-like seam edge path, your mesh will results in something like a 'Poincaré disk'
 */
 std::vector<pmp::Edge> CutLineHelper::get_cut_line(
-    const _3D_pmp::Mesh& mesh,
-    const pmp::Vertex& start_vertex,
+    const pmp::SurfaceMesh& mesh,
     pmp::Vertex current_vertex
 ){
     pmp::VertexProperty<pmp::Scalar> distance_pmp = mesh.get_vertex_property<pmp::Scalar>("geodesic:distance");
@@ -119,14 +117,13 @@ std::vector<pmp::Edge> CutLineHelper::get_cut_line(
 }
 
 
-
 /**
  * @brief Find the farthest vertex from a given start vertex
  *
  * @info: Unittested
 */
 pmp::Vertex CutLineHelper::find_farthest_vertex(
-    const _3D_pmp::Mesh mesh
+    const pmp::SurfaceMesh& mesh
 ){
     pmp::Scalar max_distances(0);
     pmp::VertexProperty<pmp::Scalar> distance = mesh.get_vertex_property<pmp::Scalar>("geodesic:distance");
