@@ -35,6 +35,15 @@ std::vector<_3D::edge_descriptor> CutLineHelper::set_UV_border_edges(){
     std::ifstream in(CGAL::data_file_path(mesh_3D_file_path));
     in >> mesh;
 
+    _3D_pmp::Mesh mesh_pmp;
+    pmp::read_off(mesh_pmp, mesh_3D_file_path);
+
+    // Compute geodesic distance from first vertex using breadth first search
+    std::vector<pmp::Vertex> seeds{pmp::Vertex(0)};
+    pmp::geodesics(mesh_pmp, seeds);
+
+
+
     // Create vectors to store the predecessors (p) and the distances from the root (d)
     std::vector<_3D::vertex_descriptor> predecessor_pmap(num_vertices(mesh));  // record the predecessor of each vertex
     std::vector<int> distance(num_vertices(mesh));  // record the distance from the root
@@ -42,8 +51,13 @@ std::vector<_3D::edge_descriptor> CutLineHelper::set_UV_border_edges(){
     // Calculate the distances from the start node to all other vertices
     calculate_distances(mesh, start_node, predecessor_pmap, distance);
 
+
+
     // Find the target node (farthest from the start node)
-    _3D::vertex_descriptor target_node = find_farthest_vertex(mesh, start_node, distance);
+    pmp::Vertex target_node_pmp = find_farthest_vertex(mesh_pmp);
+    _3D::vertex_descriptor target_node(target_node_pmp.idx());
+
+
 
     // Get the edges of the path between the start and the target node
     std::vector<_3D::edge_descriptor> path_list = get_cut_line(mesh, start_node, target_node, predecessor_pmap);
@@ -126,20 +140,17 @@ void CutLineHelper::calculate_distances(
  *
  * @info: Unittested
 */
-_3D::vertex_descriptor CutLineHelper::find_farthest_vertex(
-    const _3D::Mesh mesh,
-    _3D::vertex_descriptor start_node,
-    const std::vector<int> distance
+pmp::Vertex CutLineHelper::find_farthest_vertex(
+    const _3D_pmp::Mesh mesh
 ){
-    int max_distances = 0;
-    _3D::vertex_descriptor target_node;
+    pmp::Scalar max_distances(0);
+    pmp::VertexProperty<pmp::Scalar> distance = mesh.get_vertex_property<pmp::Scalar>("geodesic:distance");
+    pmp::Vertex target_node;
 
-    for (_3D::vertex_descriptor vd : vertices(mesh)) {
-        if (vd != boost::graph_traits<_3D::Mesh>::null_vertex()) {
-            if (distance[vd] > max_distances) {
-                max_distances = distance[vd];
-                target_node = vd;
-            }
+    for (auto v : mesh.vertices()) {
+        if (distance[v] > max_distances) {
+            max_distances = distance[v];
+            target_node = v;
         }
     }
 

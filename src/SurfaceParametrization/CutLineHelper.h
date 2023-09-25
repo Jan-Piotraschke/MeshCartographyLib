@@ -35,9 +35,7 @@ private:
         std::vector<int>& distance
     );
 
-    _3D::vertex_descriptor find_farthest_vertex(
-        const _3D::Mesh mesh,
-        _3D::vertex_descriptor start_node,
-        const std::vector<int> distance
+    pmp::Vertex find_farthest_vertex(
+        const _3D_pmp::Mesh mesh
     );
 };

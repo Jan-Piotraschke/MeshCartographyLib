@@ -27,6 +27,7 @@ target_link_libraries(MeshCartographyLib PUBLIC
     CGAL::CGAL
     Boost::filesystem
     CGAL::Eigen3_support
+    pmp
 )
 
 # Add include directories
@@ -36,6 +37,7 @@ target_include_directories(MeshCartographyLib PUBLIC src)
 add_executable(MeshCartography MeshCartography.cpp)
 target_link_libraries(MeshCartography PUBLIC
         MeshCartographyLib
+        pmp
 )
 
 # Collect all test source files

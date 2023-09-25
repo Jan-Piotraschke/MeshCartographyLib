@@ -31,6 +31,9 @@ namespace SMP = CGAL::Surface_mesh_parameterization;
 
 // PMP libraries
 #include <pmp/surface_mesh.h>
+#include <pmp/io/read_off.h>
+#include <pmp/algorithms/geodesics.h>
+
 using Scalar = double;
 using Point_2_pmp = pmp::vec2;
 using Point_3_pmp = pmp::vec3;
