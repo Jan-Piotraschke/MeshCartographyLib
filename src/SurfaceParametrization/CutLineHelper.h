@@ -22,8 +22,8 @@ private:
     _3D::vertex_descriptor start_node;
 
     std::vector<pmp::Edge> get_cut_line(
-        const _3D_pmp::Mesh mesh,
-        const pmp::Vertex start_vertex,
+        const _3D_pmp::Mesh& mesh,
+        const pmp::Vertex& start_vertex,
         pmp::Vertex current_vertex
     );
 

@@ -70,22 +70,20 @@ std::vector<_3D::edge_descriptor> CutLineHelper::set_UV_border_edges(){
 /**
 * @brief Create a path of vertices from the start node to the target node
 *
-* @info: Unittested
-*
 * The size of the path_list multiplied with 2 is the number of vertices on the border of the UV mesh
 *
 * So, if you want something like an inverse 'Poincaré disk' you have to really shorten the path_list
 * The same is true if you reverse the logic: If you create a spiral-like seam edge path, your mesh will results in something like a 'Poincaré disk'
 */
 std::vector<pmp::Edge> CutLineHelper::get_cut_line(
-    const _3D_pmp::Mesh mesh,
-    const pmp::Vertex start_vertex,
+    const _3D_pmp::Mesh& mesh,
+    const pmp::Vertex& start_vertex,
     pmp::Vertex current_vertex
 ){
     pmp::VertexProperty<pmp::Scalar> distance_pmp = mesh.get_vertex_property<pmp::Scalar>("geodesic:distance");
 
     std::vector<pmp::Vertex> path;
-    std::vector<pmp::Edge> path_list;
+    std::vector<pmp::Edge> path_edges;
 
     while (current_vertex != start_vertex) {
         path.push_back(current_vertex);
@@ -106,30 +104,20 @@ std::vector<pmp::Edge> CutLineHelper::get_cut_line(
 
     path.push_back(start_vertex);
 
-    // Loop through the vertex path from the start to the second-to-last vertex
     for (size_t i = 0; i < path.size() - 1; ++i) {
-        pmp::Vertex v1 = path[i];
-        pmp::Vertex v2 = path[i + 1];
-
-        // Loop over all edges of the mesh to find the one connecting v1 and v2
-        for (auto e : mesh.edges()) {
-            pmp::Vertex ev1 = mesh.vertex(e, 0);
-            pmp::Vertex ev2 = mesh.vertex(e, 1);
-
-            if ((ev1 == v1 && ev2 == v2) || (ev1 == v2 && ev2 == v1)) {
-                path_list.push_back(e);
-                break;
-            }
+        auto edge = mesh.find_edge(path[i], path[i + 1]);
+        if (edge.is_valid()) {
+            path_edges.push_back(edge);
         }
     }
 
-    std::vector<pmp::Edge> longest_mod_two;
-    size_t size = path_list.size();
-    size_t max_length_mod_two = size % 2 == 0 ? size : size - 1;
-    longest_mod_two = std::vector<pmp::Edge>(path_list.begin(), path_list.begin() + max_length_mod_two);
+    if (path_edges.size() % 2 != 0) {
+        path_edges.pop_back();
+    }
 
-    return longest_mod_two;
+    return path_edges;
 }
+
 
 
 /**
