@@ -6,9 +6,10 @@ project(MeshCartographyLib VERSION 1.0)
 add_definitions("-DMeshCartographyLib_SOURCE_DIR=\"${PROJECT_SOURCE_DIR}\"")
 
 # Specify the required C++ standard
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 
 # Find required packages
+find_package(PMP REQUIRED)
 find_package(CGAL REQUIRED)
 find_package(Boost COMPONENTS filesystem REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -26,6 +27,7 @@ target_link_libraries(MeshCartographyLib PUBLIC
     CGAL::CGAL
     Boost::filesystem
     CGAL::Eigen3_support
+    pmp
 )
 
 # Add include directories
@@ -35,6 +37,7 @@ target_include_directories(MeshCartographyLib PUBLIC src)
 add_executable(MeshCartography MeshCartography.cpp)
 target_link_libraries(MeshCartography PUBLIC
         MeshCartographyLib
+        pmp
 )
 
 # Collect all test source files

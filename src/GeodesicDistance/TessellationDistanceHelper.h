@@ -1,4 +1,3 @@
-// TessellationDistance.h
 #pragma once
 
 #include <string>

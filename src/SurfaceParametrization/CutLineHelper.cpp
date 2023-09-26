@@ -7,17 +7,17 @@
  * @license     Apache License 2.0
  *
  * @bug         -
- * @todo        replace calculate_distances() with a function within the GeodesicDistance class
+ * @todo        -
  */
 
 #include "CutLineHelper.h"
 
 CutLineHelper::CutLineHelper(
     const std::string mesh_3D_file_path,
-    _3D::vertex_descriptor start_node
+    pmp::Vertex start_vertex
 )
     : mesh_3D_file_path(mesh_3D_file_path),
-    start_node(start_node)
+    start_vertex(start_vertex)
 {};
 
 // ========================================
@@ -30,25 +30,34 @@ CutLineHelper::CutLineHelper(
 * @info: Unittested
 */
 std::vector<_3D::edge_descriptor> CutLineHelper::set_UV_border_edges(){
-    // Load the mesh from the file
+    pmp::SurfaceMesh mesh_pmp;
+    pmp::read_off(mesh_pmp, mesh_3D_file_path);
+
+    // Compute geodesic distance from first vertex using breadth first search
+    std::vector<pmp::Vertex> seeds{start_vertex};
+    pmp::geodesics(mesh_pmp, seeds);
+
+    // Find the target node (farthest from the start node)
+    pmp::Vertex target_node = find_farthest_vertex(mesh_pmp);
+
+    // Get the edges of the path between the start and the target node
+    std::vector<pmp::Edge> path_list = get_cut_line(mesh_pmp, target_node);
+
+    // ! Temp: convert path_list to _3D::edge_descriptor
     _3D::Mesh mesh;
     std::ifstream in(CGAL::data_file_path(mesh_3D_file_path));
     in >> mesh;
 
-    // Create vectors to store the predecessors (p) and the distances from the root (d)
-    std::vector<_3D::vertex_descriptor> predecessor_pmap(num_vertices(mesh));  // record the predecessor of each vertex
-    std::vector<int> distance(num_vertices(mesh));  // record the distance from the root
+    std::vector<_3D::edge_descriptor> path_list_3D;
+    for (auto e : path_list) {
+        _3D::vertex_descriptor v1(mesh_pmp.vertex(e, 0).idx());
+        _3D::vertex_descriptor v2(mesh_pmp.vertex(e, 1).idx());
 
-    // Calculate the distances from the start node to all other vertices
-    calculate_distances(mesh, start_node, predecessor_pmap, distance);
+        std::pair<_3D::edge_descriptor, bool> edge_pair = edge(v1, v2, mesh);
+        path_list_3D.push_back(edge_pair.first);
+    }
 
-    // Find the target node (farthest from the start node)
-    _3D::vertex_descriptor target_node = find_farthest_vertex(mesh, start_node, distance);
-
-    // Get the edges of the path between the start and the target node
-    std::vector<_3D::edge_descriptor> path_list = get_cut_line(mesh, start_node, target_node, predecessor_pmap);
-
-    return path_list;
+    return path_list_3D;
 }
 
 
@@ -60,64 +69,51 @@ std::vector<_3D::edge_descriptor> CutLineHelper::set_UV_border_edges(){
 /**
 * @brief Create a path of vertices from the start node to the target node
 *
-* @info: Unittested
-*
 * The size of the path_list multiplied with 2 is the number of vertices on the border of the UV mesh
 *
 * So, if you want something like an inverse 'Poincaré disk' you have to really shorten the path_list
 * The same is true if you reverse the logic: If you create a spiral-like seam edge path, your mesh will results in something like a 'Poincaré disk'
 */
-std::vector<_3D::edge_descriptor> CutLineHelper::get_cut_line(
-    const _3D::Mesh mesh,
-    const _3D::vertex_descriptor start_node,
-    _3D::vertex_descriptor current,
-    const std::vector<_3D::vertex_descriptor> predecessor_pmap
+std::vector<pmp::Edge> CutLineHelper::get_cut_line(
+    const pmp::SurfaceMesh& mesh,
+    pmp::Vertex current_vertex
 ){
-    std::vector<_3D::edge_descriptor> path_list;
+    pmp::VertexProperty<pmp::Scalar> distance_pmp = mesh.get_vertex_property<pmp::Scalar>("geodesic:distance");
 
-    while (current != start_node) {
-        _3D::vertex_descriptor predecessor = predecessor_pmap[current];
-        std::pair<_3D::edge_descriptor, bool> edge_pair = edge(predecessor, current, mesh);
-        path_list.push_back(edge_pair.first);
-        current = predecessor;
+    std::vector<pmp::Vertex> path;
+    std::vector<pmp::Edge> path_edges;
+
+    while (current_vertex != start_vertex) {
+        path.push_back(current_vertex);
+
+        double min_distance = std::numeric_limits<double>::infinity();
+        pmp::Vertex next_vertex;
+
+        for (auto neighbor_vertex : mesh.vertices(current_vertex)) {
+            double d = distance_pmp[neighbor_vertex];
+            if (d < min_distance) {
+                min_distance = d;
+                next_vertex = neighbor_vertex;
+            }
+        }
+
+        current_vertex = next_vertex;
     }
 
-    std::vector<_3D::edge_descriptor> longest_mod_two;
-    size_t size = path_list.size();
-    size_t max_length_mod_two = size % 2 == 0 ? size : size - 1;
-    size_t half_length_mod_two = (max_length_mod_two / 2) % 2 == 0 ? max_length_mod_two / 2 : (max_length_mod_two / 2) - 1;
-    longest_mod_two = std::vector<_3D::edge_descriptor>(path_list.begin(), path_list.begin() + max_length_mod_two);
+    path.push_back(start_vertex);
 
-    // for(const auto& edge : longest_mod_two) {
-    //     std::cout << mesh.point(source(edge, mesh)) << std::endl;
-    // }
+    for (size_t i = 0; i < path.size() - 1; ++i) {
+        auto edge = mesh.find_edge(path[i], path[i + 1]);
+        if (edge.is_valid()) {
+            path_edges.push_back(edge);
+        }
+    }
 
-    return longest_mod_two;
-}
+    if (path_edges.size() % 2 != 0) {
+        path_edges.pop_back();
+    }
 
-
-/**
- * @brief Calculate the distances from a given start vertex to all other vertices
- *
- * @info: Unittested
-*/
-void CutLineHelper::calculate_distances(
-    _3D::Mesh mesh,
-    _3D::vertex_descriptor start_node,
-    std::vector<_3D::vertex_descriptor>& predecessor_pmap,
-    std::vector<int>& distance
-){
-    auto indexmap = get(boost::vertex_index, mesh);
-    auto dist_pmap = boost::make_iterator_property_map(distance.begin(), indexmap);
-
-    auto vis = boost::make_bfs_visitor(
-        std::make_pair(
-            boost::record_distances(dist_pmap, boost::on_tree_edge{}),
-            boost::record_predecessors(&predecessor_pmap[0], boost::on_tree_edge{})
-        )
-    );
-
-    boost::breadth_first_search(mesh, start_node, visitor(vis));
+    return path_edges;
 }
 
 
@@ -126,20 +122,17 @@ void CutLineHelper::calculate_distances(
  *
  * @info: Unittested
 */
-_3D::vertex_descriptor CutLineHelper::find_farthest_vertex(
-    const _3D::Mesh mesh,
-    _3D::vertex_descriptor start_node,
-    const std::vector<int> distance
+pmp::Vertex CutLineHelper::find_farthest_vertex(
+    const pmp::SurfaceMesh& mesh
 ){
-    int max_distances = 0;
-    _3D::vertex_descriptor target_node;
+    pmp::Scalar max_distances(0);
+    pmp::VertexProperty<pmp::Scalar> distance = mesh.get_vertex_property<pmp::Scalar>("geodesic:distance");
+    pmp::Vertex target_node;
 
-    for (_3D::vertex_descriptor vd : vertices(mesh)) {
-        if (vd != boost::graph_traits<_3D::Mesh>::null_vertex()) {
-            if (distance[vd] > max_distances) {
-                max_distances = distance[vd];
-                target_node = vd;
-            }
+    for (auto v : mesh.vertices()) {
+        if (distance[v] > max_distances) {
+            max_distances = distance[v];
+            target_node = v;
         }
     }
 
