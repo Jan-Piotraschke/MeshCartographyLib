@@ -19,7 +19,7 @@ private:
     pmp::SurfaceMesh& mesh;
     pmp::Vertex start_vertex;
 
-    std::vector<pmp::Edge> get_cut_line(pmp::Vertex current_vertex);
+    void cut_the_mesh(pmp::Vertex current_vertex);
     pmp::Vertex find_farthest_vertex();
     void open_mesh_along_seam(const std::vector<pmp::Vertex>& seamVertices, const std::vector<pmp::Edge>& seamEdges);
     bool has_boundary();
