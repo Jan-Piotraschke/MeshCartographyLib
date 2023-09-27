@@ -24,6 +24,59 @@ CutLineHelper::CutLineHelper(
 // Public Functions
 // ========================================
 
+bool CutLineHelper::has_boundary(const pmp::SurfaceMesh& mesh)
+{
+    for (auto v : mesh.vertices())
+        if (mesh.is_boundary(v))
+            return true;
+    return false;
+}
+
+void CutLineHelper::openMeshAlongSeam(pmp::SurfaceMesh& mesh, const std::vector<pmp::Vertex>& seamVertices, const std::vector<pmp::Edge>& seamEdges)
+{
+    if (seamVertices.size() < 2) return; // We need at least two vertices to define a seam
+
+    std::vector<pmp::Vertex> duplicatedVertices;
+    for (auto v : seamVertices)
+    {
+        pmp::Point pos = mesh.position(v);
+        pmp::Vertex newVertex = mesh.add_vertex(pos);
+        duplicatedVertices.push_back(newVertex);
+    }
+
+    for (size_t i = 0; i < seamEdges.size(); i++)
+    {
+        pmp::Edge e = seamEdges[i];
+        pmp::Halfedge he = mesh.halfedge(e, 0); // Get one of the halfedges of the edge
+        pmp::Vertex v0 = mesh.from_vertex(he); // Vertex at the start of this halfedge
+        pmp::Vertex v1 = mesh.to_vertex(he);   // Vertex at the end of this halfedge
+
+        // Find the corresponding duplicated vertices
+        pmp::Vertex dup_v0 = duplicatedVertices[std::distance(seamVertices.begin(), std::find(seamVertices.begin(), seamVertices.end(), v0))];
+        pmp::Vertex dup_v1 = duplicatedVertices[std::distance(seamVertices.begin(), std::find(seamVertices.begin(), seamVertices.end(), v1))];
+
+        // Adjust the connectivity of adjacent faces
+        // Assuming he points from v0 to v1, and that you want to "open" the mesh on the side of the face adjacent to he.
+        // Replace the vertex v0 with its duplicate for the face adjacent to he.
+        mesh.set_vertex(he, dup_v0);
+
+        // Likewise, for the opposite halfedge replace v1 with its duplicate
+        mesh.set_vertex(mesh.opposite_halfedge(he), dup_v1);
+
+        // Remove the original seam edge
+        mesh.delete_edge(e); // Not deleting the associated vertices
+        // mesh.delete_edge(e, false); // Not deleting the associated vertices
+    }
+
+    if (!has_boundary(mesh))
+    {
+        std::cout << "Mesh is not closed anymore!" << std::endl;
+    } else {
+        std::cout << "Mesh is still closed!" << std::endl;
+    }
+}
+
+
 /**
 * @brief Calculate the border of the mesh
 *
@@ -75,7 +128,7 @@ std::vector<_3D::edge_descriptor> CutLineHelper::set_UV_border_edges(){
 * The same is true if you reverse the logic: If you create a spiral-like seam edge path, your mesh will results in something like a 'Poincaré disk'
 */
 std::vector<pmp::Edge> CutLineHelper::get_cut_line(
-    const pmp::SurfaceMesh& mesh,
+    pmp::SurfaceMesh& mesh,
     pmp::Vertex current_vertex
 ){
     pmp::VertexProperty<pmp::Scalar> distance_pmp = mesh.get_vertex_property<pmp::Scalar>("geodesic:distance");
@@ -112,6 +165,9 @@ std::vector<pmp::Edge> CutLineHelper::get_cut_line(
     if (path_edges.size() % 2 != 0) {
         path_edges.pop_back();
     }
+
+    openMeshAlongSeam(mesh, path, path_edges);
+    pmp::write(mesh, "path_to_opened_mesh.off");
 
     return path_edges;
 }
