@@ -116,69 +116,26 @@ pmp::Vertex CutLineHelper::find_farthest_vertex(){
 void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Vertex>& seamVertices, const std::vector<pmp::Edge>& seamEdges) {
     if (seamVertices.size() < 2) return; // We need at least two vertices to define a seam
 
-    std::vector<pmp::Vertex> duplicatedVertices;
+    // get the halfedge that goes from the first item of the seamVertices to the second
+    pmp::Vertex v0 = seamVertices[0];
+    pmp::Vertex v1 = seamVertices[1];
+    pmp::Halfedge h = mesh.find_halfedge(v0, v1);
 
-    // Start from index 1 to avoid duplicating the first vertex
-    for (size_t i = 1; i < seamVertices.size() - 1; i++) {
-        pmp::Vertex v = seamVertices[i];
-        pmp::Point pos = mesh.position(v);
-        pmp::Vertex newVertex = mesh.add_vertex(pos);
-        duplicatedVertices.push_back(newVertex);
-    }
+    // get the face that contains the halfedge h
+    pmp::Face f = mesh.face(h);
 
-    for (size_t i = 0; i < seamEdges.size(); i++) {
-        pmp::Edge e = seamEdges[i];
-        pmp::Halfedge he = mesh.halfedge(e, 0);
-        pmp::Vertex v0 = mesh.from_vertex(he);
-        pmp::Vertex v1 = mesh.to_vertex(he);
+    // add the new vertex to the mesh
+    pmp::Point pos = mesh.position(v1);
+    pmp::Vertex v_new = mesh.add_vertex(pos);
 
-        // Find the corresponding duplicated vertices
-        auto it_v0 = std::find(seamVertices.begin(), seamVertices.end(), v0);
-        auto it_v1 = std::find(seamVertices.begin(), seamVertices.end(), v1);
-
-        // Ensure it_v0 and it_v1 are not pointing to first or last vertices in seamVertices
-        if (it_v0 != seamVertices.begin() && it_v0 != seamVertices.end() - 1) {
-            pmp::Vertex dup_v0 = duplicatedVertices[std::distance(seamVertices.begin(), it_v0) - 1];
-            mesh.set_vertex(he, dup_v0);
-        }
-
-        if (it_v1 != seamVertices.begin() && it_v1 != seamVertices.end() - 1) {
-            pmp::Vertex dup_v1 = duplicatedVertices[std::distance(seamVertices.begin(), it_v1) - 1];
-            mesh.set_vertex(mesh.opposite_halfedge(he), dup_v1);
-        }
-
-        // Remove the original seam edge
-        mesh.delete_edge(e);
-    }
-
-    // check that the duplicated vertices aren't connected with their original vertices
-    for (size_t i = 0; i < seamVertices.size() - 2; i++) {
-        pmp::Vertex v = seamVertices[i + 1];
-        pmp::Vertex dup_v = duplicatedVertices[i];
-        if (mesh.find_edge(v, dup_v).is_valid()) {
-            // std::cout << "Duplicated vertex " << i << " is connected to its original vertex!" << std::endl;
-
-            // remove the connection
-            mesh.delete_edge(mesh.find_edge(v, dup_v));
+    // replace v1 with v_new in the face f
+    for (auto h : mesh.halfedges(f)) {
+        // Check if this halfedge points to v1
+        if (mesh.to_vertex(h) == v1) {
+            mesh.set_vertex(h, v_new);
         }
     }
-
-    for (size_t i = 0; i < seamVertices.size() - 2; i++) {
-        pmp::Vertex v = seamVertices[i + 1];
-        pmp::Vertex dup_v = duplicatedVertices[i];
-        if (mesh.find_edge(v, dup_v).is_valid()) {
-            std::cout << "Duplicated vertex " << i << " is connected to its original vertex!" << std::endl;
-        }
-    }
-
-    if (!has_boundary()) {
-        std::cout << "Mesh is still closed!" << std::endl;
-        return;
-    }
-
-    std::cout << "Mesh is open!" << std::endl;
 }
-
 
 
 bool CutLineHelper::has_boundary()
