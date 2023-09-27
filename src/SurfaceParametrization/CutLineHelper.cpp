@@ -13,10 +13,10 @@
 #include "CutLineHelper.h"
 
 CutLineHelper::CutLineHelper(
-    const std::string mesh_3D_file_path,
+    pmp::SurfaceMesh& mesh,
     pmp::Vertex start_vertex
 )
-    : mesh_3D_file_path(mesh_3D_file_path),
+    : mesh(mesh),
     start_vertex(start_vertex)
 {};
 
@@ -24,7 +24,7 @@ CutLineHelper::CutLineHelper(
 // Public Functions
 // ========================================
 
-bool CutLineHelper::has_boundary(const pmp::SurfaceMesh& mesh)
+bool CutLineHelper::has_boundary()
 {
     for (auto v : mesh.vertices())
         if (mesh.is_boundary(v))
@@ -32,7 +32,7 @@ bool CutLineHelper::has_boundary(const pmp::SurfaceMesh& mesh)
     return false;
 }
 
-void CutLineHelper::openMeshAlongSeam(pmp::SurfaceMesh& mesh, const std::vector<pmp::Vertex>& seamVertices, const std::vector<pmp::Edge>& seamEdges)
+void CutLineHelper::openMeshAlongSeam(const std::vector<pmp::Vertex>& seamVertices, const std::vector<pmp::Edge>& seamEdges)
 {
     if (seamVertices.size() < 2) return; // We need at least two vertices to define a seam
 
@@ -70,47 +70,29 @@ void CutLineHelper::openMeshAlongSeam(pmp::SurfaceMesh& mesh, const std::vector<
 
     if (!has_boundary(mesh))
     {
-        std::cout << "Mesh is not closed anymore!" << std::endl;
-    } else {
         std::cout << "Mesh is still closed!" << std::endl;
+    } else {
+        std::cout << "Mesh is not closed anymore!" << std::endl;
     }
 }
 
 
 /**
 * @brief Calculate the border of the mesh
-*
-* @info: Unittested
 */
-std::vector<_3D::edge_descriptor> CutLineHelper::set_UV_border_edges(){
-    pmp::SurfaceMesh mesh_pmp;
-    pmp::read_off(mesh_pmp, mesh_3D_file_path);
-
+void CutLineHelper::cut_mesh_open(){
     // Compute geodesic distance from first vertex using breadth first search
     std::vector<pmp::Vertex> seeds{start_vertex};
-    pmp::geodesics(mesh_pmp, seeds);
+    pmp::geodesics(mesh, seeds);
 
     // Find the target node (farthest from the start node)
-    pmp::Vertex target_node = find_farthest_vertex(mesh_pmp);
+    pmp::Vertex target_node = find_farthest_vertex();
 
     // Get the edges of the path between the start and the target node
-    std::vector<pmp::Edge> path_list = get_cut_line(mesh_pmp, target_node);
+    std::vector<pmp::Edge> path_list = get_cut_line(target_node);
 
-    // ! Temp: convert path_list to _3D::edge_descriptor
-    _3D::Mesh mesh;
-    std::ifstream in(CGAL::data_file_path(mesh_3D_file_path));
-    in >> mesh;
+    // Open the mesh along the path
 
-    std::vector<_3D::edge_descriptor> path_list_3D;
-    for (auto e : path_list) {
-        _3D::vertex_descriptor v1(mesh_pmp.vertex(e, 0).idx());
-        _3D::vertex_descriptor v2(mesh_pmp.vertex(e, 1).idx());
-
-        std::pair<_3D::edge_descriptor, bool> edge_pair = edge(v1, v2, mesh);
-        path_list_3D.push_back(edge_pair.first);
-    }
-
-    return path_list_3D;
 }
 
 
@@ -127,10 +109,7 @@ std::vector<_3D::edge_descriptor> CutLineHelper::set_UV_border_edges(){
 * So, if you want something like an inverse 'Poincaré disk' you have to really shorten the path_list
 * The same is true if you reverse the logic: If you create a spiral-like seam edge path, your mesh will results in something like a 'Poincaré disk'
 */
-std::vector<pmp::Edge> CutLineHelper::get_cut_line(
-    pmp::SurfaceMesh& mesh,
-    pmp::Vertex current_vertex
-){
+std::vector<pmp::Edge> CutLineHelper::get_cut_line(pmp::Vertex current_vertex){
     pmp::VertexProperty<pmp::Scalar> distance_pmp = mesh.get_vertex_property<pmp::Scalar>("geodesic:distance");
 
     std::vector<pmp::Vertex> path;
@@ -175,12 +154,8 @@ std::vector<pmp::Edge> CutLineHelper::get_cut_line(
 
 /**
  * @brief Find the farthest vertex from a given start vertex
- *
- * @info: Unittested
 */
-pmp::Vertex CutLineHelper::find_farthest_vertex(
-    const pmp::SurfaceMesh& mesh
-){
+pmp::Vertex CutLineHelper::find_farthest_vertex(){
     pmp::Scalar max_distances(0);
     pmp::VertexProperty<pmp::Scalar> distance = mesh.get_vertex_property<pmp::Scalar>("geodesic:distance");
     pmp::Vertex target_node;

@@ -9,23 +9,18 @@
 class CutLineHelper : public CutLineHelperInterface {
 public:
     CutLineHelper(
-        const std::string mesh_3D_file_path,
+        pmp::SurfaceMesh& mesh,
         pmp::Vertex start_vertex
     );
-    void openMeshAlongSeam(pmp::SurfaceMesh& mesh, const std::vector<pmp::Vertex>& seamVertices, const std::vector<pmp::Edge>& seamEdges);
-    std::vector<_3D::edge_descriptor> set_UV_border_edges() override;
-    bool has_boundary(const pmp::SurfaceMesh& mesh);
+
+    void cut_mesh_open() override;
+    bool has_boundary();
+    void openMeshAlongSeam(const std::vector<pmp::Vertex>& seamVertices, const std::vector<pmp::Edge>& seamEdges);
 
 private:
-    const std::string mesh_3D_file_path;
+    pmp::SurfaceMesh& mesh;
     pmp::Vertex start_vertex;
 
-    std::vector<pmp::Edge> get_cut_line(
-        pmp::SurfaceMesh& mesh,
-        pmp::Vertex current_vertex
-    );
-
-    pmp::Vertex find_farthest_vertex(
-        const pmp::SurfaceMesh& mesh
-    );
+    std::vector<pmp::Edge> get_cut_line(pmp::Vertex current_vertex);
+    pmp::Vertex find_farthest_vertex();
 };
