@@ -75,7 +75,7 @@ private:
     std::vector<int64_t> calculate_uv_surface(
         _3D::vertex_descriptor start_node
     );
-    void save_uv_as_mesh(const pmp::SurfaceMesh& mesh, const std::string& filename);
+    void save_uv_as_mesh(const pmp::SurfaceMesh& mesh, const fs::path& filename);
     void extract_polygon_border_edges(
         const std::string& mesh_uv_path
     );

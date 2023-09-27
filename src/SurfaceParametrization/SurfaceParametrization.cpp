@@ -215,7 +215,9 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     // Perform the parameterization
     harmonic_parameterization(mesh);
 
-    save_uv_as_mesh(mesh, "uv_mesh.off");
+    fs::path mesh_uv_path = MESH_FOLDER / (get_mesh_name(mesh_3D_file_path) + "_uv.off");
+
+    save_uv_as_mesh(mesh, mesh_uv_path);
 
 
     // // Perform parameterization
@@ -266,7 +268,7 @@ std::tuple<Point_3, Point_2, int64_t> SurfaceParametrization::getMeshData(
 }
 
 
-void SurfaceParametrization::save_uv_as_mesh(const pmp::SurfaceMesh& mesh, const std::string& filename)
+void SurfaceParametrization::save_uv_as_mesh(const pmp::SurfaceMesh& mesh, const fs::path& filename)
 {
     pmp::SurfaceMesh uvMesh;
 
@@ -297,7 +299,7 @@ void SurfaceParametrization::save_uv_as_mesh(const pmp::SurfaceMesh& mesh, const
     }
 
     // Write uvMesh to an .off file
-    pmp::write(uvMesh, filename);
+    pmp::write(uvMesh, filename.string());
 }
 
 
