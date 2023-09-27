@@ -63,11 +63,6 @@ private:
     Eigen::MatrixXd vertice_3D;
     std::string mesh_3D_file_path;
 
-    UV::Mesh create_UV_mesh(
-        _3D::Mesh& mesh,
-        const std::vector<_3D::edge_descriptor> calc_edges
-    );
-
     std::tuple<Point_3, Point_2, int64_t> getMeshData(
         const UV::vertex_descriptor& vd,
         const UV::Mesh& mesh,
@@ -80,9 +75,9 @@ private:
     );
 
     void save_UV_mesh(
-        UV::Mesh _mesh,
-        UV::halfedge_descriptor _bhd,
-        _3D::UV_pmap _uvmap,
+        Triangle_mesh _mesh,
+        halfedge_descriptor _bhd,
+        UV_pmap _uvmap,
         const std::string mesh_path
     );
 

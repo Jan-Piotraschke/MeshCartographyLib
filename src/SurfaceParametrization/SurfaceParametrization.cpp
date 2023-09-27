@@ -81,23 +81,28 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     _3D::vertex_descriptor start_node
 ){
     pmp::Vertex start_vertex(start_node.idx());
+
+    pmp::SurfaceMesh mesh_pmp;
+    pmp::read_off(mesh_pmp, mesh_3D_file_path);
+
     // Set the border edges of the UV mesh
-    CutLineHelper helper = CutLineHelper(mesh_3D_file_path, start_vertex);
+    CutLineHelper helper = CutLineHelper(mesh_pmp, mesh_3D_file_path, start_vertex);
     CutLineHelperInterface& cutline_helper = helper;
-    auto border_edges = cutline_helper.set_UV_border_edges();
+    cutline_helper.cut_mesh_open();
 
-    _3D::Mesh sm;
+
+
+    Triangle_mesh mesh;
     std::ifstream in(CGAL::data_file_path(mesh_3D_file_path));
-    in >> sm;
-
-    // Canonical Halfedges Representing a Vertex
-    _3D::UV_pmap uvmap = sm.add_property_map<_3D::halfedge_descriptor, Point_2>("h:uv").first;
-
-    // Create the seam mesh
-    UV::Mesh mesh = create_UV_mesh(sm, border_edges);
+    in >> mesh;
 
     // Choose a halfedge on the border
-    UV::halfedge_descriptor bhd = CGAL::Polygon_mesh_processing::longest_border(mesh).first;
+    halfedge_descriptor bhd = CGAL::Polygon_mesh_processing::longest_border(mesh).first;
+
+    // // Canonical Halfedges Representing a Vertex
+    // ! _3D::UV_pmap uvmap = mesh.add_property_map<_3D::halfedge_descriptor, Point_2>("h:uv").first;
+    // The 2D points of the uv parametrisation will be written into this map
+    UV_pmap uvmap = mesh.add_property_map<vertex_descriptor, Point_2>("v:uv").first;
 
     // Perform parameterization
     SquareBorderParametrizationHelper square_helper = SquareBorderParametrizationHelper(mesh, bhd, uvmap);
@@ -112,23 +117,23 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     vertice_3D.resize(number_of_vertices, 3);
     vertice_UV.resize(number_of_vertices, 3);
 
-    int i = 0;
-    for (UV::vertex_descriptor vd : vertices(mesh)) {
-        auto [point_3D, uv, target_vertice] = getMeshData(vd, mesh, sm, uvmap);
+    // int i = 0;
+    // for (UV::vertex_descriptor vd : vertices(mesh)) {
+    //     auto [point_3D, uv, target_vertice] = getMeshData(vd, mesh, sm, uvmap);
 
-        h_v_mapping_vector.push_back(target_vertice);
+    //     h_v_mapping_vector.push_back(target_vertice);
 
-        // Get the points
-        vertice_3D(i, 0) = point_3D.x();
-        vertice_3D(i, 1) = point_3D.y();
-        vertice_3D(i, 2) = point_3D.z();
+    //     // Get the points
+    //     vertice_3D(i, 0) = point_3D.x();
+    //     vertice_3D(i, 1) = point_3D.y();
+    //     vertice_3D(i, 2) = point_3D.z();
 
-        // Get the uv points
-        vertice_UV(i, 0) = uv.x();
-        vertice_UV(i, 1) = uv.y();
-        vertice_UV(i, 2) = 0;
-        i++;
-    }
+    //     // Get the uv points
+    //     vertice_UV(i, 0) = uv.x();
+    //     vertice_UV(i, 1) = uv.y();
+    //     vertice_UV(i, 2) = 0;
+    //     i++;
+    // }
 
     return h_v_mapping_vector;
 }
@@ -148,33 +153,12 @@ std::tuple<Point_3, Point_2, int64_t> SurfaceParametrization::getMeshData(
 
 
 /**
- * @brief Create the UV mesh
-*/
-UV::Mesh SurfaceParametrization::create_UV_mesh(
-    _3D::Mesh& mesh,
-    const std::vector<_3D::edge_descriptor> calc_edges
-){
-    // Create property maps to store seam edges and vertices
-    _3D::Seam_edge_pmap seam_edge_pm = mesh.add_property_map<_3D::edge_descriptor, bool>("e:on_seam", false).first;   // if not false -> we can't add seam edges
-    _3D::Seam_vertex_pmap seam_vertex_pm = mesh.add_property_map<_3D::vertex_descriptor, bool>("v:on_seam", false).first;  // if not false -> we can't run the parameterization part
-
-    UV::Mesh UV_mesh(mesh, seam_edge_pm, seam_vertex_pm);
-
-    for (_3D::edge_descriptor e : calc_edges) {
-        UV_mesh.add_seam(source(e, mesh), target(e, mesh));
-    }
-
-    return UV_mesh;
-}
-
-
-/**
  * @brief Save the generated UV mesh to a file
 */
 void SurfaceParametrization::save_UV_mesh(
-    UV::Mesh _mesh,
-    UV::halfedge_descriptor _bhd,
-    _3D::UV_pmap _uvmap,
+    Triangle_mesh _mesh,
+    halfedge_descriptor _bhd,
+    UV_pmap _uvmap,
     const std::string mesh_path
 ){
     // Get the mesh name without the extension

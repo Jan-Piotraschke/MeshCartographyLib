@@ -13,9 +13,9 @@
 #include "SquareBorderParametrizationHelper.h"
 
 SquareBorderParametrizationHelper::SquareBorderParametrizationHelper(
-        UV::Mesh mesh,
-        UV::halfedge_descriptor bhd,
-        _3D::UV_pmap uvmap
+        Triangle_mesh& mesh,
+        halfedge_descriptor& bhd,
+        UV_pmap& uvmap
 ) :
         mesh(mesh),
         bhd(bhd),
@@ -34,12 +34,12 @@ SquareBorderParametrizationHelper::SquareBorderParametrizationHelper(
 */
 SMP::Error_code SquareBorderParametrizationHelper::parameterize_UV_mesh(){
     // Choose the border type of the uv parametrisation
-    using Border_parameterizer = SMP::Square_border_uniform_parameterizer_3<UV::Mesh>;
+    using Border_parameterizer = SMP::Square_border_uniform_parameterizer_3<Triangle_mesh>;
     Border_parameterizer border_parameterizer;
 
     // Minimize Angle Distortion: Discrete Conformal Map Parameterization
     // from https://doi.org/10.1145/218380.218440
-    using Parameterizer = SMP::Discrete_conformal_map_parameterizer_3<UV::Mesh, Border_parameterizer>;
+    using Parameterizer = SMP::Discrete_conformal_map_parameterizer_3<Triangle_mesh, Border_parameterizer>;
 
     return SMP::parameterize(mesh, Parameterizer(), bhd, uvmap);
 }
