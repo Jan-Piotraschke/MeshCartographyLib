@@ -74,6 +74,113 @@ std::tuple<std::vector<int64_t>, Eigen::MatrixXd, Eigen::MatrixXd, std::string> 
 // Private Functions
 // ========================================
 
+bool SurfaceParametrization::has_boundary(const pmp::SurfaceMesh& mesh)
+{
+    for (auto v : mesh.vertices())
+        if (mesh.is_boundary(v))
+            return true;
+    return false;
+}
+
+void SurfaceParametrization::setup_boundary_constraints(pmp::SurfaceMesh& mesh)
+{
+    // get properties
+    auto points = mesh.vertex_property<pmp::Point>("v:point");
+    auto tex = mesh.vertex_property<pmp::TexCoord>("v:tex");
+
+    pmp::SurfaceMesh::VertexIterator vit, vend = mesh.vertices_end();
+    pmp::Vertex vh;
+    pmp::Halfedge hh;
+    std::vector<pmp::Vertex> loop;
+
+    // Initialize all texture coordinates to the origin.
+    for (auto v : mesh.vertices())
+        tex[v] = pmp::TexCoord(0.5, 0.5);
+
+    // find 1st boundary vertex
+    for (vit = mesh.vertices_begin(); vit != vend; ++vit)
+        if (mesh.is_boundary(*vit))
+            break;
+
+    // collect boundary loop
+    vh = *vit;
+    hh = mesh.halfedge(vh);
+    do
+    {
+        loop.push_back(mesh.to_vertex(hh));
+        hh = mesh.next_halfedge(hh);
+    } while (hh != mesh.halfedge(vh));
+
+    // map boundary loop to unit circle in texture domain
+    unsigned int i, n = loop.size();
+    pmp::Scalar angle, l, length;
+    pmp::TexCoord t;
+
+    // compute length of boundary loop
+    for (i = 0, length = 0.0; i < n; ++i)
+        length += distance(points[loop[i]], points[loop[(i + 1) % n]]);
+
+    // map length intervalls to unit circle intervals
+    for (i = 0, l = 0.0; i < n;)
+    {
+        // go from 2pi to 0 to preserve orientation
+        angle = 2.0 * M_PI * (1.0 - l / length);
+
+        t[0] = 0.5 + 0.5 * cosf(angle);
+        t[1] = 0.5 + 0.5 * sinf(angle);
+
+        tex[loop[i]] = t;
+
+        ++i;
+        if (i < n)
+        {
+            l += distance(points[loop[i]], points[loop[(i + 1) % n]]);
+        }
+    }
+}
+
+void SurfaceParametrization::harmonic_parameterization(pmp::SurfaceMesh& mesh, bool use_uniform_weights)
+{
+    // check precondition
+    if (!has_boundary(mesh))
+    {
+        auto what = std::string{__func__} + ": Mesh has no boundary.";
+        throw pmp::InvalidInputException(what);
+    }
+
+    // map boundary to circle
+    setup_boundary_constraints(mesh);
+
+    // get properties
+    auto tex = mesh.vertex_property<pmp::TexCoord>("v:tex");
+
+    // build system matrix (clamp negative cotan weights to zero)
+    pmp::SparseMatrix L;
+    if (use_uniform_weights)
+        pmp::uniform_laplace_matrix(mesh, L);
+    else
+        pmp::laplace_matrix(mesh, L, true);
+
+    // build right-hand side B and inject boundary constraints
+    pmp::DenseMatrix B(mesh.n_vertices(), 2);
+    B.setZero();
+    for (auto v : mesh.vertices())
+        if (mesh.is_boundary(v))
+            B.row(v.idx()) = static_cast<Eigen::Vector2d>(tex[v]);
+
+    // solve system
+    auto is_constrained = [&](unsigned int i) {
+        return mesh.is_boundary(pmp::Vertex(i));
+    };
+    pmp::DenseMatrix X = pmp::cholesky_solve(L, B, is_constrained, B);
+
+    // copy solution
+    for (auto v : mesh.vertices())
+        if (!mesh.is_boundary(v))
+            tex[v] = X.row(v.idx());
+}
+
+
 /**
  * @brief Calculate the UV coordinates of the 3D mesh and also return their mapping to the 3D coordinates
 */
@@ -86,36 +193,45 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     pmp::read_off(mesh_pmp, mesh_3D_file_path);
 
     // Set the border edges of the UV mesh
-    CutLineHelper helper = CutLineHelper(mesh_pmp, mesh_3D_file_path, start_vertex);
+    CutLineHelper helper = CutLineHelper(mesh_pmp, start_vertex);
     CutLineHelperInterface& cutline_helper = helper;
     cutline_helper.cut_mesh_open();
 
+    std::cout << "Cutting done." << std::endl;
+    // Perform the parameterization
+    harmonic_parameterization(mesh_pmp);
+    std::cout << "Parameterization done." << std::endl;
 
+    // print the vertex coordinates of the mesh
+    // for (auto v : mesh_pmp.vertices()) {
+    //     std::cout << "v[" << v << "] = " << mesh_pmp.position(v) << std::endl;
+    // }
+    pmp::write(mesh_pmp, "test.off");
 
-    Triangle_mesh mesh;
-    std::ifstream in(CGAL::data_file_path(mesh_3D_file_path));
-    in >> mesh;
+    // Triangle_mesh mesh;
+    // std::ifstream in(CGAL::data_file_path(mesh_3D_file_path));
+    // in >> mesh;
 
-    // Choose a halfedge on the border
-    halfedge_descriptor bhd = CGAL::Polygon_mesh_processing::longest_border(mesh).first;
+    // // Choose a halfedge on the border
+    // halfedge_descriptor bhd = CGAL::Polygon_mesh_processing::longest_border(mesh).first;
 
-    // // Canonical Halfedges Representing a Vertex
-    // ! _3D::UV_pmap uvmap = mesh.add_property_map<_3D::halfedge_descriptor, Point_2>("h:uv").first;
-    // The 2D points of the uv parametrisation will be written into this map
-    UV_pmap uvmap = mesh.add_property_map<vertex_descriptor, Point_2>("v:uv").first;
+    // // // Canonical Halfedges Representing a Vertex
+    // // ! _3D::UV_pmap uvmap = mesh.add_property_map<_3D::halfedge_descriptor, Point_2>("h:uv").first;
+    // // The 2D points of the uv parametrisation will be written into this map
+    // UV_pmap uvmap = mesh.add_property_map<vertex_descriptor, Point_2>("v:uv").first;
 
-    // Perform parameterization
-    SquareBorderParametrizationHelper square_helper = SquareBorderParametrizationHelper(mesh, bhd, uvmap);
-    ParametrizationHelperInterface& square_border_parametrization_helper = square_helper;
-    square_border_parametrization_helper.parameterize_UV_mesh();
+    // // Perform parameterization
+    // SquareBorderParametrizationHelper square_helper = SquareBorderParametrizationHelper(mesh, bhd, uvmap);
+    // ParametrizationHelperInterface& square_border_parametrization_helper = square_helper;
+    // square_border_parametrization_helper.parameterize_UV_mesh();
 
-    // Save the uv mesh
-    save_UV_mesh(mesh, bhd, uvmap, mesh_3D_file_path);
+    // // Save the uv mesh
+    // save_UV_mesh(mesh, bhd, uvmap, mesh_3D_file_path);
 
     std::vector<int64_t> h_v_mapping_vector;
-    int number_of_vertices = size(vertices(mesh));
-    vertice_3D.resize(number_of_vertices, 3);
-    vertice_UV.resize(number_of_vertices, 3);
+    // int number_of_vertices = size(vertices(mesh));
+    // vertice_3D.resize(number_of_vertices, 3);
+    // vertice_UV.resize(number_of_vertices, 3);
 
     // int i = 0;
     // for (UV::vertex_descriptor vd : vertices(mesh)) {
