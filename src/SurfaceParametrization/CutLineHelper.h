@@ -14,8 +14,6 @@ public:
     );
 
     void cut_mesh_open() override;
-    bool has_boundary();
-    void openMeshAlongSeam(const std::vector<pmp::Vertex>& seamVertices, const std::vector<pmp::Edge>& seamEdges);
 
 private:
     pmp::SurfaceMesh& mesh;
@@ -23,4 +21,6 @@ private:
 
     std::vector<pmp::Edge> get_cut_line(pmp::Vertex current_vertex);
     pmp::Vertex find_farthest_vertex();
+    void open_mesh_along_seam(const std::vector<pmp::Vertex>& seamVertices, const std::vector<pmp::Edge>& seamEdges);
+    bool has_boundary();
 };
