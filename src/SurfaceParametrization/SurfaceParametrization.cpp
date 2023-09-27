@@ -215,7 +215,7 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     // Perform the parameterization
     harmonic_parameterization(mesh);
 
-    pmp::write(mesh, "test.off");
+    save_uv_as_mesh(mesh, "uv_mesh.off");
 
 
     // // Perform parameterization
@@ -266,28 +266,38 @@ std::tuple<Point_3, Point_2, int64_t> SurfaceParametrization::getMeshData(
 }
 
 
-/**
- * @brief Save the generated UV mesh to a file
-*/
-void SurfaceParametrization::save_UV_mesh(
-    Triangle_mesh _mesh,
-    halfedge_descriptor _bhd,
-    UV_pmap _uvmap,
-    const std::string mesh_path
-){
-    // Get the mesh name without the extension
-    auto mesh_3D_name = get_mesh_name(mesh_path);
+void SurfaceParametrization::save_uv_as_mesh(const pmp::SurfaceMesh& mesh, const std::string& filename)
+{
+    pmp::SurfaceMesh uvMesh;
 
-    // Create the output file path based on uv_mesh_number
-    fs::path output_file_path;
-    std::string output_file_path_str;
+    // Get UV coordinates property
+    auto UV_coord = mesh.get_vertex_property<pmp::TexCoord>("v:tex");
+    if (!UV_coord)
+        throw std::runtime_error("UV coordinates not found!");
 
-    output_file_path = MESH_FOLDER / (mesh_3D_name + "_uv.off");
-    output_file_path_str = output_file_path.string();
-    meshmeta.mesh_path = output_file_path_str;
+    // Create a mapping from the old vertices to the new vertices
+    std::map<pmp::Vertex, pmp::Vertex> vertexMapping;
 
-    std::ofstream out(output_file_path_str);
-    SMP::IO::output_uvmap_to_off(_mesh, _bhd, _uvmap, out);
+    // Add vertices to uvMesh using UV coordinates as positions
+    for (auto v : mesh.vertices())
+    {
+        pmp::Point uvPoint(UV_coord[v][0], UV_coord[v][1], 0.0); // We set the Z coordinate to 0
+        vertexMapping[v] = uvMesh.add_vertex(uvPoint);
+    }
+
+    // Add faces to uvMesh
+    for (auto f : mesh.faces())
+    {
+        std::vector<pmp::Vertex> uvFaceVertices;
+        for (auto v : mesh.vertices(f))
+        {
+            uvFaceVertices.push_back(vertexMapping[v]);
+        }
+        uvMesh.add_face(uvFaceVertices);
+    }
+
+    // Write uvMesh to an .off file
+    pmp::write(uvMesh, filename);
 }
 
 
