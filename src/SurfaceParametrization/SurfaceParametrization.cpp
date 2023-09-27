@@ -13,8 +13,7 @@
 #include "SurfaceParametrization.h"
 
 #include "CutLineHelper.h"
-#include "SquareBorderParametrizationHelper.h"
-#include "SquareBorderHelper.h"
+#include "HarmonicParametrizationHelper.h"
 
 SurfaceParametrization::SurfaceParametrization(){}
 
@@ -75,64 +74,6 @@ std::tuple<std::vector<int64_t>, Eigen::MatrixXd, Eigen::MatrixXd, std::string> 
 // Private Functions
 // ========================================
 
-bool SurfaceParametrization::has_boundary(const pmp::SurfaceMesh& mesh)
-{
-    for (auto v : mesh.vertices()) {
-        if (mesh.is_boundary(v)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-
-void SurfaceParametrization::harmonic_parameterization(pmp::SurfaceMesh& mesh, bool use_uniform_weights)
-{
-    std::cout << "Harmonic parameterization... " << std::endl;
-    // check precondition
-    if (!has_boundary(mesh)) {
-        auto what = std::string{__func__} + ": Mesh has no boundary.";
-        throw pmp::InvalidInputException(what);
-    }
-
-    // create boundary
-    SquareBorderHelper border_helper = SquareBorderHelper(mesh);
-    border_helper.setup_square_boundary_constraints();
-
-    // get properties
-    auto UV_coord = mesh.vertex_property<pmp::TexCoord>("v:tex");
-
-    // build system matrix (clamp negative cotan weights to zero)
-    pmp::SparseMatrix L;
-    if (use_uniform_weights) {
-        pmp::uniform_laplace_matrix(mesh, L);
-    } else {
-        pmp::laplace_matrix(mesh, L, true);
-    }
-
-    // build right-hand side B and inject boundary constraints
-    pmp::DenseMatrix B(mesh.n_vertices(), 2);
-    B.setZero();
-    for (auto v : mesh.vertices()) {
-        if (mesh.is_boundary(v)) {
-            B.row(v.idx()) = static_cast<Eigen::Vector2d>(UV_coord[v]);
-        }
-    }
-
-    // solve system
-    auto is_constrained = [&](unsigned int i) {
-        return mesh.is_boundary(pmp::Vertex(i));
-    };
-    pmp::DenseMatrix X = pmp::cholesky_solve(L, B, is_constrained, B);
-
-    // copy solution
-    for (auto v : mesh.vertices()) {
-        if (!mesh.is_boundary(v))
-            UV_coord[v] = X.row(v.idx());
-    }
-}
-
-
 /**
  * @brief Calculate the UV coordinates of the 3D mesh and also return their mapping to the 3D coordinates
 */
@@ -145,26 +86,18 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     pmp::read_off(mesh, mesh_3D_file_path);
 
     // Set the border edges of the UV mesh
-    // CutLineHelper helper = CutLineHelper(mesh, start_vertex);
-    // CutLineHelperInterface& cutline_helper = helper;
-    // cutline_helper.cut_mesh_open();
+    CutLineHelper helper = CutLineHelper(mesh, start_vertex);
+    CutLineHelperInterface& cutline_helper = helper;
+    cutline_helper.cut_mesh_open();
 
-    std::cout << "Cutting done." << std::endl;
     // Perform the parameterization
-    harmonic_parameterization(mesh);
+    HarmonicParametrizationHelper helper_p = HarmonicParametrizationHelper(mesh);
+    ParametrizationHelperInterface& parametrization_helper = helper_p;
+    parametrization_helper.parameterize_UV_mesh();
 
+    // Save the uv mesh
     fs::path mesh_uv_path = MESH_FOLDER / (get_mesh_name(mesh_3D_file_path) + "_uv.off");
-
     save_uv_as_mesh(mesh, mesh_uv_path);
-
-
-    // // Perform parameterization
-    // SquareBorderParametrizationHelper square_helper = SquareBorderParametrizationHelper(mesh, bhd, uvmap);
-    // ParametrizationHelperInterface& square_border_parametrization_helper = square_helper;
-    // square_border_parametrization_helper.parameterize_UV_mesh();
-
-    // // Save the uv mesh
-    // save_UV_mesh(mesh, bhd, uvmap, mesh_3D_file_path);
 
     std::vector<int64_t> h_v_mapping_vector;
     // int number_of_vertices = size(vertices(mesh));

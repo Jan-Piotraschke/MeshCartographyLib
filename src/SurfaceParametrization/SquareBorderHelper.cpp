@@ -84,4 +84,9 @@ void SquareBorderHelper::setup_square_boundary_constraints()
             l += distance(points[loop[i]], points[loop[(i + 1) % n]]);
         }
     }
+
+    // // print out the texture coordinates
+    // for (auto v : mesh.vertices()) {
+    //     std::cout << tex[v] << std::endl;
+    // }
 }
