@@ -76,9 +76,11 @@ std::tuple<std::vector<int64_t>, Eigen::MatrixXd, Eigen::MatrixXd, std::string> 
 
 bool SurfaceParametrization::has_boundary(const pmp::SurfaceMesh& mesh)
 {
-    for (auto v : mesh.vertices())
-        if (mesh.is_boundary(v))
+    for (auto v : mesh.vertices()) {
+        if (mesh.is_boundary(v)) {
             return true;
+        }
+    }
     return false;
 }
 
@@ -94,13 +96,16 @@ void SurfaceParametrization::setup_boundary_constraints(pmp::SurfaceMesh& mesh)
     std::vector<pmp::Vertex> loop;
 
     // Initialize all texture coordinates to the origin.
-    for (auto v : mesh.vertices())
+    for (auto v : mesh.vertices()) {
         tex[v] = pmp::TexCoord(0.5, 0.5);
+    }
 
     // find 1st boundary vertex
-    for (vit = mesh.vertices_begin(); vit != vend; ++vit)
-        if (mesh.is_boundary(*vit))
+    for (vit = mesh.vertices_begin(); vit != vend; ++vit) {
+        if (mesh.is_boundary(*vit)) {
             break;
+        }
+    }
 
     // collect boundary loop
     vh = *vit;
@@ -113,16 +118,17 @@ void SurfaceParametrization::setup_boundary_constraints(pmp::SurfaceMesh& mesh)
 
     // map boundary loop to unit circle in texture domain
     unsigned int i, n = loop.size();
+    std::cout << "Boundary loop: " << n << " vertices" << std::endl;
     pmp::Scalar angle, l, length;
     pmp::TexCoord t;
 
     // compute length of boundary loop
-    for (i = 0, length = 0.0; i < n; ++i)
+    for (i = 0, length = 0.0; i < n; ++i) {
         length += distance(points[loop[i]], points[loop[(i + 1) % n]]);
+    }
 
     // map length intervalls to unit circle intervals
-    for (i = 0, l = 0.0; i < n;)
-    {
+    for (i = 0, l = 0.0; i < n;) {
         // go from 2pi to 0 to preserve orientation
         angle = 2.0 * M_PI * (1.0 - l / length);
 
@@ -132,8 +138,7 @@ void SurfaceParametrization::setup_boundary_constraints(pmp::SurfaceMesh& mesh)
         tex[loop[i]] = t;
 
         ++i;
-        if (i < n)
-        {
+        if (i < n) {
             l += distance(points[loop[i]], points[loop[(i + 1) % n]]);
         }
     }
@@ -141,9 +146,9 @@ void SurfaceParametrization::setup_boundary_constraints(pmp::SurfaceMesh& mesh)
 
 void SurfaceParametrization::harmonic_parameterization(pmp::SurfaceMesh& mesh, bool use_uniform_weights)
 {
+    std::cout << "Harmonic parameterization... " << std::endl;
     // check precondition
-    if (!has_boundary(mesh))
-    {
+    if (!has_boundary(mesh)) {
         auto what = std::string{__func__} + ": Mesh has no boundary.";
         throw pmp::InvalidInputException(what);
     }
@@ -152,21 +157,24 @@ void SurfaceParametrization::harmonic_parameterization(pmp::SurfaceMesh& mesh, b
     setup_boundary_constraints(mesh);
 
     // get properties
-    auto tex = mesh.vertex_property<pmp::TexCoord>("v:tex");
+    auto UV_coord = mesh.vertex_property<pmp::TexCoord>("v:tex");
 
     // build system matrix (clamp negative cotan weights to zero)
     pmp::SparseMatrix L;
-    if (use_uniform_weights)
+    if (use_uniform_weights) {
         pmp::uniform_laplace_matrix(mesh, L);
-    else
+    } else {
         pmp::laplace_matrix(mesh, L, true);
+    }
 
     // build right-hand side B and inject boundary constraints
     pmp::DenseMatrix B(mesh.n_vertices(), 2);
     B.setZero();
-    for (auto v : mesh.vertices())
-        if (mesh.is_boundary(v))
-            B.row(v.idx()) = static_cast<Eigen::Vector2d>(tex[v]);
+    for (auto v : mesh.vertices()) {
+        if (mesh.is_boundary(v)) {
+            B.row(v.idx()) = static_cast<Eigen::Vector2d>(UV_coord[v]);
+        }
+    }
 
     // solve system
     auto is_constrained = [&](unsigned int i) {
@@ -175,9 +183,15 @@ void SurfaceParametrization::harmonic_parameterization(pmp::SurfaceMesh& mesh, b
     pmp::DenseMatrix X = pmp::cholesky_solve(L, B, is_constrained, B);
 
     // copy solution
-    for (auto v : mesh.vertices())
+    for (auto v : mesh.vertices()) {
         if (!mesh.is_boundary(v))
-            tex[v] = X.row(v.idx());
+            UV_coord[v] = X.row(v.idx());
+    }
+
+    // print UV_coord coords
+    for (auto v : mesh.vertices()) {
+        std::cout << "v[" << v << "] = " << UV_coord[v] << std::endl;
+    }
 }
 
 
@@ -189,36 +203,20 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
 ){
     pmp::Vertex start_vertex(start_node.idx());
 
-    pmp::SurfaceMesh mesh_pmp;
-    pmp::read_off(mesh_pmp, mesh_3D_file_path);
+    pmp::SurfaceMesh mesh;
+    pmp::read_off(mesh, mesh_3D_file_path);
 
     // Set the border edges of the UV mesh
-    CutLineHelper helper = CutLineHelper(mesh_pmp, start_vertex);
-    CutLineHelperInterface& cutline_helper = helper;
-    cutline_helper.cut_mesh_open();
+    // CutLineHelper helper = CutLineHelper(mesh, start_vertex);
+    // CutLineHelperInterface& cutline_helper = helper;
+    // cutline_helper.cut_mesh_open();
 
     std::cout << "Cutting done." << std::endl;
     // Perform the parameterization
-    harmonic_parameterization(mesh_pmp);
-    std::cout << "Parameterization done." << std::endl;
+    harmonic_parameterization(mesh);
 
-    // print the vertex coordinates of the mesh
-    // for (auto v : mesh_pmp.vertices()) {
-    //     std::cout << "v[" << v << "] = " << mesh_pmp.position(v) << std::endl;
-    // }
-    pmp::write(mesh_pmp, "test.off");
+    pmp::write(mesh, "test.off");
 
-    // Triangle_mesh mesh;
-    // std::ifstream in(CGAL::data_file_path(mesh_3D_file_path));
-    // in >> mesh;
-
-    // // Choose a halfedge on the border
-    // halfedge_descriptor bhd = CGAL::Polygon_mesh_processing::longest_border(mesh).first;
-
-    // // // Canonical Halfedges Representing a Vertex
-    // // ! _3D::UV_pmap uvmap = mesh.add_property_map<_3D::halfedge_descriptor, Point_2>("h:uv").first;
-    // // The 2D points of the uv parametrisation will be written into this map
-    // UV_pmap uvmap = mesh.add_property_map<vertex_descriptor, Point_2>("v:uv").first;
 
     // // Perform parameterization
     // SquareBorderParametrizationHelper square_helper = SquareBorderParametrizationHelper(mesh, bhd, uvmap);

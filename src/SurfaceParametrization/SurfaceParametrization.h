@@ -62,7 +62,9 @@ private:
     Eigen::MatrixXd vertice_UV;
     Eigen::MatrixXd vertice_3D;
     std::string mesh_3D_file_path;
-
+    bool has_boundary(const pmp::SurfaceMesh& mesh);
+    void setup_boundary_constraints(pmp::SurfaceMesh& mesh);
+    void harmonic_parameterization(pmp::SurfaceMesh& mesh, bool use_uniform_weights = false);
     std::tuple<Point_3, Point_2, int64_t> getMeshData(
         const UV::vertex_descriptor& vd,
         const UV::Mesh& mesh,
