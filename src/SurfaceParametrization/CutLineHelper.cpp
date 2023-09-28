@@ -119,6 +119,7 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Vertex>& seamVer
     pmp::Vertex v_start = seamVertices[0];
     pmp::Vertex v_stop = seamVertices[seamVertices.size() - 1];
     pmp::Vertex v_seam_prev;
+    std::vector<pmp::Vertex> seam_vertices;
 
     for (size_t i = 1; i < seamVertices.size(); ++i) {
         pmp::Vertex v_next = seamVertices[i];
@@ -140,20 +141,55 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Vertex>& seamVer
                 mesh.set_vertex(h_face, v_seam_prev);
             }
         }
+        auto h_opposite = mesh.opposite_halfedge(h_seam);
+
+        seam_vertices.push_back(v_seam);
+        seam_vertices.push_back(mesh.to_vertex(h_opposite));
 
         v_start = v_next;
         v_seam_prev = v_seam;
     }
+    std::cout << "\n\n" << std::endl;
 
-    // ! wir nähern uns langsam der Lösung
+    std::sort(seam_vertices.begin(), seam_vertices.end());
+
+    for (auto v : seam_vertices) {
+        std::cout << v << std::endl;
+    }
+
+    pmp::SurfaceMesh mesh_uv;
+    for (auto v : mesh.vertices()) {
+        mesh_uv.add_vertex(mesh.position(v));
+    }
+
+    for (auto f : mesh.faces()) {
+        std::vector<pmp::Vertex> face_vertices;
+        for (auto v : mesh.vertices(f)) {
+            face_vertices.push_back(v);
+        }
+        mesh_uv.add_face(face_vertices);
+    }
+
+    // pmp::write(mesh_uv, "mesh_uv.off");
+
+    mesh = mesh_uv;
+    std::cout << "Mesh vertices: " << mesh.n_vertices() << std::endl;
+    std::cout << std::endl;
+
+    std::vector<pmp::Vertex> seam_vertices_unique;
+
     if (has_boundary()) {
-        std::cout << "Mesh has boundary!" << std::endl;
-        // print the boundary vertices
+        int boundary_vertices = 0;
         for (auto v : mesh.vertices()) {
             if (mesh.is_boundary(v)) {
-                // std::cout << "Boundary vertex: " << v << std::endl;
+                seam_vertices_unique.push_back(v);
+                boundary_vertices++;
             }
         }
+        std::cout << "Boundary vertices: " << boundary_vertices << std::endl;
+    }
+    for (auto v : seam_vertices_unique) {
+        std::cout << v << std::endl;
     }
 }
 
