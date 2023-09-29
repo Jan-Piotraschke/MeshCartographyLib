@@ -87,23 +87,15 @@ void CutLineHelper::cut_the_mesh(pmp::Vertex current_vertex){
 
     path.push_back(start_vertex);
     std::reverse(path.begin(), path.end());
-
+    std::reverse(edge_path.begin(), edge_path.end());
     std::cout << "Path vertices: " << path.size() << std::endl;
 
     // To check if the edges are valid:
     for (const auto& edge : edge_path) {
         if (!mesh.is_valid(edge)) {
             std::cout << "Invalid edge found" << std::endl;
-        } else {
-            pmp::Halfedge h0 = mesh.halfedge(edge, 0);
-            pmp::Halfedge h1 = mesh.halfedge(edge, 1);
-            pmp::Vertex v0 = mesh.from_vertex(h0);
-            pmp::Vertex v1 = mesh.to_vertex(h0);
-            // std::cout << "Edge: " << edge << " connects vertices: "
-            //         << v0 << " and " << v1 << std::endl;
         }
     }
-
 
     open_mesh_along_seam(path, edge_path);
 }
@@ -126,7 +118,7 @@ pmp::Vertex CutLineHelper::find_farthest_vertex(){
 
     return target_node;
 }
-#include <unordered_map>
+
 #include <algorithm>
 
 void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Vertex>& seamVertices, const std::vector<pmp::Edge>& seamEdges) {
@@ -134,27 +126,66 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Vertex>& seamVer
 
     pmp::SurfaceMesh mesh_uv;
 
-    // 0. Get the mapping of halfedge to_vertex
-    // std::unordered_map<pmp::Halfedge, pmp::Vertex> halfedgeToVertexMap;
+    std::vector<pmp::Vertex> edge_direction;
+    edge_direction.push_back(mesh.vertex(seamEdges[0], 0));
+    edge_direction.push_back(mesh.vertex(seamEdges[0], 1));
+    edge_direction.push_back(mesh.vertex(seamEdges[1], 0));
+    edge_direction.push_back(mesh.vertex(seamEdges[1], 1));
 
-    // for (auto h : mesh.halfedges()) {
-    //     halfedgeToVertexMap[h] = mesh.to_vertex(h);
-    // }
+    pmp::Vertex heading_towards;
+    bool found = false;
 
-    // 0.1 Get the mapping of seamHalfedge for the seamVertices
-    std::vector<pmp::Halfedge> halfedgesPointingToSeam;
-    for (size_t i = 0; i < seamVertices.size() - 2; ++i) {
-        pmp::Vertex v1 = seamVertices[i];
-        pmp::Vertex v2 = seamVertices[i + 1];
-
-        for (auto h : mesh.halfedges(v1)) {
-            if (mesh.to_vertex(h) == v2) {
-                // std::cout << v1 << " -> " << v2 << std::endl;
-                halfedgesPointingToSeam.push_back(h);
+    for (size_t i = 0; i < edge_direction.size() && !found; ++i) {
+        for (size_t j = i + 1; j < edge_direction.size(); ++j) {
+            if (edge_direction[i] == edge_direction[j]) {
+                heading_towards = edge_direction[i];
+                found = true;
                 break;
             }
         }
     }
+
+    pmp::Vertex heading_from;
+    auto option_a = mesh.vertex(seamEdges[0], 0);
+    auto option_b = mesh.vertex(seamEdges[0], 1);
+    if (option_a == heading_towards) {
+        heading_from = option_b;
+    } else {
+        heading_from = option_a;
+    }
+    std::cout << "heading_from : " << heading_from << std::endl;
+
+    // 0.1 Get the mapping of seamHalfedge for the seamEdges
+    std::vector<pmp::Halfedge> halfedgesPointingToSeam;
+
+    for (size_t i = 0; i < seamEdges.size(); ++i) {
+        // Get the vertices of the seamEdge
+        pmp::Vertex v0 = mesh.vertex(seamEdges[i], 0);
+        pmp::Vertex v1 = mesh.vertex(seamEdges[i], 1);
+        pmp::Halfedge h;
+
+        if (v0 == heading_from) {
+            h = mesh.find_halfedge(v0, v1);
+            if (!mesh.is_valid(h)) {
+                std::cerr << "Invalid halfedge for vertices: " << v0 << ", " << v1 << std::endl;
+                continue;
+            }
+            halfedgesPointingToSeam.push_back(h);
+            heading_from = v1;
+        } else if (v1 == heading_from) {
+            h = mesh.find_halfedge(v1, v0);
+            if (!mesh.is_valid(h)) {
+                std::cerr << "Invalid halfedge for vertices: " << v1 << ", " << v0 << std::endl;
+                continue;
+            }
+            halfedgesPointingToSeam.push_back(h);
+            heading_from = v0;
+        } else {
+            std::cerr << "Neither vertex matches heading_from!" << std::endl;
+            continue;
+        }
+    }
+
     std::cout << "size of halfedgesPointingToSeam : " << halfedgesPointingToSeam.size() << std::endl;
 
     // 0.2 Initialize the mesh: Add all the vertices of the mesh to the mesh_uv
