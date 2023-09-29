@@ -58,7 +58,6 @@ void CutLineHelper::cut_the_mesh(pmp::Vertex current_vertex){
     pmp::VertexProperty<pmp::Scalar> distance_pmp = mesh.get_vertex_property<pmp::Scalar>("geodesic:distance");
 
     std::vector<pmp::Vertex> path;
-    std::vector<pmp::Edge> path_edges;
 
     while (current_vertex != start_vertex) {
         path.push_back(current_vertex);
@@ -79,18 +78,8 @@ void CutLineHelper::cut_the_mesh(pmp::Vertex current_vertex){
 
     path.push_back(start_vertex);
 
-    for (size_t i = 0; i < path.size() - 1; ++i) {
-        auto edge = mesh.find_edge(path[i], path[i + 1]);
-        if (edge.is_valid()) {
-            path_edges.push_back(edge);
-        }
-    }
-
-    if (path_edges.size() % 2 != 0) {
-        path_edges.pop_back();
-    }
-    std::cout << "Path edges: " << path_edges.size() << std::endl;
-    open_mesh_along_seam(path, path_edges);
+    std::cout << "Path vertices: " << path.size() << std::endl;
+    open_mesh_along_seam(path);
 }
 
 
@@ -114,7 +103,7 @@ pmp::Vertex CutLineHelper::find_farthest_vertex(){
 #include <unordered_map>
 #include <algorithm>
 
-void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Vertex>& seamVertices, const std::vector<pmp::Edge>& seamEdges) {
+void CutLineHelper::open_mesh_along_seam(std::vector<pmp::Vertex>& seamVertices) {
     if (seamVertices.size() < 2) return; // We need at least two vertices to define a seam
 
     pmp::SurfaceMesh mesh_uv;
@@ -128,11 +117,24 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Vertex>& seamVer
 
     // 0.1 Get the mapping of seamHalfedge for the seamVertices
     std::vector<pmp::Halfedge> halfedgesPointingToSeam;
-    for (auto h : mesh.halfedges()) {
-        if (std::find(seamVertices.begin(), seamVertices.end(), mesh.to_vertex(h)) != seamVertices.end()) {
-            halfedgesPointingToSeam.push_back(h);
+    // Iterate over seamVertices by pairs
+    // delete the first and the last vertex of the seamVertices
+    // seamVertices.erase(seamVertices.begin());
+    seamVertices.pop_back();
+
+    for (size_t i = 0; i < seamVertices.size() - 1; ++i) {
+        pmp::Vertex v1 = seamVertices[i];
+        pmp::Vertex v2 = seamVertices[i + 1];
+
+        for (auto h : mesh.halfedges(v1)) {
+            if (mesh.to_vertex(h) == v2) {
+                std::cout << v1 << " -> " << v2 << std::endl;
+                halfedgesPointingToSeam.push_back(h);
+                break;
+            }
         }
     }
+    std::cout << "size of halfedgesPointingToSeam : " << halfedgesPointingToSeam.size() << std::endl;
 
     // 0.2 Initialize the mesh: Add all the vertices of the mesh to the mesh_uv
     for (auto v : mesh.vertices()) {
@@ -151,8 +153,6 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Vertex>& seamVer
         pmp::Vertex v1 = mesh.to_vertex(h1);
         pmp::Vertex v2 = mesh.to_vertex(h2);
 
-
-
         // The following if conditions "cut" the mesh along the seam
         // 3. If one of the halfedges is in the halfedgesPointingToSeam, add a new vertex to the mesh_uv and overwrite the vertex
         if (std::find(halfedgesPointingToSeam.begin(), halfedgesPointingToSeam.end(), h0) != halfedgesPointingToSeam.end()) {
@@ -165,14 +165,11 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Vertex>& seamVer
             v2 = mesh_uv.add_vertex(mesh.position(v2));
         }
 
-
-
         // 4. Add a new triangle based on the new vertices
         mesh_uv.add_triangle(v0, v1, v2);
     }
+    std::cout << "added : " << mesh_uv.n_vertices() - mesh.n_vertices() << std::endl;
 
-    // Save the remeshed model
-    pmp::write(mesh_uv, "mesh_uv.off");
     mesh.clear();
     mesh = mesh_uv;
 
@@ -185,11 +182,10 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Vertex>& seamVer
         }
     }
 
-    // ! da sind ja extrem viele mehrfach drin, weit über 2 mal
     std::sort(seam_vertices_unique.begin(), seam_vertices_unique.end());
     std::cout << "size of border vertices unique : " << seam_vertices_unique.size() << std::endl;
     // for (auto v : seam_vertices_unique) {
-    //     std::cout << mesh_uv.position(v) << std::endl;
+    //     std::cout << v << std::endl;
     // }
 }
 
