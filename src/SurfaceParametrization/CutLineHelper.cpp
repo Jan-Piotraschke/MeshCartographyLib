@@ -6,7 +6,7 @@
  * @date        2023-Sep-22
  * @license     Apache License 2.0
  *
- * @bug         seamVertices ist nicht in der richtigen Reihenfolge
+ * @bug         -
  * @todo        -
  */
 
@@ -57,11 +57,9 @@ void CutLineHelper::cut_mesh_open(){
 void CutLineHelper::cut_the_mesh(pmp::Vertex current_vertex){
     pmp::VertexProperty<pmp::Scalar> distance_pmp = mesh.get_vertex_property<pmp::Scalar>("geodesic:distance");
 
-    std::vector<pmp::Vertex> path;
     std::vector<pmp::Edge> edge_path;
 
     while (current_vertex != start_vertex) {
-        path.push_back(current_vertex);
 
         double min_distance = std::numeric_limits<double>::infinity();
         pmp::Vertex next_vertex;
@@ -85,10 +83,7 @@ void CutLineHelper::cut_the_mesh(pmp::Vertex current_vertex){
         current_vertex = next_vertex;
     }
 
-    path.push_back(start_vertex);
-    std::reverse(path.begin(), path.end());
     std::reverse(edge_path.begin(), edge_path.end());
-    std::cout << "Path vertices: " << path.size() << std::endl;
 
     // To check if the edges are valid:
     for (const auto& edge : edge_path) {
@@ -97,7 +92,7 @@ void CutLineHelper::cut_the_mesh(pmp::Vertex current_vertex){
         }
     }
 
-    open_mesh_along_seam(path, edge_path);
+    open_mesh_along_seam(edge_path);
 }
 
 
@@ -121,9 +116,7 @@ pmp::Vertex CutLineHelper::find_farthest_vertex(){
 
 #include <algorithm>
 
-void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Vertex>& seamVertices, const std::vector<pmp::Edge>& seamEdges) {
-    if (seamVertices.size() < 2) return; // We need at least two vertices to define a seam
-
+void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges) {
     pmp::SurfaceMesh mesh_uv;
 
     std::vector<pmp::Vertex> edge_direction;
@@ -186,14 +179,22 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Vertex>& seamVer
         }
     }
 
-    std::cout << "size of halfedgesPointingToSeam : " << halfedgesPointingToSeam.size() << std::endl;
-
     // 0.2 Initialize the mesh: Add all the vertices of the mesh to the mesh_uv
     for (auto v : mesh.vertices()) {
         mesh_uv.add_vertex(mesh.position(v));
     }
+
     std::vector<pmp::Vertex> old_vertex;
     std::vector<pmp::Vertex> new_vertex;
+
+    // 0.3 Add the vertices of the seam to the mesh_uv
+    for (size_t i = 0; i < halfedgesPointingToSeam.size() - 1 ; ++i) {
+        auto v = mesh.to_vertex(halfedgesPointingToSeam[i]);
+        old_vertex.push_back(v);
+        v = mesh_uv.add_vertex(mesh.position(v));
+        new_vertex.push_back(v);
+    }
+
     // 1. Iterate over the faces of "mesh"
     for (auto f : mesh.faces()) {
         // 2. Get the three halfedges of the face
@@ -206,43 +207,32 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Vertex>& seamVer
         pmp::Vertex v1 = mesh.to_vertex(h1);
         pmp::Vertex v2 = mesh.to_vertex(h2);
 
-        // The following if conditions "cut" the mesh along the seam
-        // ! hier ist bestimmt noch ein Fehler drin
-        // 3. If one of the halfedges is in the halfedgesPointingToSeam, add a new vertex to the mesh_uv and overwrite the vertex
-        if (std::find(halfedgesPointingToSeam.begin(), halfedgesPointingToSeam.end(), h0) != halfedgesPointingToSeam.end()) {
-            old_vertex.push_back(v0);
-            v0 = mesh_uv.add_vertex(mesh.position(v0));
-            new_vertex.push_back(v0);
-        }
-        if (std::find(halfedgesPointingToSeam.begin(), halfedgesPointingToSeam.end(), h1) != halfedgesPointingToSeam.end()) {
-            old_vertex.push_back(v1);
-            v1 = mesh_uv.add_vertex(mesh.position(v1));
-            new_vertex.push_back(v1);
-        }
-        if (std::find(halfedgesPointingToSeam.begin(), halfedgesPointingToSeam.end(), h2) != halfedgesPointingToSeam.end()) {
-            old_vertex.push_back(v2);
-            v2 = mesh_uv.add_vertex(mesh.position(v2));
-            new_vertex.push_back(v2);
-        }
+        // find if h0, h1 or h2 is in halfedgesPointingToSeam
+        bool h0Exists = std::find(halfedgesPointingToSeam.begin(), halfedgesPointingToSeam.end(), h0) != halfedgesPointingToSeam.end();
+        bool h1Exists = std::find(halfedgesPointingToSeam.begin(), halfedgesPointingToSeam.end(), h1) != halfedgesPointingToSeam.end();
+        bool h2Exists = std::find(halfedgesPointingToSeam.begin(), halfedgesPointingToSeam.end(), h2) != halfedgesPointingToSeam.end();
 
-        auto it = std::find(old_vertex.begin(), old_vertex.end(), v0);
-        if (it != old_vertex.end()) {
-            size_t index = std::distance(old_vertex.begin(), it);
-            v0 = new_vertex[index];
-        }
+        // if any of the halfedges is in halfedgesPointingToSeam
+        if (h0Exists || h1Exists || h2Exists) {
+            // find if v1 inside old_vertex
+            auto it = std::find(old_vertex.begin(), old_vertex.end(), v0);
+            if (it != old_vertex.end()) {
+                size_t index = std::distance(old_vertex.begin(), it);
+                v0 = new_vertex[index];
+            }
 
-        it = std::find(old_vertex.begin(), old_vertex.end(), v1);
-        if (it != old_vertex.end()) {
-            size_t index = std::distance(old_vertex.begin(), it);
-            v1 = new_vertex[index];
-        }
+            it = std::find(old_vertex.begin(), old_vertex.end(), v1);
+            if (it != old_vertex.end()) {
+                size_t index = std::distance(old_vertex.begin(), it);
+                v1 = new_vertex[index];
+            }
 
-        it = std::find(old_vertex.begin(), old_vertex.end(), v2);
-        if (it != old_vertex.end()) {
-            size_t index = std::distance(old_vertex.begin(), it);
-            v2 = new_vertex[index];
+            it = std::find(old_vertex.begin(), old_vertex.end(), v2);
+            if (it != old_vertex.end()) {
+                size_t index = std::distance(old_vertex.begin(), it);
+                v2 = new_vertex[index];
+            }
         }
-        // std::cout << v0 << " "  << v1 << " " << v2 << std::endl;
 
         // 4. Add a new triangle based on the new vertices
         mesh_uv.add_triangle(v0, v1, v2);
@@ -264,7 +254,7 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Vertex>& seamVer
     std::sort(seam_vertices_unique.begin(), seam_vertices_unique.end());
     std::cout << "size of border vertices unique : " << seam_vertices_unique.size() << std::endl;
     // for (auto v : seam_vertices_unique) {
-    //     std::cout << v << std::endl;
+    //     std::cout << mesh.position(v) << std::endl;
     // }
 }
 
