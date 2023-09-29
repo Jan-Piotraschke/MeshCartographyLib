@@ -111,119 +111,87 @@ pmp::Vertex CutLineHelper::find_farthest_vertex(){
 
     return target_node;
 }
+#include <unordered_map>
+#include <algorithm>
 
 void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Vertex>& seamVertices, const std::vector<pmp::Edge>& seamEdges) {
     if (seamVertices.size() < 2) return; // We need at least two vertices to define a seam
 
-    // Initialize v_start as the first vertex in the seamVertices list
-    pmp::Vertex v_start = seamVertices[0];
-    pmp::Vertex v_stop = seamVertices[seamVertices.size() - 1];
-    pmp::Vertex v_seam_prev;
-    std::vector<pmp::Vertex> seam_vertices;
-
-    for (size_t i = 1; i < seamVertices.size(); ++i) {
-        pmp::Vertex v_next = seamVertices[i];
-        pmp::Halfedge h_seam = mesh.find_halfedge(v_start, v_next);
-
-        // Get the face associated with this halfedge
-        pmp::Face f_seam = mesh.face(h_seam);
-
-        // Add a new vertex with the same position as v_next
-        pmp::Point pos = mesh.position(v_next);
-        pmp::Vertex v_seam = mesh.add_vertex(pos);
-
-        for (auto h_face : mesh.halfedges(f_seam)) {
-            // If current vertex in halfedge is v_next in the cut-line, replace with v_seam
-            if (mesh.to_vertex(h_face) == v_next && mesh.to_vertex(h_face) != v_stop) {
-                mesh.set_vertex(h_face, v_seam);
-            }
-            if (v_seam_prev.is_valid() && mesh.to_vertex(h_face) == v_start) {
-                mesh.set_vertex(h_face, v_seam_prev);
-            }
-        }
-        auto h_opposite = mesh.opposite_halfedge(h_seam);
-
-        seam_vertices.push_back(v_seam);
-        seam_vertices.push_back(mesh.to_vertex(h_opposite));
-
-        v_start = v_next;
-        v_seam_prev = v_seam;
-    }
-    std::cout << "\n\n" << std::endl;
-
-    std::sort(seam_vertices.begin(), seam_vertices.end());
-
-    for (auto v : seam_vertices) {
-        std::cout << v << std::endl;
-    }
-
     pmp::SurfaceMesh mesh_uv;
+
+    // 0. Get the mapping of halfedge to_vertex
+    // std::unordered_map<pmp::Halfedge, pmp::Vertex> halfedgeToVertexMap;
+
+    // for (auto h : mesh.halfedges()) {
+    //     halfedgeToVertexMap[h] = mesh.to_vertex(h);
+    // }
+
+    // 0.1 Get the mapping of seamHalfedge for the seamVertices
+    std::vector<pmp::Halfedge> halfedgesPointingToSeam;
+    for (auto h : mesh.halfedges()) {
+        if (std::find(seamVertices.begin(), seamVertices.end(), mesh.to_vertex(h)) != seamVertices.end()) {
+            halfedgesPointingToSeam.push_back(h);
+        }
+    }
+
+    // 0.2 Initialize the mesh: Add all the vertices of the mesh to the mesh_uv
     for (auto v : mesh.vertices()) {
         mesh_uv.add_vertex(mesh.position(v));
     }
 
+    // 1. Iterate over the faces of "mesh"
     for (auto f : mesh.faces()) {
-        std::vector<pmp::Vertex> face_vertices;
-        for (auto v : mesh.vertices(f)) {
-            face_vertices.push_back(v);
+        // 2. Get the three halfedges of the face
+        auto h0 = mesh.halfedge(f);
+        auto h1 = mesh.next_halfedge(h0);
+        auto h2 = mesh.next_halfedge(h1);
+
+        // 2.1 Get the vertices of the halfedges
+        pmp::Vertex v0 = mesh.to_vertex(h0);
+        pmp::Vertex v1 = mesh.to_vertex(h1);
+        pmp::Vertex v2 = mesh.to_vertex(h2);
+
+
+
+        // The following if conditions "cut" the mesh along the seam
+        // 3. If one of the halfedges is in the halfedgesPointingToSeam, add a new vertex to the mesh_uv and overwrite the vertex
+        if (std::find(halfedgesPointingToSeam.begin(), halfedgesPointingToSeam.end(), h0) != halfedgesPointingToSeam.end()) {
+            v0 = mesh_uv.add_vertex(mesh.position(v0));
         }
-        mesh_uv.add_face(face_vertices);
+        if (std::find(halfedgesPointingToSeam.begin(), halfedgesPointingToSeam.end(), h1) != halfedgesPointingToSeam.end()) {
+            v1 = mesh_uv.add_vertex(mesh.position(v1));
+        }
+        if (std::find(halfedgesPointingToSeam.begin(), halfedgesPointingToSeam.end(), h2) != halfedgesPointingToSeam.end()) {
+            v2 = mesh_uv.add_vertex(mesh.position(v2));
+        }
+
+
+
+        // 4. Add a new triangle based on the new vertices
+        mesh_uv.add_triangle(v0, v1, v2);
     }
 
-    // pmp::write(mesh_uv, "mesh_uv.off");
-
+    // Save the remeshed model
+    pmp::write(mesh_uv, "mesh_uv.off");
+    mesh.clear();
     mesh = mesh_uv;
-    std::cout << "Mesh vertices: " << mesh.n_vertices() << std::endl;
-    std::cout << std::endl;
 
     std::vector<pmp::Vertex> seam_vertices_unique;
-
     if (has_boundary()) {
-        int boundary_vertices = 0;
         for (auto v : mesh.vertices()) {
             if (mesh.is_boundary(v)) {
                 seam_vertices_unique.push_back(v);
-                boundary_vertices++;
             }
         }
-        std::cout << "Boundary vertices: " << boundary_vertices << std::endl;
     }
-    for (auto v : seam_vertices_unique) {
-        std::cout << v << std::endl;
-    }
+
+    // ! da sind ja extrem viele mehrfach drin, weit über 2 mal
+    std::sort(seam_vertices_unique.begin(), seam_vertices_unique.end());
+    std::cout << "size of border vertices unique : " << seam_vertices_unique.size() << std::endl;
+    // for (auto v : seam_vertices_unique) {
+    //     std::cout << mesh_uv.position(v) << std::endl;
+    // }
 }
-
-
-// void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Vertex>& seamVertices, const std::vector<pmp::Edge>& seamEdges) {
-//     if (seamVertices.size() < 2) return; // We need at least two vertices to define a seam
-
-//     // get the halfedge that goes from the first item of the seamVertices to the second
-//     pmp::Vertex v_start = seamVertices[0];
-//     pmp::Vertex v_seam_prev;
-
-//     for (size_t i = 1; i < seamVertices.size(); ++i) {
-//         pmp::Vertex v1 = seamVertices[i];
-//         pmp::Halfedge h = mesh.find_halfedge(v_start, v1);
-//         std::cout << "Halfedge: " << h << std::endl;
-
-//         // get the face that contains the halfedge h
-//         pmp::Face f = mesh.face(h);
-
-//         // add the new vertex to the mesh
-//         pmp::Point pos = mesh.position(v1);
-//         pmp::Vertex v_seam = mesh.add_vertex(pos);
-
-//         // replace v1 with v_seam in the face f
-//         for (auto h : mesh.halfedges(f)) {
-//             // Check if this halfedge points to v1
-//             if (mesh.to_vertex(h) == v1) {
-//                 mesh.set_vertex(h, v_seam);
-//             }
-//         }
-//         v_start = v1;
-//         v_seam_prev = v_seam;
-//     }
-// }
 
 
 bool CutLineHelper::has_boundary()
