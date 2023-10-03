@@ -32,7 +32,11 @@ namespace SMP = CGAL::Surface_mesh_parameterization;
 // PMP libraries
 #include <pmp/surface_mesh.h>
 #include <pmp/io/read_off.h>
+#include <pmp/io/write_off.h>
+#include <pmp/io/io.h>
 #include <pmp/algorithms/geodesics.h>
+#include "pmp/algorithms/laplace.h"
+#include "pmp/algorithms/differential_geometry.h"
 
 using Scalar = double;
 using Point_2_pmp = pmp::vec2;
@@ -57,7 +61,10 @@ using Point_3 = Kernel::Point_3;
 using Polygon_2 = CGAL::Polygon_2<Kernel>;
 using Triangle_mesh = CGAL::Surface_mesh<Point_3>;
 using vertex_descriptor = boost::graph_traits<Triangle_mesh>::vertex_descriptor;
+using halfedge_descriptor = boost::graph_traits<Triangle_mesh>::halfedge_descriptor;
+using face_descriptor = boost::graph_traits<Triangle_mesh>::face_descriptor;
 using Vertex_distance_map = Triangle_mesh::Property_map<vertex_descriptor, double>;
+using UV_pmap = Triangle_mesh::Property_map<vertex_descriptor, Point_2>;
 
 using Point_2_eigen = Eigen::Vector2d;
 

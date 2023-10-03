@@ -62,12 +62,6 @@ private:
     Eigen::MatrixXd vertice_UV;
     Eigen::MatrixXd vertice_3D;
     std::string mesh_3D_file_path;
-
-    UV::Mesh create_UV_mesh(
-        _3D::Mesh& mesh,
-        const std::vector<_3D::edge_descriptor> calc_edges
-    );
-
     std::tuple<Point_3, Point_2, int64_t> getMeshData(
         const UV::vertex_descriptor& vd,
         const UV::Mesh& mesh,
@@ -78,14 +72,7 @@ private:
     std::vector<int64_t> calculate_uv_surface(
         _3D::vertex_descriptor start_node
     );
-
-    void save_UV_mesh(
-        UV::Mesh _mesh,
-        UV::halfedge_descriptor _bhd,
-        _3D::UV_pmap _uvmap,
-        const std::string mesh_path
-    );
-
+    void save_uv_as_mesh(const pmp::SurfaceMesh& mesh, const fs::path& filename);
     void extract_polygon_border_edges(
         const std::string& mesh_uv_path
     );
