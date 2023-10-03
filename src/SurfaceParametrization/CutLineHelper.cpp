@@ -230,16 +230,24 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
 
     // add the two other halfedges that heads towards the seam
     auto halfedgesCopy = halfedgesPointingToSeam;
-    for (auto h : halfedgesCopy) {
-        auto h2 = mesh.opposite_halfedge(mesh.next_halfedge(h));
-        halfedgesPointingToSeam.push_back(h2);
-        auto h3 = mesh.opposite_halfedge(mesh.next_halfedge(h2));
-        halfedgesPointingToSeam.push_back(h3);
+    for (size_t i = 0; i < halfedgesCopy.size() -1; ++i) {
+        auto h = halfedgesCopy[i];
+        auto vertice_after = cut_line_vertices[i + 2];
+
+        while (true) {
+            auto next_h = mesh.next_halfedge(h);
+            auto h2 = mesh.opposite_halfedge(next_h);
+            if (mesh.to_vertex(next_h) == vertice_after) {
+                break;
+            }
+            halfedgesPointingToSeam.push_back(h2);
+            h = h2;
+        }
     }
 
     // 1. Iterate over the faces of "mesh"
     // Access the vertex using an index
-    size_t index = 110;
+    size_t index = 141;
     pmp::Vertex vertex_by_index;
     size_t count = 0;
 
@@ -253,17 +261,17 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
         count++;
     }
 
-    // for (auto v : cut_line_vertices) {
-    //     std::cout << v << std::endl;
-    // }
-    // std::cout << std::endl;
+    for (auto v : cut_line_vertices) {
+        std::cout << v << std::endl;
+    }
+    std::cout << std::endl;
 
-    // auto get_neighbours_test = get_neighbors(vertex_by_index);
-    // for (auto v : get_neighbours_test) {
-    //     std::cout << v << std::endl;
-    // }
+    auto get_neighbours_test = get_neighbors(vertex_by_index);
+    for (auto v : get_neighbours_test) {
+        std::cout << v << std::endl;
+    }
 
-    // std::cout << std::endl;
+    std::cout << std::endl;
 
     // Check the vertices of the faces
     std::vector<pmp::Face> faces_of_vertex;
@@ -314,9 +322,9 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
             }
         }
 
-        // if (v0 == vertex_by_index || v1 == vertex_by_index || v2 == vertex_by_index) {
-        //     std::cout << v0 << "( " << h0 << " ) , " << v1 << "( " << h1 << " ) , " << v2 << "( " << h2 << " )" << std::endl;
-        // }
+        if (v0 == vertex_by_index || v1 == vertex_by_index || v2 == vertex_by_index) {
+            std::cout << v0 << "( " << h0 << " ) , " << v1 << "( " << h1 << " ) , " << v2 << "( " << h2 << " )" << std::endl;
+        }
 
         // 4. Add a new triangle based on the new vertices
         auto new_face = mesh_uv.add_triangle(v0, v1, v2);
