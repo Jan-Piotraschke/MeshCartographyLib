@@ -6,7 +6,7 @@
  * @date        2023-Sep-22
  * @license     Apache License 2.0
  *
- * @bug         -
+ * @bug         ich bekomme nicht alle Dreiecks-punkte bei mesh_uv, die ich brauche
  * @todo        -
  */
 
@@ -116,6 +116,16 @@ pmp::Vertex CutLineHelper::find_farthest_vertex(){
 
 #include <algorithm>
 
+std::vector<pmp::Vertex> CutLineHelper::get_neighbors(pmp::Vertex v) const {
+    std::vector<pmp::Vertex> neighbors;
+    auto vv = mesh.vertices(v);
+    for (auto it = vv.begin(); it != vv.end(); ++it) {
+        neighbors.push_back(*it);
+    }
+    return neighbors;
+}
+
+
 void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges) {
     pmp::SurfaceMesh mesh_uv;
 
@@ -164,6 +174,7 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
                 continue;
             }
             halfedgesPointingToSeam.push_back(h);
+            // std::cout << v0 << " -> " << v1 << std::endl;
             heading_from = v1;
         } else if (v1 == heading_from) {
             h = mesh.find_halfedge(v1, v0);
@@ -171,6 +182,7 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
                 std::cerr << "Invalid halfedge for vertices: " << v1 << ", " << v0 << std::endl;
                 continue;
             }
+            // std::cout << v1 << " -> " << v0 << std::endl;
             halfedgesPointingToSeam.push_back(h);
             heading_from = v0;
         } else {
@@ -178,6 +190,35 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
             continue;
         }
     }
+
+    std::set<pmp::Vertex> seam_vertices;
+
+    // Collect the special vertices
+    for (auto h : halfedgesPointingToSeam) {
+        seam_vertices.insert(mesh.to_vertex(h));
+    }
+
+    std::vector<int> neighbors_count;
+
+    for (auto v : mesh.vertices()) {
+        if (seam_vertices.find(v) == seam_vertices.end()) {
+            int count = 0;
+
+            auto neighbors = get_neighbors(v);
+            for (auto n : neighbors) {
+                if (seam_vertices.find(n) == seam_vertices.end()) {
+                    count++;
+                }
+            }
+
+            neighbors_count.push_back(count);
+        }
+    }
+
+    for (auto n : neighbors_count) {
+        std::cout << n << std::endl;
+    }
+
 
     // 0.2 Initialize the mesh: Add all the vertices of the mesh to the mesh_uv
     for (auto v : mesh.vertices()) {
@@ -200,7 +241,7 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
         // 2. Get the three halfedges of the face
         auto h0 = mesh.halfedge(f);
         auto h1 = mesh.next_halfedge(h0);
-        auto h2 = mesh.next_halfedge(h1);
+        auto h2 = mesh.prev_halfedge(h0);
 
         // 2.1 Get the vertices of the halfedges
         pmp::Vertex v0 = mesh.to_vertex(h0);
@@ -235,9 +276,28 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
         }
 
         // 4. Add a new triangle based on the new vertices
-        mesh_uv.add_triangle(v0, v1, v2);
+        auto new_face = mesh_uv.add_triangle(v0, v1, v2);
+
+        // 5. Check if the new face is valid
+        if (mesh_uv.is_isolated(v0) || mesh_uv.is_isolated(v1) || mesh_uv.is_isolated(v2)) {
+            std::cout << "isolated vertex found" << std::endl;
+        }
+        if (!mesh_uv.is_valid(new_face)) {
+            std::cout << "invalid face found" << std::endl;
+        }
+        if (!mesh_uv.is_valid(mesh_uv.find_edge(v0, v1))) {
+            std::cout << "invalid edge found" << std::endl;
+        }
+        if (!mesh_uv.is_valid(mesh_uv.find_edge(v1, v2))) {
+            std::cout << "invalid edge found" << std::endl;
+        }
+        if (!mesh_uv.is_valid(mesh_uv.find_edge(v2, v0))) {
+            std::cout << "invalid edge found" << std::endl;
+        }
     }
-    std::cout << "added : " << mesh_uv.n_vertices() - mesh.n_vertices() << std::endl;
+    if (!mesh_uv.is_triangle_mesh()) {
+        std::cout << "mesh_uv is not a triangle mesh" << std::endl;
+    }
 
     mesh.clear();
     mesh = mesh_uv;
@@ -253,8 +313,10 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
 
     std::sort(seam_vertices_unique.begin(), seam_vertices_unique.end());
     std::cout << "size of border vertices unique : " << seam_vertices_unique.size() << std::endl;
+
     // for (auto v : seam_vertices_unique) {
-    //     std::cout << mesh.position(v) << std::endl;
+    //     // std::cout << v << std::endl;
+    //     // std::cout << mesh.position(v) << std::endl;
     // }
 }
 
