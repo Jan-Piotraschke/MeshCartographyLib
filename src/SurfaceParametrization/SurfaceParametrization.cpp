@@ -90,6 +90,10 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     CutLineHelperInterface& cutline_helper = helper;
     cutline_helper.cut_mesh_open();
 
+    // Save the open mesh for testing
+    fs::path mesh_uv_path_test = MESH_FOLDER / (get_mesh_name(mesh_3D_file_path) + "_test_UV.off");
+    pmp::write(mesh, mesh_uv_path_test.string());
+
     // Perform the parameterization
     HarmonicParametrizationHelper helper_p = HarmonicParametrizationHelper(mesh);
     ParametrizationHelperInterface& parametrization_helper = helper_p;
