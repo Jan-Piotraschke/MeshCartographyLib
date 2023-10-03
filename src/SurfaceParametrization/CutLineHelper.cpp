@@ -125,6 +125,16 @@ std::vector<pmp::Vertex> CutLineHelper::get_neighbors(pmp::Vertex v) const {
     return neighbors;
 }
 
+std::map<pmp::Vertex, int> CutLineHelper::get_vertex_neighbors_count() const {
+    std::map<pmp::Vertex, int> vertex_neighbors_count;
+
+    for (auto v : mesh.vertices()) {
+        if (!(std::find(cut_line_vertices.begin(), cut_line_vertices.end(), v) != cut_line_vertices.end())) {
+            vertex_neighbors_count[v] = mesh.valence(v);;
+        }
+    }
+    return vertex_neighbors_count;
+}
 
 void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges) {
     pmp::SurfaceMesh mesh_uv;
@@ -157,10 +167,9 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
         heading_from = option_a;
     }
     std::cout << "heading_from : " << heading_from << std::endl;
-    std::vector<pmp::Vertex> seam_vertices;
 
     // Collect the special vertices
-    seam_vertices.push_back(heading_from);
+    cut_line_vertices.push_back(heading_from);
 
     // 0.1 Get the mapping of seamHalfedge for the seamEdges
     std::vector<pmp::Halfedge> halfedgesPointingToSeam;
@@ -196,22 +205,11 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
     }
 
     for (auto h : halfedgesPointingToSeam) {
-        seam_vertices.push_back(mesh.to_vertex(h));
+        cut_line_vertices.push_back(mesh.to_vertex(h));
     }
 
-    std::map<pmp::Vertex, int> vertex_neighbors_count;
-
-    for (auto v : mesh.vertices()) {
-        if (!(std::find(seam_vertices.begin(), seam_vertices.end(), v) != seam_vertices.end())) {
-            vertex_neighbors_count[v] = mesh.valence(v);;
-        }
-    }
-
-    // If you want to print the map:
-    for (const auto& [vertex, count] : vertex_neighbors_count) {
-        std::cout << "Vertex " << vertex << " has " << count << " neighbors.\n";
-    }
-
+    auto original_vertex_neighbors_count = get_vertex_neighbors_count();
+    auto original_edge_count = mesh.n_edges();
 
     // 0.2 Initialize the mesh: Add all the vertices of the mesh to the mesh_uv
     for (auto v : mesh.vertices()) {
@@ -295,19 +293,35 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
     mesh.clear();
     mesh = mesh_uv;
 
-    std::vector<pmp::Vertex> seam_vertices_unique;
-    if (has_boundary()) {
-        for (auto v : mesh.vertices()) {
-            if (mesh.is_boundary(v)) {
-                seam_vertices_unique.push_back(v);
+    // Test if the number of neighbors of each vertex is the same as before except for the vertices on the cut line
+    std::map<pmp::Vertex, int> new_vertex_neighbors_count = get_vertex_neighbors_count();
+    for (auto v : mesh.vertices()) {
+        if (original_vertex_neighbors_count.find(v) != original_vertex_neighbors_count.end()) {
+            if (new_vertex_neighbors_count[v] != original_vertex_neighbors_count[v]) {
+                std::cout << "vertex " << v << " has " << new_vertex_neighbors_count[v] << " neighbors instead of " << original_vertex_neighbors_count[v] << std::endl;
             }
         }
     }
 
-    std::sort(seam_vertices_unique.begin(), seam_vertices_unique.end());
-    std::cout << "size of border vertices unique : " << seam_vertices_unique.size() << std::endl;
+    // Test if the number of edges is the old number of edges plus the number of edges of the seam -1 through an error message
+    auto new_edge_count = mesh.n_edges();
+    if (new_edge_count != original_edge_count + cut_line_vertices.size() - 1) {
+        std::cerr << "The number of edges is not the old number of edges plus the number of edges of the seam -1" << std::endl;
+    }
 
-    // for (auto v : seam_vertices_unique) {
+    std::vector<pmp::Vertex> cut_line_vertices_unique;
+    if (has_boundary()) {
+        for (auto v : mesh.vertices()) {
+            if (mesh.is_boundary(v)) {
+                cut_line_vertices_unique.push_back(v);
+            }
+        }
+    }
+
+    std::sort(cut_line_vertices_unique.begin(), cut_line_vertices_unique.end());
+    std::cout << "size of border vertices unique : " << cut_line_vertices_unique.size() << std::endl;
+
+    // for (auto v : cut_line_vertices_unique) {
     //     // std::cout << v << std::endl;
     //     // std::cout << mesh.position(v) << std::endl;
     // }
