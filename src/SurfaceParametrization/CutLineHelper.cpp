@@ -221,10 +221,20 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
 
     // 0.3 Add the vertices of the seam to the mesh_uv
     for (size_t i = 0; i < halfedgesPointingToSeam.size() - 1 ; ++i) {
+        // std::cout << "halfedgesPointingToSeam[i] : " << halfedgesPointingToSeam[i] << std::endl;
         auto v = mesh.to_vertex(halfedgesPointingToSeam[i]);
         old_vertex.push_back(v);
         v = mesh_uv.add_vertex(mesh.position(v));
         new_vertex.push_back(v);
+    }
+
+    // add the two other halfedges that heads towards the seam
+    auto halfedgesCopy = halfedgesPointingToSeam;
+    for (auto h : halfedgesCopy) {
+        auto h2 = mesh.opposite_halfedge(mesh.next_halfedge(h));
+        halfedgesPointingToSeam.push_back(h2);
+        auto h3 = mesh.opposite_halfedge(mesh.next_halfedge(h2));
+        halfedgesPointingToSeam.push_back(h3);
     }
 
     // 1. Iterate over the faces of "mesh"
@@ -243,17 +253,17 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
         count++;
     }
 
-    for (auto v : cut_line_vertices) {
-        std::cout << v << std::endl;
-    }
-    std::cout << std::endl;
+    // for (auto v : cut_line_vertices) {
+    //     std::cout << v << std::endl;
+    // }
+    // std::cout << std::endl;
 
-    auto get_neighbours_test = get_neighbors(vertex_by_index);
-    for (auto v : get_neighbours_test) {
-        std::cout << v << std::endl;
-    }
+    // auto get_neighbours_test = get_neighbors(vertex_by_index);
+    // for (auto v : get_neighbours_test) {
+    //     std::cout << v << std::endl;
+    // }
 
-    std::cout << std::endl;
+    // std::cout << std::endl;
 
     // Check the vertices of the faces
     std::vector<pmp::Face> faces_of_vertex;
@@ -304,9 +314,9 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
             }
         }
 
-        if (v0 == vertex_by_index || v1 == vertex_by_index || v2 == vertex_by_index) {
-            std::cout << v0 << " , " << v1 << " , " << v2 << std::endl;
-        }
+        // if (v0 == vertex_by_index || v1 == vertex_by_index || v2 == vertex_by_index) {
+        //     std::cout << v0 << "( " << h0 << " ) , " << v1 << "( " << h1 << " ) , " << v2 << "( " << h2 << " )" << std::endl;
+        // }
 
         // 4. Add a new triangle based on the new vertices
         auto new_face = mesh_uv.add_triangle(v0, v1, v2);
@@ -339,9 +349,9 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
     std::map<pmp::Vertex, int> new_vertex_neighbors_count = get_vertex_neighbors_count();
     for (auto v : mesh.vertices()) {
         if (original_vertex_neighbors_count.find(v) != original_vertex_neighbors_count.end()) {
-            // if (new_vertex_neighbors_count[v] != original_vertex_neighbors_count[v]) {
-            //     std::cout << "vertex " << v << " has " << new_vertex_neighbors_count[v] << " neighbors instead of " << original_vertex_neighbors_count[v] << std::endl;
-            // }
+            if (new_vertex_neighbors_count[v] != original_vertex_neighbors_count[v]) {
+                std::cout << "vertex " << v << " has " << new_vertex_neighbors_count[v] << " neighbors instead of " << original_vertex_neighbors_count[v] << std::endl;
+            }
         }
     }
 
@@ -364,7 +374,7 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
     std::cout << "size of border vertices unique : " << cut_line_vertices_unique.size() << std::endl;
 
     // for (auto v : cut_line_vertices_unique) {
-    //     // std::cout << v << std::endl;
+    //     std::cout << v << std::endl;
     //     // std::cout << mesh.position(v) << std::endl;
     // }
 }
