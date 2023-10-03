@@ -157,6 +157,10 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
         heading_from = option_a;
     }
     std::cout << "heading_from : " << heading_from << std::endl;
+    std::vector<pmp::Vertex> seam_vertices;
+
+    // Collect the special vertices
+    seam_vertices.push_back(heading_from);
 
     // 0.1 Get the mapping of seamHalfedge for the seamEdges
     std::vector<pmp::Halfedge> halfedgesPointingToSeam;
@@ -191,32 +195,21 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
         }
     }
 
-    std::set<pmp::Vertex> seam_vertices;
-
-    // Collect the special vertices
     for (auto h : halfedgesPointingToSeam) {
-        seam_vertices.insert(mesh.to_vertex(h));
+        seam_vertices.push_back(mesh.to_vertex(h));
     }
 
-    std::vector<int> neighbors_count;
+    std::map<pmp::Vertex, int> vertex_neighbors_count;
 
     for (auto v : mesh.vertices()) {
-        if (seam_vertices.find(v) == seam_vertices.end()) {
-            int count = 0;
-
-            auto neighbors = get_neighbors(v);
-            for (auto n : neighbors) {
-                if (seam_vertices.find(n) == seam_vertices.end()) {
-                    count++;
-                }
-            }
-
-            neighbors_count.push_back(count);
+        if (!(std::find(seam_vertices.begin(), seam_vertices.end(), v) != seam_vertices.end())) {
+            vertex_neighbors_count[v] = mesh.valence(v);;
         }
     }
 
-    for (auto n : neighbors_count) {
-        std::cout << n << std::endl;
+    // If you want to print the map:
+    for (const auto& [vertex, count] : vertex_neighbors_count) {
+        std::cout << "Vertex " << vertex << " has " << count << " neighbors.\n";
     }
 
 
