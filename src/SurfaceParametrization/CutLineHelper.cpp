@@ -228,6 +228,44 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
     }
 
     // 1. Iterate over the faces of "mesh"
+    // Access the vertex using an index
+    size_t index = 110;
+    pmp::Vertex vertex_by_index;
+    size_t count = 0;
+
+    for (const auto& vertex : mesh.vertices())
+    {
+        if (count == index)
+        {
+            vertex_by_index = vertex;
+            break;
+        }
+        count++;
+    }
+
+    for (auto v : cut_line_vertices) {
+        std::cout << v << std::endl;
+    }
+    std::cout << std::endl;
+
+    auto get_neighbours_test = get_neighbors(vertex_by_index);
+    for (auto v : get_neighbours_test) {
+        std::cout << v << std::endl;
+    }
+
+    std::cout << std::endl;
+
+    // Check the vertices of the faces
+    std::vector<pmp::Face> faces_of_vertex;
+    for (auto f : mesh.faces(vertex_by_index)) {
+        for (auto v : mesh.vertices(f)) {
+            std::cout << v <<  " ";
+        }
+        std::cout << std::endl;
+    }
+
+    std::cout << std::endl;
+
     for (auto f : mesh.faces()) {
         // 2. Get the three halfedges of the face
         auto h0 = mesh.halfedge(f);
@@ -266,6 +304,10 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
             }
         }
 
+        if (v0 == vertex_by_index || v1 == vertex_by_index || v2 == vertex_by_index) {
+            std::cout << v0 << " , " << v1 << " , " << v2 << std::endl;
+        }
+
         // 4. Add a new triangle based on the new vertices
         auto new_face = mesh_uv.add_triangle(v0, v1, v2);
 
@@ -297,9 +339,9 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
     std::map<pmp::Vertex, int> new_vertex_neighbors_count = get_vertex_neighbors_count();
     for (auto v : mesh.vertices()) {
         if (original_vertex_neighbors_count.find(v) != original_vertex_neighbors_count.end()) {
-            if (new_vertex_neighbors_count[v] != original_vertex_neighbors_count[v]) {
-                std::cout << "vertex " << v << " has " << new_vertex_neighbors_count[v] << " neighbors instead of " << original_vertex_neighbors_count[v] << std::endl;
-            }
+            // if (new_vertex_neighbors_count[v] != original_vertex_neighbors_count[v]) {
+            //     std::cout << "vertex " << v << " has " << new_vertex_neighbors_count[v] << " neighbors instead of " << original_vertex_neighbors_count[v] << std::endl;
+            // }
         }
     }
 
