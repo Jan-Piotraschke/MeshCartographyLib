@@ -49,20 +49,22 @@ void SquareBorderHelper::setup_square_boundary_constraints()
         hh = mesh.next_halfedge(hh);
     } while (hh != mesh.halfedge(vh));
 
-    unsigned int i, n = loop.size();
+    unsigned int vertice_id, N = loop.size();
     pmp::Scalar l, length;
     pmp::TexCoord t;
 
     // compute length of boundary loop
-    for (i = 0, length = 0.0; i < n; ++i) {
-        length += distance(points[loop[i]], points[loop[(i + 1) % n]]);
+    for (vertice_id = 0, length = 0.0; vertice_id < N; ++vertice_id) {
+        length += distance(points[loop[vertice_id]], points[loop[(vertice_id + 1) % N]]);
     }
 
     // Define lengths of the square sides
     pmp::Scalar sideLength = length / 4.0;
+    std::cout << "sideLength: " << sideLength << std::endl;
 
     // map length intervals to square intervals
-    for (i = 0, l = 0.0; i < n;) {
+    for (vertice_id = 0, l = 0.0; vertice_id < N;) {
+        std::cout << "l: " << l << " vertice_id: " << vertice_id << std::endl;
         if (l <= sideLength) { // bottom side
             t[0] = l / sideLength;
             t[1] = 0.0;
@@ -77,16 +79,11 @@ void SquareBorderHelper::setup_square_boundary_constraints()
             t[1] = 1.0 - (l - 3 * sideLength) / sideLength;
         }
 
-        tex[loop[i]] = t;
+        tex[loop[vertice_id]] = t;
 
-        ++i;
-        if (i < n) {
-            l += distance(points[loop[i]], points[loop[(i + 1) % n]]);
+        ++vertice_id;
+        if (vertice_id < N) {
+            l += distance(points[loop[vertice_id]], points[loop[(vertice_id + 1) % N]]);
         }
     }
-
-    // // print out the texture coordinates
-    // for (auto v : mesh.vertices()) {
-    //     std::cout << tex[v] << std::endl;
-    // }
 }
