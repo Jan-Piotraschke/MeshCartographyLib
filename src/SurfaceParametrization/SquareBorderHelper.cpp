@@ -7,7 +7,7 @@
  * @license     Apache License 2.0
  *
  * @bug         -
- * @todo        improve the accuracy of the square border
+ * @todo        -
  */
 
 #include "SquareBorderHelper.h"
@@ -60,11 +60,12 @@ void SquareBorderHelper::setup_square_boundary_constraints()
 
     // Define lengths of the square sides
     pmp::Scalar sideLength = length / 4.0;
-    std::cout << "sideLength: " << sideLength << std::endl;
+    pmp::Scalar step_size = length / N;
+
+    auto tolerance = 1e-4;
 
     // map length intervals to square intervals
     for (vertice_id = 0, l = 0.0; vertice_id < N;) {
-        std::cout << "l: " << l << " vertice_id: " << vertice_id << std::endl;
         if (l <= sideLength) { // bottom side
             t[0] = l / sideLength;
             t[1] = 0.0;
@@ -79,11 +80,18 @@ void SquareBorderHelper::setup_square_boundary_constraints()
             t[1] = 1.0 - (l - 3 * sideLength) / sideLength;
         }
 
+        if (t[0] < tolerance) {
+            t[0] = 0.0;
+        }
+        if (t[1] < tolerance) {
+            t[1] = 0.0;
+        }
+
         tex[loop[vertice_id]] = t;
 
         ++vertice_id;
         if (vertice_id < N) {
-            l += distance(points[loop[vertice_id]], points[loop[(vertice_id + 1) % N]]);
+            l += step_size;
         }
     }
 }
