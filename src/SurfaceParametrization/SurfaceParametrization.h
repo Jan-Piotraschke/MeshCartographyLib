@@ -44,31 +44,22 @@ public:
         int32_t start_node_int
     );
 
-
     std::string get_mesh_name(const std::string mesh_file_path);
 
-    bool check_point_in_polygon(
-        const Point_2_eigen& point,
-        bool is_original_mesh
-    );
+    bool check_point_in_polygon(const Point_2_eigen& point);
 
-    Polygon_2 polygon;
-    std::vector<_3D::vertex_descriptor> polygon_v;
+    Polygon_eigen polygon;
+    std::vector<pmp::Vertex> polygon_v;
     MeshMeta meshmeta;
 
 private:
-    int combine_key;
-
     Eigen::MatrixXd vertice_UV;
     Eigen::MatrixXd vertice_3D;
     std::string mesh_3D_file_path;
-    std::vector<int64_t> calculate_uv_surface(
-        _3D::vertex_descriptor start_node
-    );
+
+    std::vector<int64_t> calculate_uv_surface(pmp::Vertex start_node);
     void save_uv_as_mesh(const pmp::SurfaceMesh& mesh, const fs::path& filename);
-    void extract_polygon_border_edges(
-        const std::string& mesh_uv_path
-    );
+    void extract_polygon_border_edges(const std::string& mesh_uv_path);
 
 friend class SurfaceParametrizationTest;
 };

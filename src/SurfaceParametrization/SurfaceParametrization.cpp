@@ -38,17 +38,31 @@ std::string SurfaceParametrization::get_mesh_name(
 /**
  * @brief Check if a given point is inside our polygon border
 */
-bool SurfaceParametrization::check_point_in_polygon(
-    const Point_2_eigen& point,
-    bool is_original_mesh
-){
-    Point_2 cgal_point(point[0], point[1]);
+bool SurfaceParametrization::check_point_in_polygon(const Point_2_eigen& point) {
+    bool inside = false;
+    int n = polygon.size();
+    for (int i = 0; i < n; ++i) {
+        const Point_2_eigen& p1 = polygon[i];
+        const Point_2_eigen& p2 = polygon[(i + 1) % n];
 
-    auto result = CGAL::bounded_side_2(polygon.vertices_begin(), polygon.vertices_end(), cgal_point, Kernel());
-
-    return result == CGAL::ON_BOUNDED_SIDE || result == CGAL::ON_BOUNDARY;
+        if ((p1[1] > point[1]) != (p2[1] > point[1]) &&
+            (point[0] < (p2[0] - p1[0]) * (point[1] - p1[1]) / (p2[1] - p1[1]) + p1[0])) {
+            inside = !inside;
+        }
+    }
+    return inside;
 }
 
+// bool SurfaceParametrization::check_point_in_polygon(
+//     const Point_2_eigen& point,
+//     bool is_original_mesh
+// ){
+//     Point_2 cgal_point(point[0], point[1]);
+
+//     auto result = CGAL::bounded_side_2(polygon.vertices_begin(), polygon.vertices_end(), cgal_point, Kernel());
+
+//     return result == CGAL::ON_BOUNDED_SIDE || result == CGAL::ON_BOUNDARY;
+// }
 
 /**
  * @brief Create the UV surface
@@ -57,12 +71,13 @@ std::tuple<std::vector<int64_t>, Eigen::MatrixXd, Eigen::MatrixXd, std::string> 
     std::string mesh_path,
     int32_t start_node_int
 ){
-    _3D::vertex_descriptor start_node(start_node_int);
+    pmp::Vertex start_node(start_node_int);
     mesh_3D_file_path = mesh_path;
     auto h_v_mapping_vector = calculate_uv_surface(start_node);
 
+    fs::path mesh_uv_path = MESH_FOLDER / (get_mesh_name(mesh_3D_file_path) + "_uv.off");
+    meshmeta.mesh_path = mesh_uv_path.string();
     std::string mesh_uv_file_path = meshmeta.mesh_path;
-
     extract_polygon_border_edges(mesh_uv_file_path);
 
     return {h_v_mapping_vector, vertice_UV, vertice_3D, mesh_uv_file_path};
@@ -78,10 +93,8 @@ std::tuple<std::vector<int64_t>, Eigen::MatrixXd, Eigen::MatrixXd, std::string> 
  * @brief Calculate the UV coordinates of the 3D mesh and also return their mapping to the 3D coordinates
 */
 std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
-    _3D::vertex_descriptor start_node
+    pmp::Vertex start_vertex
 ){
-    pmp::Vertex start_vertex(start_node.idx());
-
     pmp::SurfaceMesh mesh;
     pmp::read_off(mesh, mesh_3D_file_path);
 
@@ -176,35 +189,44 @@ void SurfaceParametrization::save_uv_as_mesh(const pmp::SurfaceMesh& mesh, const
 void SurfaceParametrization::extract_polygon_border_edges(
     const std::string& mesh_uv_path
 ){
-    std::ifstream input(CGAL::data_file_path(mesh_uv_path));
-    _3D::Mesh mesh;
-    input >> mesh;
+    pmp::SurfaceMesh mesh;
+    pmp::read_off(mesh, mesh_uv_path);
 
     // Find the border edges of the mesh
-    std::vector<_3D::halfedge_descriptor> border_edges;
-    CGAL::Polygon_mesh_processing::border_halfedges(mesh, std::back_inserter(border_edges));
+    std::vector<pmp::Halfedge> border_edges;
 
-    // Create a map from source vertex to border halfedge
-    std::unordered_map<_3D::vertex_descriptor, _3D::halfedge_descriptor> source_to_halfedge;
-    for (const _3D::halfedge_descriptor& h : border_edges) {
-        source_to_halfedge[mesh.source(h)] = h;
+    // get properties
+    auto points = mesh.vertex_property<pmp::Point>("v:point");
+    auto tex = mesh.vertex_property<pmp::TexCoord>("v:tex");
+
+    pmp::SurfaceMesh::VertexIterator vit, vend = mesh.vertices_end();
+    pmp::Vertex vh;
+    pmp::Halfedge hh;
+
+    // Initialize all texture coordinates to the origin.
+    for (auto v : mesh.vertices()) {
+        tex[v] = pmp::TexCoord(0.0, 0.0); // Initialize to the bottom-left corner
     }
 
-    // Extract the coordinates of the vertices in the correct order
-    std::unordered_set<_3D::vertex_descriptor> visited;
-    _3D::vertex_descriptor v = mesh.source(border_edges[0]);
-    for (std::size_t i = 0; i < border_edges.size(); i++) {
-        polygon_v.push_back(v);
-        polygon.push_back(Point_2(mesh.point(v).x(), mesh.point(v).y()));
-
-        visited.insert(v);
-
-        _3D::halfedge_descriptor next_h = source_to_halfedge[mesh.target(source_to_halfedge[v])];
-        v = mesh.source(next_h);
-
-        // Ensure that we don't visit the same vertex again
-        if (visited.count(v)) {
+    // find 1st boundary vertex
+    for (vit = mesh.vertices_begin(); vit != vend; ++vit) {
+        if (mesh.is_boundary(*vit)) {
             break;
         }
+    }
+
+    // collect boundary edges
+    vh = *vit;
+    hh = mesh.halfedge(vh);
+    do {
+        border_edges.push_back(hh);
+        hh = mesh.next_halfedge(hh);
+    } while (hh != mesh.halfedge(vh));
+
+    // Extract the coordinates of the vertices in the correct order
+    for (const pmp::Halfedge& h : border_edges) {
+        polygon_v.push_back(mesh.to_vertex(h));
+        auto position = mesh.position(mesh.to_vertex(h));
+        polygon.push_back(Point_2_eigen(position[0], position[1]));
     }
 }

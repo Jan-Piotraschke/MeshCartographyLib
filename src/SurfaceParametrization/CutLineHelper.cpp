@@ -311,12 +311,3 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
         std::cerr << "The number of edges is not the old number of edges plus the number of edges of the seam -1" << std::endl;
     }
 }
-
-
-bool CutLineHelper::has_boundary()
-{
-    for (auto v : mesh.vertices())
-        if (mesh.is_boundary(v))
-            return true;
-    return false;
-}

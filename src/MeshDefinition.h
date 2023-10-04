@@ -67,6 +67,8 @@ using Vertex_distance_map = Triangle_mesh::Property_map<vertex_descriptor, doubl
 using UV_pmap = Triangle_mesh::Property_map<vertex_descriptor, Point_2>;
 
 using Point_2_eigen = Eigen::Vector2d;
+using Point_3_eigen = Eigen::Vector3d;
+using Polygon_eigen = std::vector<Point_2_eigen>;
 
 class Segment_2_eigen {
 private:
