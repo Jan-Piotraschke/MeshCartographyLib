@@ -39,8 +39,7 @@ void Tessellation::create_kachelmuster() {
     process_mesh(CGAL::data_file_path(mesh_uv_path), mesh_original, 270.0, 0, 0);  // position 3 2 -> down
 
     std::string output_path = (MESH_FOLDER / (mesh_3D_name + "_kachelmuster.off")).string();
-    // std::ofstream out(output_path);
-    // out << mesh_original;
+    pmp::write(mesh_original, output_path);
 }
 
 
