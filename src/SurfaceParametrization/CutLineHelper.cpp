@@ -80,6 +80,10 @@ void CutLineHelper::cut_the_mesh(pmp::Vertex current_vertex){
 
     std::reverse(edge_path.begin(), edge_path.end());
 
+    if (edge_path.size() % 2 != 0) {
+        edge_path.pop_back();
+    }
+
     // To check if the edges are valid:
     for (const auto& edge : edge_path) {
         if (!mesh.is_valid(edge)) {
