@@ -20,6 +20,8 @@ namespace fs = boost::filesystem;
 #include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
 #include <CGAL/Heat_method_3/Surface_mesh_geodesic_distances_3.h>
 
+#include "MeshDefinition.h"
+
 // Basic type definitions and constants
 using Kernel = CGAL::Simple_cartesian<double>;
 using Point_2 = Kernel::Point_2;
@@ -45,13 +47,13 @@ private:
     fs::path mesh_path;
 
     void fill_distance_matrix(
-        Triangle_mesh mesh,
+        pmp::SurfaceMesh mesh,
         Eigen::MatrixXd& distance_matrix,
-        int closest_vertice
+        pmp::Vertex closest_vertice
     );
 
     std::vector<double> geo_distance(
-        Triangle_mesh mesh,
-        int32_t start_node
+        pmp::SurfaceMesh mesh,
+        pmp::Vertex start_node
     );
 };
