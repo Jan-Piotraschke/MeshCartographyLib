@@ -1,6 +1,3 @@
-[submodule "cgal"]
-	path = cgal
-	url = https://github.com/CGAL/cgal.git
 [submodule "pmp-library"]
 	path = pmp-library
 	url = https://github.com/pmp-library/pmp-library.git
