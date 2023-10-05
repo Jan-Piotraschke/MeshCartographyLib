@@ -87,7 +87,7 @@ void CutLineHelper::cut_the_mesh(pmp::Vertex current_vertex){
     // To check if the edges are valid:
     for (const auto& edge : edge_path) {
         if (!mesh.is_valid(edge)) {
-            std::cout << "Invalid edge found" << std::endl;
+            std::cerr << "Invalid edge found" << std::endl;
         }
     }
 
@@ -138,7 +138,7 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
     edge_direction.push_back(mesh.vertex(seamEdges[1], 0));
     edge_direction.push_back(mesh.vertex(seamEdges[1], 1));
 
-    pmp::Vertex heading_towards;
+    pmp::Vertex heading_towards, heading_from;
     bool found = false;
 
     for (size_t i = 0; i < edge_direction.size() && !found; ++i) {
@@ -151,7 +151,6 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
         }
     }
 
-    pmp::Vertex heading_from;
     auto option_a = mesh.vertex(seamEdges[0], 0);
     auto option_b = mesh.vertex(seamEdges[0], 1);
     if (option_a == heading_towards) {
@@ -278,20 +277,8 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
         auto new_face = mesh_uv.add_triangle(v0, v1, v2);
 
         // 5. Check if the new face is valid
-        if (mesh_uv.is_isolated(v0) || mesh_uv.is_isolated(v1) || mesh_uv.is_isolated(v2)) {
-            std::cout << "isolated vertex found" << std::endl;
-        }
         if (!mesh_uv.is_valid(new_face)) {
-            std::cout << "invalid face found" << std::endl;
-        }
-        if (!mesh_uv.is_valid(mesh_uv.find_edge(v0, v1))) {
-            std::cout << "invalid edge found" << std::endl;
-        }
-        if (!mesh_uv.is_valid(mesh_uv.find_edge(v1, v2))) {
-            std::cout << "invalid edge found" << std::endl;
-        }
-        if (!mesh_uv.is_valid(mesh_uv.find_edge(v2, v0))) {
-            std::cout << "invalid edge found" << std::endl;
+            std::cerr << "invalid face found" << std::endl;
         }
     }
 
@@ -303,7 +290,7 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
     for (auto v : mesh.vertices()) {
         if (original_vertex_neighbors_count.find(v) != original_vertex_neighbors_count.end()) {
             if (new_vertex_neighbors_count[v] != original_vertex_neighbors_count[v]) {
-                std::cout << "vertex " << v << " has " << new_vertex_neighbors_count[v] << " neighbors instead of " << original_vertex_neighbors_count[v] << std::endl;
+                std::cerr << "vertex " << v << " has " << new_vertex_neighbors_count[v] << " neighbors instead of " << original_vertex_neighbors_count[v] << std::endl;
             }
         }
     }
