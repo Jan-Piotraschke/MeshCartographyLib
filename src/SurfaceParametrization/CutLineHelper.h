@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <Eigen/Dense>
+#include <gtest/gtest_prod.h>
 
 #include "SurfaceParametrizationHelperInterface.h"
 
@@ -24,5 +25,6 @@ private:
     void cut_the_mesh(pmp::Vertex current_vertex);
     pmp::Vertex find_farthest_vertex();
     void open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges);
-    bool has_boundary();
+
+FRIEND_TEST(SurfaceParametrizationTest, FarthestVertex);
 };

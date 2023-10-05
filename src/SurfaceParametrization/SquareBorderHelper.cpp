@@ -7,7 +7,7 @@
  * @license     Apache License 2.0
  *
  * @bug         -
- * @todo        improve the accuracy of the square border
+ * @todo        -
  */
 
 #include "SquareBorderHelper.h"
@@ -49,20 +49,23 @@ void SquareBorderHelper::setup_square_boundary_constraints()
         hh = mesh.next_halfedge(hh);
     } while (hh != mesh.halfedge(vh));
 
-    unsigned int i, n = loop.size();
+    unsigned int vertice_id, N = loop.size();
     pmp::Scalar l, length;
     pmp::TexCoord t;
 
     // compute length of boundary loop
-    for (i = 0, length = 0.0; i < n; ++i) {
-        length += distance(points[loop[i]], points[loop[(i + 1) % n]]);
+    for (vertice_id = 0, length = 0.0; vertice_id < N; ++vertice_id) {
+        length += distance(points[loop[vertice_id]], points[loop[(vertice_id + 1) % N]]);
     }
 
     // Define lengths of the square sides
     pmp::Scalar sideLength = length / 4.0;
+    pmp::Scalar step_size = length / N;
+
+    auto tolerance = 1e-4;
 
     // map length intervals to square intervals
-    for (i = 0, l = 0.0; i < n;) {
+    for (vertice_id = 0, l = 0.0; vertice_id < N;) {
         if (l <= sideLength) { // bottom side
             t[0] = l / sideLength;
             t[1] = 0.0;
@@ -77,16 +80,18 @@ void SquareBorderHelper::setup_square_boundary_constraints()
             t[1] = 1.0 - (l - 3 * sideLength) / sideLength;
         }
 
-        tex[loop[i]] = t;
+        if (t[0] < tolerance) {
+            t[0] = 0.0;
+        }
+        if (t[1] < tolerance) {
+            t[1] = 0.0;
+        }
 
-        ++i;
-        if (i < n) {
-            l += distance(points[loop[i]], points[loop[(i + 1) % n]]);
+        tex[loop[vertice_id]] = t;
+
+        ++vertice_id;
+        if (vertice_id < N) {
+            l += step_size;
         }
     }
-
-    // // print out the texture coordinates
-    // for (auto v : mesh.vertices()) {
-    //     std::cout << tex[v] << std::endl;
-    // }
 }
