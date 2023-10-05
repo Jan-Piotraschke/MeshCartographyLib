@@ -28,16 +28,11 @@ CutLineHelper::CutLineHelper(
 * @brief Calculate the border of the mesh
 */
 void CutLineHelper::cut_mesh_open(){
-    // Compute geodesic distance from first vertex using breadth first search
-    std::vector<pmp::Vertex> seeds{start_vertex};
-    pmp::geodesics(mesh, seeds);
-
     // Find the target node (farthest from the start node)
     pmp::Vertex target_node = find_farthest_vertex();
 
     // Get the edges of the path between the start and the target node
     cut_the_mesh(target_node);
-    std::cout << "Mesh cut open!" << std::endl;
 }
 
 
@@ -100,6 +95,10 @@ void CutLineHelper::cut_the_mesh(pmp::Vertex current_vertex){
  * @brief Find the farthest vertex from a given start vertex
 */
 pmp::Vertex CutLineHelper::find_farthest_vertex(){
+    // Compute geodesic distance from first vertex using breadth first search
+    std::vector<pmp::Vertex> seeds{start_vertex};
+    pmp::geodesics(mesh, seeds);
+
     pmp::Scalar max_distances(0);
     pmp::VertexProperty<pmp::Scalar> distance = mesh.get_vertex_property<pmp::Scalar>("geodesic:distance");
     pmp::Vertex target_node;

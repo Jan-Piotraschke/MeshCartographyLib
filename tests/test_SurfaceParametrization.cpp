@@ -22,6 +22,8 @@ namespace fs = boost::filesystem;
 
 const fs::path PROJECT_PATH = MeshCartographyLib_SOURCE_DIR;
 
+SurfaceParametrization surface_parametrization;
+
 class SurfaceParametrizationTest : public ::testing::Test {
 protected:
     static pmp::SurfaceMesh mesh;
@@ -36,7 +38,7 @@ protected:
         start_node = pmp::Vertex(start_node_int);
 
         // Create UV surface
-        auto result = SurfaceParametrization().create_uv_surface(mesh_file_path, start_node_int);
+        auto result = surface_parametrization.create_uv_surface(mesh_file_path, start_node_int);
     }
 
     // If you need any per-test setup
@@ -52,11 +54,10 @@ std::string SurfaceParametrizationTest::mesh_file_path;
 TEST_F(SurfaceParametrizationTest, MeshNameTestNormalFileName) {
     std::string path = "/path/to/mesh_file.off";
     std::string expected = "mesh_file";
-    EXPECT_EQ(SurfaceParametrization().get_mesh_name(path), expected);
+    EXPECT_EQ(surface_parametrization.get_mesh_name(path), expected);
 }
 
 TEST_F(SurfaceParametrizationTest, CheckPointInPolygon) {
-    SurfaceParametrization sp;
     // 1. Points clearly inside the square
     std::vector<Point_2_eigen> inside_points = {
         {0.5, 0.5},
@@ -65,12 +66,11 @@ TEST_F(SurfaceParametrizationTest, CheckPointInPolygon) {
         {0.4, 0.6}
     };
     for (const auto& point : inside_points) {
-        EXPECT_TRUE(sp.check_point_in_polygon(point));
+        EXPECT_TRUE(surface_parametrization.check_point_in_polygon(point));
     }
 }
 
 TEST_F(SurfaceParametrizationTest, CheckPointOutsidePolygon) {
-    SurfaceParametrization sp;
     // 2. Points clearly outside the square
     std::vector<Point_2_eigen> outside_points = {
         {-0.1, 0.5},
@@ -79,12 +79,11 @@ TEST_F(SurfaceParametrizationTest, CheckPointOutsidePolygon) {
         {0.5, 1.1}
     };
     for (const auto& point : outside_points) {
-        EXPECT_FALSE(sp.check_point_in_polygon(point));
+        EXPECT_FALSE(surface_parametrization.check_point_in_polygon(point));
     }
 }
 
 TEST_F(SurfaceParametrizationTest, CheckPointOnBoundary) {
-    SurfaceParametrization sp;
     // 3. Points right on the boundary
     std::vector<Point_2_eigen> boundary_points = {
         {0, 0},
@@ -97,12 +96,11 @@ TEST_F(SurfaceParametrizationTest, CheckPointOnBoundary) {
         {1, 0.5}
     };
     for (const auto& point : boundary_points) {
-        EXPECT_TRUE(sp.check_point_in_polygon(point));
+        EXPECT_TRUE(surface_parametrization.check_point_in_polygon(point));
     }
 }
 
 TEST_F(SurfaceParametrizationTest, CheckPointInPolygonGrid) {
-    SurfaceParametrization surface_parametrization;
     // 4. Grid of points covering the region
     double step = 0.01;
     for (double x = -0.2; x <= 1.2; x += step) {
@@ -114,7 +112,6 @@ TEST_F(SurfaceParametrizationTest, CheckPointInPolygonGrid) {
 }
 
 TEST_F(SurfaceParametrizationTest, CheckPointInPolygonRandom) {
-    SurfaceParametrization surface_parametrization;
     // 5. Randomly generated points
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -131,7 +128,7 @@ TEST_F(SurfaceParametrizationTest, CheckPointInPolygonRandom) {
 TEST_F(SurfaceParametrizationTest, FarthestVertex) {
     CutLineHelper clh(mesh, start_node);
     pmp::Vertex expected_vertex = clh.find_farthest_vertex();
-    int expected = 1798;
+    int expected = 1833;
     EXPECT_EQ(expected_vertex.idx(), expected);
 }
 

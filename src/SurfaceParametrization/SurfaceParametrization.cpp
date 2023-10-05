@@ -45,6 +45,23 @@ bool SurfaceParametrization::check_point_in_polygon(const Point_2_eigen& point) 
         const Point_2_eigen& p1 = polygon[i];
         const Point_2_eigen& p2 = polygon[(i + 1) % n];
 
+        // Check if point is on a vertex
+        if (point == p1 || point == p2) {
+            return true;
+        }
+
+        // Check if point is on a horizontal boundary
+        if ((p1[1] == point[1] && p2[1] == point[1]) &&
+            (point[0] > std::min(p1[0], p2[0]) && point[0] < std::max(p1[0], p2[0]))) {
+            return true;
+        }
+
+        // Check if point is on a vertical boundary
+        if ((p1[0] == point[0] && p2[0] == point[0]) &&
+            (point[1] > std::min(p1[1], p2[1]) && point[1] < std::max(p1[1], p2[1]))) {
+            return true;
+        }
+
         if ((p1[1] > point[1]) != (p2[1] > point[1]) &&
             (point[0] < (p2[0] - p1[0]) * (point[1] - p1[1]) / (p2[1] - p1[1]) + p1[0])) {
             inside = !inside;
@@ -53,16 +70,6 @@ bool SurfaceParametrization::check_point_in_polygon(const Point_2_eigen& point) 
     return inside;
 }
 
-// bool SurfaceParametrization::check_point_in_polygon(
-//     const Point_2_eigen& point,
-//     bool is_original_mesh
-// ){
-//     Point_2 cgal_point(point[0], point[1]);
-
-//     auto result = CGAL::bounded_side_2(polygon.vertices_begin(), polygon.vertices_end(), cgal_point, Kernel());
-
-//     return result == CGAL::ON_BOUNDED_SIDE || result == CGAL::ON_BOUNDARY;
-// }
 
 /**
  * @brief Create the UV surface
