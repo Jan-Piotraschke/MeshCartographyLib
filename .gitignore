@@ -42,6 +42,7 @@ cmake_install.cmake
 
 # uv meshes
 *_uv*.off
+*_open*.off
 
 *.csv
 
