@@ -6,11 +6,11 @@
  * @date        2023-Sep-22
  * @license     Apache License 2.0
  *
- * @bug         -
+ * @bug         - The mesh is sometimes not added correctly to the original mesh
  * @todo        - improve the find_vertex_by_coordinates function, as we only have to check on the border of the mesh
- *              - save the kachelmuster mesh
  */
 
+#include <math.h>
 #include "TessellationHelper.h"
 
 // ========================================
@@ -21,24 +21,25 @@ void Tessellation::create_kachelmuster() {
     analyseSides();
 
     std::string mesh_uv_path = parent.meshmeta.mesh_path;
-    auto mesh_3D_name = parent.get_mesh_name(mesh_uv_path);
+    auto mesh_uv_name = parent.get_mesh_name(mesh_uv_path);
 
     pmp::SurfaceMesh mesh_original;
     pmp::read_off(mesh_original, mesh_uv_path);
+    std::cout << "Mesh name: " << mesh_uv_name << std::endl;
 
     docking_side = "left";
-    process_mesh(CGAL::data_file_path(mesh_uv_path), mesh_original, 90.0, 0, 0);   // position 2 (row) 3 (column)  -> left
+    process_mesh(mesh_uv_path, mesh_original, 90.0, 0, 0);   // position 2 (row) 3 (column)  -> left
 
     docking_side = "right";
-    process_mesh(CGAL::data_file_path(mesh_uv_path), mesh_original, 90.0, 2, 0);  // position 2 1  -> right
+    process_mesh(mesh_uv_path, mesh_original, 90.0, 2, 0);  // position 2 1  -> right
 
     docking_side = "up";
-    process_mesh(CGAL::data_file_path(mesh_uv_path), mesh_original, 270.0, 0, 2);  // position 1 2 -> up
+    process_mesh(mesh_uv_path, mesh_original, 270.0, 0, 2);  // position 1 2 -> up
 
     docking_side = "down";
-    process_mesh(CGAL::data_file_path(mesh_uv_path), mesh_original, 270.0, 0, 0);  // position 3 2 -> down
-
-    std::string output_path = (MESH_FOLDER / (mesh_3D_name + "_kachelmuster.off")).string();
+    process_mesh(mesh_uv_path, mesh_original, 270.0, 0, 0);  // position 3 2 -> down
+    std::cout << "Finished creating the kachelmuster" << std::endl;
+    std::string output_path = (MESH_FOLDER / (mesh_uv_name + "_kachelmuster.off")).string();
     pmp::write(mesh_original, output_path);
 }
 
@@ -101,7 +102,7 @@ void Tessellation::rotate_and_shift_mesh(
     int shift_x_coordinates,
     int shift_y_coordinates
 ) {
-    double angle_radians = CGAL_PI * angle_degrees / 180.0; // Convert angle to radians
+    double angle_radians = M_PI * angle_degrees / 180.0; // Convert angle to radians
     double threshold = 1e-10; // or any other small value you consider appropriate
 
     // Rotate and shift the mesh

@@ -4,9 +4,6 @@
 #include <fstream>
 #include <Eigen/Dense>
 
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
-
 #include "GeodesicDistanceHelperInterface.h"
 #include "GeodesicDistanceHelper.h"
 

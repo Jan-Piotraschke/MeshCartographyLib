@@ -10,12 +10,10 @@ set(CMAKE_CXX_STANDARD 17)
 
 # Find required packages
 find_package(PMP REQUIRED)
-find_package(CGAL REQUIRED)
 find_package(Boost COMPONENTS filesystem REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(GTest REQUIRED)
 
-include(CGAL_Eigen3_support)
 include_directories(${GTEST_INCLUDE_DIRS})
 
 # Add the source files of your library
@@ -24,10 +22,9 @@ add_library(MeshCartographyLib STATIC ${SIMULATION_SOURCES})
 
 # Link the library with the required packages
 target_link_libraries(MeshCartographyLib PUBLIC
-    CGAL::CGAL
-    Boost::filesystem
-    CGAL::Eigen3_support
+    Eigen3::Eigen
     pmp
+    Boost::filesystem
 )
 
 # Add include directories

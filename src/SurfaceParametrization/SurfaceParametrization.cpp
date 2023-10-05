@@ -131,7 +131,8 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     for (pmp::Vertex vd : mesh.vertices()) {
         pmp::Halfedge halfedge = mesh.halfedge(vd); // ? oder doch über die halfedge iterieren und dann die target vertex nehmen?
         int64_t halfedge_int = halfedge.idx();
-        h_v_mapping_vector.push_back(halfedge_int);
+        int64_t target_id = mesh.to_vertex(halfedge).idx();
+        h_v_mapping_vector.push_back(target_id);
 
         Point_3_pmp point_3D = sm.position(vd);
 
