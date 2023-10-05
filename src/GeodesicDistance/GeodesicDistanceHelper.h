@@ -15,13 +15,13 @@ private:
     fs::path mesh_path;
 
     void fill_distance_matrix(
-        pmp::SurfaceMesh mesh,
+        pmp::SurfaceMesh& mesh,
         Eigen::MatrixXd& distance_matrix,
-        pmp::Vertex closest_vertice
+        pmp::Vertex vertex
     );
 
-    std::vector<double> geo_distance(
-        pmp::SurfaceMesh mesh,
-        pmp::Vertex start_node
+    std::vector<double> calculate_geodesic_distance(
+        pmp::SurfaceMesh& mesh,
+        pmp::Vertex start_vertex
     );
 };

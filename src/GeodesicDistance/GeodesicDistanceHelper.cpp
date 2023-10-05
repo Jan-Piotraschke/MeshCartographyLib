@@ -7,8 +7,7 @@
  * @license     Apache License 2.0
  *
  * @bug         -
- * @todo        - check, ob man das Mesh nicht auch als Referenz übergeben kann
- *              - check, ob man nicht hier Eigen:: durch std::vector ersetzen kann
+ * @todo        - check, ob man nicht hier Eigen:: durch std::vector ersetzen kann
  */
 
 #include "GeodesicDistanceHelper.h"
@@ -49,33 +48,31 @@ Eigen::MatrixXd GeodesicDistanceHelper::get_mesh_distance_matrix() {
  * different index until all the distances have been added to the distance matrix.
 */
 void GeodesicDistanceHelper::fill_distance_matrix(
-    pmp::SurfaceMesh mesh,
+    pmp::SurfaceMesh& mesh,
     Eigen::MatrixXd& distance_matrix,
-    pmp::Vertex closest_vertice
+    pmp::Vertex vertex
 ){
-
-    if (distance_matrix.row(closest_vertice.idx()).head(2).isZero()) {
+    if (distance_matrix.row(vertex.idx()).head(2).isZero()) {
         // get the distance of all vertices to all other vertices
-        std::vector<double> vertices_3D_distance_map = geo_distance(mesh, closest_vertice);
-        distance_matrix.row(closest_vertice.idx()) = Eigen::Map<Eigen::VectorXd>(vertices_3D_distance_map.data(), vertices_3D_distance_map.size());
+        std::vector<double> vertices_3D_distance_map = calculate_geodesic_distance(mesh, vertex);
+        distance_matrix.row(vertex.idx()) = Eigen::Map<Eigen::VectorXd>(vertices_3D_distance_map.data(), vertices_3D_distance_map.size());
     }
 }
 
 
-std::vector<double> GeodesicDistanceHelper::geo_distance(
-    pmp::SurfaceMesh mesh,
-    pmp::Vertex start_node
+std::vector<double> GeodesicDistanceHelper::calculate_geodesic_distance(
+    pmp::SurfaceMesh& mesh,
+    pmp::Vertex start_vertex
 ){
-    std::vector<pmp::Vertex> seeds{start_node};
+    std::vector<pmp::Vertex> seeds{start_vertex};
     pmp::geodesics_heat(mesh, seeds);
 
-    //property map for the distance values to the source set
     pmp::VertexProperty<pmp::Scalar> distance_pmap = mesh.get_vertex_property<pmp::Scalar>("geodesic:distance");
 
-    std::vector<double> distances_list;
-    for (pmp::Vertex vd : mesh.vertices()) {
-        distances_list.push_back(distance_pmap[vd]);
+    std::vector<double> distances;
+    for (pmp::Vertex vertex : mesh.vertices()) {
+        distances.push_back(distance_pmap[vertex]);
     }
 
-    return distances_list;
+    return distances;
 }
