@@ -104,14 +104,6 @@ pmp::Vertex CutLineHelper::find_farthest_vertex(){
     std::vector<pmp::Vertex> seeds{start_vertex};
     pmp::geodesics(mesh, seeds);
 
-    // Compute vertex curvature
-    pmp::curvature(mesh, pmp::Curvature::gauss, 1);
-    auto curvatures = mesh.get_vertex_property<pmp::Scalar>("v:curv");
-    for (const auto& v : mesh.vertices())
-    {
-        std::cout << "Vertex " << v << ": Gaussian Curvature = " << curvatures[v] << std::endl;
-    }
-
     pmp::Scalar max_distances(0);
     pmp::VertexProperty<pmp::Scalar> distance = mesh.get_vertex_property<pmp::Scalar>("geodesic:distance");
     pmp::Vertex target_node;
@@ -125,6 +117,45 @@ pmp::Vertex CutLineHelper::find_farthest_vertex(){
 
     return target_node;
 }
+
+
+// CutLineHelper::get_gaussian_vertex(){
+//     // Compute vertex curvature
+//     pmp::curvature(mesh, pmp::Curvature::gauss, 1);
+//     auto curvatures = mesh.get_vertex_property<pmp::Scalar>("v:curv");
+
+//     // Sort vertices based on curvature
+//     std::vector<pmp::Vertex> sorted_vertices;
+//     for (auto v : mesh.vertices()) {
+//         sorted_vertices.push_back(v);
+//     }
+//     std::sort(sorted_vertices.begin(), sorted_vertices.end(), [&](const pmp::Vertex& a, const pmp::Vertex& b) {
+//         return curvatures[a] > curvatures[b];
+//     });
+
+//     pmp::Vertex first_high_curvature_vertex = sorted_vertices[0];
+
+//     // Compute geodesic distance from vertex with highest curvature
+//     std::vector<pmp::Vertex> seeds{first_high_curvature_vertex};
+//     pmp::geodesics(mesh, seeds);
+//     pmp::VertexProperty<pmp::Scalar> distance = mesh.get_vertex_property<pmp::Scalar>("geodesic:distance");
+
+//     // Find another vertex with high curvature and farthest from first_high_curvature_vertex
+//     pmp::Scalar max_distances = std::numeric_limits<pmp::Scalar>::lowest();
+//     pmp::Vertex second_high_curvature_vertex;
+
+//     for (size_t i = 1; i < sorted_vertices.size(); ++i) {
+//         auto v = sorted_vertices[i];
+//         if (distance[v] > max_distances) {
+//             max_distances = distance[v];
+//             second_high_curvature_vertex = v;
+//         }
+//     }
+//     start_vertex = first_high_curvature_vertex;
+//     pmp::Vertex target_vertex = second_high_curvature_vertex;
+//     std::cout << mesh.position(first_high_curvature_vertex) << std::endl;
+//     std::cout << mesh.position(target_vertex) << std::endl;
+// }
 
 
 std::map<pmp::Vertex, int> CutLineHelper::get_vertex_neighbors_count() const {
