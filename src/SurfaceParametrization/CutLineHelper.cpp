@@ -11,6 +11,7 @@
  */
 
 #include "CutLineHelper.h"
+#include "pmp/algorithms/curvature.h"
 
 CutLineHelper::CutLineHelper(
     pmp::SurfaceMesh& mesh,
@@ -102,6 +103,14 @@ pmp::Vertex CutLineHelper::find_farthest_vertex(){
     // Compute geodesic distance from first vertex using breadth first search
     std::vector<pmp::Vertex> seeds{start_vertex};
     pmp::geodesics(mesh, seeds);
+
+    // Compute vertex curvature
+    pmp::curvature(mesh, pmp::Curvature::gauss, 1);
+    auto curvatures = mesh.get_vertex_property<pmp::Scalar>("v:curv");
+    for (const auto& v : mesh.vertices())
+    {
+        std::cout << "Vertex " << v << ": Gaussian Curvature = " << curvatures[v] << std::endl;
+    }
 
     pmp::Scalar max_distances(0);
     pmp::VertexProperty<pmp::Scalar> distance = mesh.get_vertex_property<pmp::Scalar>("geodesic:distance");
