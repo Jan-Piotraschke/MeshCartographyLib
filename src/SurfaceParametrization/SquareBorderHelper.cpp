@@ -6,7 +6,7 @@
  * @date        2023-Sep-27
  * @license     Apache License 2.0
  *
- * @bug         - ich weiß nicht ob in diesem Skript, aber beim Entfalten des Kamels sind manche Knoten duzendfach vorhanden -> siehe Screenshot
+ * @bug         -
  * @todo        -
  */
 
@@ -71,7 +71,6 @@ void SquareBorderHelper::setup_square_boundary_constraints()
 
     // map length intervals to square intervals
     for (vertice_id = 0, l = 0.0; vertice_id < N;) {
-        std::cout << l << std::endl;
         if (l <= sideLength) { // bottom side
             t[0] = l / sideLength;
             t[1] = 0.0;
