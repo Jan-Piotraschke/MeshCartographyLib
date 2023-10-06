@@ -62,10 +62,6 @@ void SquareBorderHelper::setup_square_boundary_constraints()
     // Define lengths of the square sides
     pmp::Scalar sideLength = length / corner_count;
     pmp::Scalar step_size = length / N;
-    std::cout << "sideLength: " << sideLength << std::endl;
-    std::cout << "step_size: " << step_size << std::endl;
-    std::cout << "length: " << length << std::endl;
-    std::cout << "N: " << N << std::endl;
 
     auto tolerance = 1e-4;
 
