@@ -6,7 +6,7 @@
  * @date        2023-Sep-27
  * @license     Apache License 2.0
  *
- * @bug         -
+ * @bug         - ich weiß nicht ob in diesem Skript, aber beim Entfalten des Kamels sind manche Knoten duzendfach vorhanden -> siehe Screenshot
  * @todo        -
  */
 
@@ -57,15 +57,21 @@ void SquareBorderHelper::setup_square_boundary_constraints()
     for (vertice_id = 0, length = 0.0; vertice_id < N; ++vertice_id) {
         length += distance(points[loop[vertice_id]], points[loop[(vertice_id + 1) % N]]);
     }
+    int corner_count = 4;
 
     // Define lengths of the square sides
-    pmp::Scalar sideLength = length / 4.0;
+    pmp::Scalar sideLength = length / corner_count;
     pmp::Scalar step_size = length / N;
+    std::cout << "sideLength: " << sideLength << std::endl;
+    std::cout << "step_size: " << step_size << std::endl;
+    std::cout << "length: " << length << std::endl;
+    std::cout << "N: " << N << std::endl;
 
     auto tolerance = 1e-4;
 
     // map length intervals to square intervals
     for (vertice_id = 0, l = 0.0; vertice_id < N;) {
+        std::cout << l << std::endl;
         if (l <= sideLength) { // bottom side
             t[0] = l / sideLength;
             t[1] = 0.0;
