@@ -50,7 +50,7 @@ void SquareBorderHelper::setup_square_boundary_constraints()
     } while (hh != mesh.halfedge(vh));
 
     unsigned int vertice_id, N = loop.size();
-    pmp::Scalar l, length;
+    long double l, length;
     pmp::TexCoord t;
 
     // compute length of boundary loop
@@ -60,8 +60,8 @@ void SquareBorderHelper::setup_square_boundary_constraints()
     int corner_count = 4;
 
     // Define lengths of the square sides
-    pmp::Scalar sideLength = length / corner_count;
-    pmp::Scalar step_size = length / N;
+    long double sideLength = length / corner_count;
+    long double step_size = length / N;
 
     auto tolerance = 1e-4;
 
