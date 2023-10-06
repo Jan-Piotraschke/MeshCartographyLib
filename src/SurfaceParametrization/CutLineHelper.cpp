@@ -11,6 +11,7 @@
  */
 
 #include "CutLineHelper.h"
+#include "pmp/algorithms/curvature.h"
 
 CutLineHelper::CutLineHelper(
     pmp::SurfaceMesh& mesh,
@@ -80,10 +81,14 @@ void CutLineHelper::cut_the_mesh(pmp::Vertex current_vertex){
 
     std::reverse(edge_path.begin(), edge_path.end());
 
+    if (edge_path.size() % 2 != 0) {
+        edge_path.pop_back();
+    }
+
     // To check if the edges are valid:
     for (const auto& edge : edge_path) {
         if (!mesh.is_valid(edge)) {
-            std::cout << "Invalid edge found" << std::endl;
+            std::cerr << "Invalid edge found" << std::endl;
         }
     }
 
@@ -114,6 +119,45 @@ pmp::Vertex CutLineHelper::find_farthest_vertex(){
 }
 
 
+// CutLineHelper::get_gaussian_vertex(){
+//     // Compute vertex curvature
+//     pmp::curvature(mesh, pmp::Curvature::gauss, 1);
+//     auto curvatures = mesh.get_vertex_property<pmp::Scalar>("v:curv");
+
+//     // Sort vertices based on curvature
+//     std::vector<pmp::Vertex> sorted_vertices;
+//     for (auto v : mesh.vertices()) {
+//         sorted_vertices.push_back(v);
+//     }
+//     std::sort(sorted_vertices.begin(), sorted_vertices.end(), [&](const pmp::Vertex& a, const pmp::Vertex& b) {
+//         return curvatures[a] > curvatures[b];
+//     });
+
+//     pmp::Vertex first_high_curvature_vertex = sorted_vertices[0];
+
+//     // Compute geodesic distance from vertex with highest curvature
+//     std::vector<pmp::Vertex> seeds{first_high_curvature_vertex};
+//     pmp::geodesics(mesh, seeds);
+//     pmp::VertexProperty<pmp::Scalar> distance = mesh.get_vertex_property<pmp::Scalar>("geodesic:distance");
+
+//     // Find another vertex with high curvature and farthest from first_high_curvature_vertex
+//     pmp::Scalar max_distances = std::numeric_limits<pmp::Scalar>::lowest();
+//     pmp::Vertex second_high_curvature_vertex;
+
+//     for (size_t i = 1; i < sorted_vertices.size(); ++i) {
+//         auto v = sorted_vertices[i];
+//         if (distance[v] > max_distances) {
+//             max_distances = distance[v];
+//             second_high_curvature_vertex = v;
+//         }
+//     }
+//     start_vertex = first_high_curvature_vertex;
+//     pmp::Vertex target_vertex = second_high_curvature_vertex;
+//     std::cout << mesh.position(first_high_curvature_vertex) << std::endl;
+//     std::cout << mesh.position(target_vertex) << std::endl;
+// }
+
+
 std::map<pmp::Vertex, int> CutLineHelper::get_vertex_neighbors_count() const {
     std::map<pmp::Vertex, int> vertex_neighbors_count;
     for (const auto& v : mesh.vertices()) {
@@ -134,7 +178,7 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
     edge_direction.push_back(mesh.vertex(seamEdges[1], 0));
     edge_direction.push_back(mesh.vertex(seamEdges[1], 1));
 
-    pmp::Vertex heading_towards;
+    pmp::Vertex heading_towards, heading_from;
     bool found = false;
 
     for (size_t i = 0; i < edge_direction.size() && !found; ++i) {
@@ -147,7 +191,6 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
         }
     }
 
-    pmp::Vertex heading_from;
     auto option_a = mesh.vertex(seamEdges[0], 0);
     auto option_b = mesh.vertex(seamEdges[0], 1);
     if (option_a == heading_towards) {
@@ -274,20 +317,8 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
         auto new_face = mesh_uv.add_triangle(v0, v1, v2);
 
         // 5. Check if the new face is valid
-        if (mesh_uv.is_isolated(v0) || mesh_uv.is_isolated(v1) || mesh_uv.is_isolated(v2)) {
-            std::cout << "isolated vertex found" << std::endl;
-        }
         if (!mesh_uv.is_valid(new_face)) {
-            std::cout << "invalid face found" << std::endl;
-        }
-        if (!mesh_uv.is_valid(mesh_uv.find_edge(v0, v1))) {
-            std::cout << "invalid edge found" << std::endl;
-        }
-        if (!mesh_uv.is_valid(mesh_uv.find_edge(v1, v2))) {
-            std::cout << "invalid edge found" << std::endl;
-        }
-        if (!mesh_uv.is_valid(mesh_uv.find_edge(v2, v0))) {
-            std::cout << "invalid edge found" << std::endl;
+            std::cerr << "invalid face found" << std::endl;
         }
     }
 
@@ -299,7 +330,7 @@ void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
     for (auto v : mesh.vertices()) {
         if (original_vertex_neighbors_count.find(v) != original_vertex_neighbors_count.end()) {
             if (new_vertex_neighbors_count[v] != original_vertex_neighbors_count[v]) {
-                std::cout << "vertex " << v << " has " << new_vertex_neighbors_count[v] << " neighbors instead of " << original_vertex_neighbors_count[v] << std::endl;
+                std::cerr << "vertex " << v << " has " << new_vertex_neighbors_count[v] << " neighbors instead of " << original_vertex_neighbors_count[v] << std::endl;
             }
         }
     }

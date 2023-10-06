@@ -6,7 +6,7 @@
  * @date        2023-Sep-27
  * @license     Apache License 2.0
  *
- * @bug         -
+ * @bug         - beim Entfalten des Kamels sind manche Knoten dutzendfach vorhanden
  * @todo        -
  */
 

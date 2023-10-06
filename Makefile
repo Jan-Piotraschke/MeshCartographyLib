@@ -24,24 +24,24 @@ all: check_submodule build
 
 .PHONY: check_submodule
 check_submodule:
-	@if [ ! "$(shell git submodule status | grep cgal | cut -c 1)" = "-" ]; then \
-		echo "CGAL submodule already initialized and updated."; \
+	@if [ ! "$(shell git submodule status | grep pmp-library | cut -c 1)" = "-" ]; then \
+		echo "PMP library submodule already initialized and updated."; \
 	else \
-		echo "CGAL submodule is empty. Initializing and updating..."; \
-		git submodule update --init -- cgal; \
-		$(MAKE) install_cgal; \
+		echo "PMP library submodule is empty. Initializing and updating..."; \
+		git submodule update --init -- pmp-library; \
+		$(MAKE) install_pmp; \
 	fi
 
 .PHONY: update_submodule
 update_submodule:
-	@echo "Updating CGAL submodule..."; \
-	git submodule update --remote cgal;
+	@echo "Updating PMP library submodule..."; \
+	git submodule update --remote pmp-library;
 
-.PHONY: install_cgal
-install_cgal:
-	@echo "Installing CGAL..."; \
-	mkdir -p build/cgal; \
-	cd build/cgal && $(CMAKE_CMD) $(PROJECT_DIR)/cgal -DCMAKE_BUILD_TYPE=Release -DCGAL_HEADER_ONLY=OFF && make && sudo make install;
+.PHONY: install_pmp
+install_pmp:
+	@echo "Installing PMP library..."; \
+	mkdir -p build/pmp-library; \
+	cd build/pmp-library && $(CMAKE_CMD) $(PROJECT_DIR)/pmp-library -DCMAKE_BUILD_TYPE=Release && make && sudo make install;
 
 .PHONY: build
 build:
