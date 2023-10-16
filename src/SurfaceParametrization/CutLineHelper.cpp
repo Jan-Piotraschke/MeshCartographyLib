@@ -11,7 +11,7 @@
  */
 
 #include "CutLineHelper.h"
-#include "pmp/algorithms/curvature.h"
+#include "GaussianCutLineHelper.h"
 
 CutLineHelper::CutLineHelper(
     pmp::SurfaceMesh& mesh,
@@ -29,12 +29,11 @@ CutLineHelper::CutLineHelper(
 * @brief Calculate the border of the mesh
 */
 void CutLineHelper::cut_mesh_open(){
-    // Find the target node (farthest from the start node)
-    // pmp::Vertex target_node = find_farthest_vertex();
-    pmp::Vertex target_node = get_gaussian_vertex();
+    // Get the cutline
+    GaussianCutLineHelper cutline_helper = GaussianCutLineHelper(mesh, start_vertex);
+    auto edge_path = cutline_helper.get_gaussian_cutline();
 
-    // Get the edges of the path between the start and the target node
-    cut_the_mesh(target_node);
+    open_mesh_along_seam(edge_path);
 }
 
 
@@ -42,60 +41,6 @@ void CutLineHelper::cut_mesh_open(){
 // ========================================
 // Private Functions
 // ========================================
-
-/**
-* @brief Create a path of vertices from the start node to the target node
-*
-* The size of the path_list multiplied with 2 is the number of vertices on the border of the UV mesh
-*
-* So, if you want something like an inverse 'Poincaré disk' you have to really shorten the path_list
-* The same is true if you reverse the logic: If you create a spiral-like seam edge path, your mesh will results in something like a 'Poincaré disk'
-*/
-void CutLineHelper::cut_the_mesh(pmp::Vertex current_vertex){
-    pmp::VertexProperty<pmp::Scalar> distance_pmp = mesh.get_vertex_property<pmp::Scalar>("geodesic:distance");
-
-    std::vector<pmp::Edge> edge_path;
-
-    while (current_vertex != start_vertex) {
-
-        double min_distance = std::numeric_limits<double>::infinity();
-        pmp::Vertex next_vertex;
-
-        for (auto neighbor_vertex : mesh.vertices(current_vertex)) {
-            double d = distance_pmp[neighbor_vertex];
-            if (d < min_distance) {
-                min_distance = d;
-                next_vertex = neighbor_vertex;
-            }
-        }
-
-        for (auto halfedge : mesh.halfedges(current_vertex)) {
-            pmp::Vertex neighbor_vertex = mesh.to_vertex(halfedge);
-            if (neighbor_vertex == next_vertex) {
-                edge_path.push_back(mesh.edge(halfedge));
-                break;
-            }
-        }
-
-        current_vertex = next_vertex;
-    }
-
-    std::reverse(edge_path.begin(), edge_path.end());
-
-    if (edge_path.size() % 2 != 0) {
-        edge_path.pop_back();
-    }
-
-    // To check if the edges are valid:
-    for (const auto& edge : edge_path) {
-        if (!mesh.is_valid(edge)) {
-            std::cerr << "Invalid edge found" << std::endl;
-        }
-    }
-
-    open_mesh_along_seam(edge_path);
-}
-
 
 /**
  * @brief Find the farthest vertex from a given start vertex
@@ -117,50 +62,6 @@ pmp::Vertex CutLineHelper::find_farthest_vertex(){
     }
 
     return target_node;
-}
-
-
-
-/**
- * @brief Based on the Gaussian curvature K = k1*k2 (k1 and k2 are the principal curvatures (minimum and maximum normal curvature))
-*/
-pmp::Vertex CutLineHelper::get_gaussian_vertex(){
-    // Compute vertex curvature
-    pmp::curvature(mesh, pmp::Curvature::gauss, 1);
-    auto curvatures = mesh.get_vertex_property<pmp::Scalar>("v:curv");
-
-    // Sort vertices based on curvature
-    std::vector<pmp::Vertex> sorted_vertices;
-    for (auto v : mesh.vertices()) {
-        sorted_vertices.push_back(v);
-    }
-    std::sort(sorted_vertices.begin(), sorted_vertices.end(), [&](const pmp::Vertex& a, const pmp::Vertex& b) {
-        return curvatures[a] > curvatures[b];
-    });
-
-    pmp::Vertex first_high_curvature_vertex = sorted_vertices[0];
-
-    // Compute geodesic distance from vertex with highest curvature
-    std::vector<pmp::Vertex> seeds{first_high_curvature_vertex};
-    pmp::geodesics(mesh, seeds);
-    pmp::VertexProperty<pmp::Scalar> distance = mesh.get_vertex_property<pmp::Scalar>("geodesic:distance");
-
-    // Find another vertex with high curvature and farthest from first_high_curvature_vertex
-    pmp::Scalar max_distances = std::numeric_limits<pmp::Scalar>::lowest();
-    pmp::Vertex second_high_curvature_vertex;
-
-    for (size_t i = 1; i < sorted_vertices.size(); ++i) {
-        auto v = sorted_vertices[i];
-        if (distance[v] > max_distances) {
-            max_distances = distance[v];
-            second_high_curvature_vertex = v;
-        }
-    }
-    start_vertex = first_high_curvature_vertex;
-    pmp::Vertex target_vertex = second_high_curvature_vertex;
-    std::cout << mesh.position(first_high_curvature_vertex) << std::endl;
-    std::cout << mesh.position(target_vertex) << std::endl;
-    return target_vertex;
 }
 
 
