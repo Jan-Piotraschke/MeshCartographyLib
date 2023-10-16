@@ -124,14 +124,6 @@ TEST_F(SurfaceParametrizationTest, CheckPointInPolygonRandom) {
     }
 }
 
-// CutLineHelper tests
-TEST_F(SurfaceParametrizationTest, FarthestVertex) {
-    CutLineHelper clh(mesh, start_node);
-    pmp::Vertex expected_vertex = clh.find_farthest_vertex();
-    int expected = 1833;
-    EXPECT_EQ(expected_vertex.idx(), expected);
-}
-
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

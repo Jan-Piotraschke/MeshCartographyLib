@@ -13,9 +13,11 @@
 #include "SquareBorderHelper.h"
 
 SquareBorderHelper::SquareBorderHelper(
-    pmp::SurfaceMesh& mesh
+    pmp::SurfaceMesh& mesh,
+    pmp::Vertex& start_vertex
 )
-    : mesh(mesh)
+    : mesh(mesh),
+    start_vertex(start_vertex)
 {};
 
 void SquareBorderHelper::setup_square_boundary_constraints()
@@ -25,7 +27,6 @@ void SquareBorderHelper::setup_square_boundary_constraints()
     auto tex = mesh.vertex_property<pmp::TexCoord>("v:tex");
 
     pmp::SurfaceMesh::VertexIterator vit, vend = mesh.vertices_end();
-    pmp::Vertex vh;
     pmp::Halfedge hh;
     std::vector<pmp::Vertex> loop;
 
@@ -34,20 +35,13 @@ void SquareBorderHelper::setup_square_boundary_constraints()
         tex[v] = pmp::TexCoord(0.0, 0.0); // Initialize to the bottom-left corner
     }
 
-    // find 1st boundary vertex
-    for (vit = mesh.vertices_begin(); vit != vend; ++vit) {
-        if (mesh.is_boundary(*vit)) {
-            break;
-        }
-    }
-
+    std::cout << "start_vertex:: " << start_vertex << std::endl;
     // collect boundary loop
-    vh = *vit;
-    hh = mesh.halfedge(vh);
+    hh = mesh.halfedge(start_vertex);
     do {
-        loop.push_back(mesh.to_vertex(hh));
+        loop.push_back(mesh.from_vertex(hh));
         hh = mesh.next_halfedge(hh);
-    } while (hh != mesh.halfedge(vh));
+    } while (hh != mesh.halfedge(start_vertex));
 
     unsigned int vertice_id, N = loop.size();
     double l, length;
@@ -55,7 +49,7 @@ void SquareBorderHelper::setup_square_boundary_constraints()
 
     // compute length of boundary loop
     for (vertice_id = 0, length = 0.0; vertice_id < N; ++vertice_id) {
-        length += distance(points[loop[vertice_id]], points[loop[(vertice_id + 1) % N]]);
+        length += pmp::distance(points[loop[vertice_id]], points[loop[(vertice_id + 1) % N]]);
     }
     int corner_count = 4;
 

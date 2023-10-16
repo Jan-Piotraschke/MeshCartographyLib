@@ -114,11 +114,8 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     fs::path mesh_uv_path_test = MESH_FOLDER / (get_mesh_name(mesh_3D_file_path) + "_open.off");
     pmp::write(mesh, mesh_uv_path_test.string());
 
-    pmp::SurfaceMesh sm;
-    sm = mesh;
-
     // Perform the parameterization
-    HarmonicParametrizationHelper helper_p = HarmonicParametrizationHelper(mesh);
+    HarmonicParametrizationHelper helper_p = HarmonicParametrizationHelper(mesh, start_vertex);
     ParametrizationHelperInterface& parametrization_helper = helper_p;
     parametrization_helper.parameterize_UV_mesh();
 
@@ -131,17 +128,16 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     vertice_3D.resize(number_of_vertices, 3);
     vertice_UV.resize(number_of_vertices, 3);
 
-
     auto UV_coord = mesh.get_vertex_property<pmp::TexCoord>("v:tex");
+    auto points = mesh.get_vertex_property<pmp::Point>("v:point");
+
 
     int i = 0;
     for (pmp::Vertex vd : mesh.vertices()) {
-        pmp::Halfedge halfedge = mesh.halfedge(vd); // ? oder doch über die halfedge iterieren und dann die target vertex nehmen?
-        int64_t halfedge_int = halfedge.idx();
-        int64_t target_id = mesh.to_vertex(halfedge).idx();
+        int64_t target_id = vd.idx();
         h_v_mapping_vector.push_back(target_id);
 
-        Point_3_pmp point_3D = sm.position(vd);
+        Point_3_pmp point_3D = points[vd];
 
         // Get the points
         vertice_3D(i, 0) = point_3D(0, 0);
