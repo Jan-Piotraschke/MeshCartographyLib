@@ -16,4 +16,5 @@ private:
     pmp::Vertex& start_vertex;
 
     pmp::Vertex get_gaussian_vertex();
+    void validate_edges(const std::vector<pmp::Edge>& edge_path);
 };

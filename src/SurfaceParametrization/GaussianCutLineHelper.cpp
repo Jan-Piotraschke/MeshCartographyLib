@@ -13,6 +13,10 @@
 #include "GaussianCutLineHelper.h"
 #include "pmp/algorithms/curvature.h"
 
+// ========================================
+// Constructor
+// ========================================
+
 GaussianCutLineHelper::GaussianCutLineHelper(
     pmp::SurfaceMesh& mesh,
     pmp::Vertex& start_vertex
@@ -69,11 +73,7 @@ std::vector<pmp::Edge> GaussianCutLineHelper::get_gaussian_cutline() {
     }
 
     // To check if the edges are valid:
-    for (const auto& edge : edge_path) {
-        if (!mesh.is_valid(edge)) {
-            std::cerr << "Invalid edge found" << std::endl;
-        }
-    }
+    validate_edges(edge_path);
 
     return edge_path;
 }
@@ -123,4 +123,13 @@ pmp::Vertex GaussianCutLineHelper::get_gaussian_vertex(){
     pmp::Vertex target_vertex = second_high_curvature_vertex;
 
     return target_vertex;
+}
+
+
+void GaussianCutLineHelper::validate_edges(const std::vector<pmp::Edge>& edge_path) {
+    for (const auto& edge : edge_path) {
+        if (!mesh.is_valid(edge)) {
+            std::cerr << "Invalid edge found" << std::endl;
+        }
+    }
 }
