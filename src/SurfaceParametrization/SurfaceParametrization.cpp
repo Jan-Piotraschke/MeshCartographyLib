@@ -115,7 +115,7 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     pmp::write(mesh, mesh_uv_path_test.string());
 
     // Perform the parameterization
-    HarmonicParametrizationHelper helper_p = HarmonicParametrizationHelper(mesh);
+    HarmonicParametrizationHelper helper_p = HarmonicParametrizationHelper(mesh, start_vertex);
     ParametrizationHelperInterface& parametrization_helper = helper_p;
     parametrization_helper.parameterize_UV_mesh();
 

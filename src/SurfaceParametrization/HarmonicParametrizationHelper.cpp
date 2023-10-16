@@ -14,9 +14,11 @@
 #include "SquareBorderHelper.h"
 
 HarmonicParametrizationHelper::HarmonicParametrizationHelper(
-    pmp::SurfaceMesh& mesh
+    pmp::SurfaceMesh& mesh,
+    pmp::Vertex& start_vertex
 )
-    : mesh(mesh)
+    : mesh(mesh),
+    start_vertex(start_vertex)
 {};
 
 
@@ -41,7 +43,7 @@ void HarmonicParametrizationHelper::parameterize_UV_mesh(bool use_uniform_weight
     }
 
     // create boundary
-    SquareBorderHelper border_helper = SquareBorderHelper(mesh);
+    SquareBorderHelper border_helper = SquareBorderHelper(mesh, start_vertex);
     border_helper.setup_square_boundary_constraints();
 
     // get properties
