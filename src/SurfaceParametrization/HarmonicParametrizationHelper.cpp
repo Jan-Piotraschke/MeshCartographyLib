@@ -72,8 +72,7 @@ void HarmonicParametrizationHelper::parameterize_UV_mesh(bool use_uniform_weight
 
     // copy solution
     for (auto v : mesh.vertices()) {
-        if (!mesh.is_boundary(v))
-            UV_coord[v] = X.row(v.idx());
+        UV_coord[v] = X.row(v.idx());
     }
 }
 
