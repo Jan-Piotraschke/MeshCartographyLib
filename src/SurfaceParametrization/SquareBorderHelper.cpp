@@ -6,7 +6,7 @@
  * @date        2023-Sep-27
  * @license     Apache License 2.0
  *
- * @bug         -
+ * @bug         - ! die Zwillingvertices in 2D haben nicht den selben 3D Vertex
  * @todo        -
  */
 
@@ -55,7 +55,8 @@ void SquareBorderHelper::setup_square_boundary_constraints()
 
     // compute length of boundary loop
     for (vertice_id = 0, length = 0.0; vertice_id < N; ++vertice_id) {
-        length += distance(points[loop[vertice_id]], points[loop[(vertice_id + 1) % N]]);
+        // std::cout << points[loop[vertice_id]] << '\n';
+        length += pmp::distance(points[loop[vertice_id]], points[loop[(vertice_id + 1) % N]]);
     }
     int corner_count = 4;
 
@@ -87,6 +88,8 @@ void SquareBorderHelper::setup_square_boundary_constraints()
         if (t[1] < tolerance) {
             t[1] = 0.0;
         }
+        // std::cout << points[loop[vertice_id]] << '\n';
+        // std::cout << t << '\n';
 
         tex[loop[vertice_id]] = t;
 
