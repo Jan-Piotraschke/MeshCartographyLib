@@ -15,7 +15,7 @@
 
 CutLineHelper::CutLineHelper(
     pmp::SurfaceMesh& mesh,
-    pmp::Vertex start_vertex
+    pmp::Vertex& start_vertex
 )
     : mesh(mesh),
     start_vertex(start_vertex)
@@ -41,29 +41,6 @@ void CutLineHelper::cut_mesh_open(){
 // ========================================
 // Private Functions
 // ========================================
-
-/**
- * @brief Find the farthest vertex from a given start vertex
-*/
-pmp::Vertex CutLineHelper::find_farthest_vertex(){
-    // Compute geodesic distance from first vertex using breadth first search
-    std::vector<pmp::Vertex> seeds{start_vertex};
-    pmp::geodesics(mesh, seeds);
-
-    pmp::Scalar max_distances(0);
-    pmp::VertexProperty<pmp::Scalar> distance = mesh.get_vertex_property<pmp::Scalar>("geodesic:distance");
-    pmp::Vertex target_node;
-
-    for (auto v : mesh.vertices()) {
-        if (distance[v] > max_distances) {
-            max_distances = distance[v];
-            target_node = v;
-        }
-    }
-
-    return target_node;
-}
-
 
 std::map<pmp::Vertex, int> CutLineHelper::get_vertex_neighbors_count() const {
     std::map<pmp::Vertex, int> vertex_neighbors_count;

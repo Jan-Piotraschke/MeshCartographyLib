@@ -129,12 +129,12 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     vertice_UV.resize(number_of_vertices, 3);
 
     auto UV_coord = mesh.get_vertex_property<pmp::TexCoord>("v:tex");
-    auto points = mesh.vertex_property<pmp::Point>("v:point");
+    auto points = mesh.get_vertex_property<pmp::Point>("v:point");
+
 
     int i = 0;
     for (pmp::Vertex vd : mesh.vertices()) {
-        pmp::Halfedge halfedge = mesh.halfedge(vd); // ? oder doch über die halfedge iterieren und dann die target vertex nehmen?
-        int64_t target_id = mesh.to_vertex(halfedge).idx();
+        int64_t target_id = vd.idx();
         h_v_mapping_vector.push_back(target_id);
 
         Point_3_pmp point_3D = points[vd];

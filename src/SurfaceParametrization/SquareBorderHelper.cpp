@@ -6,8 +6,8 @@
  * @date        2023-Sep-27
  * @license     Apache License 2.0
  *
- * @bug         - ! die Zwillingvertices in 2D haben nicht den selben 3D Vertex
- * @todo        -
+ * @bug         -
+ * @todo        - find gaussian vertex as start vertex
  */
 
 #include "SquareBorderHelper.h"
@@ -42,10 +42,10 @@ void SquareBorderHelper::setup_square_boundary_constraints()
     }
 
     // collect boundary loop
-    vh = *vit;
+    vh = pmp::Vertex(4466);  // TEMP: manually set the start vertex
     hh = mesh.halfedge(vh);
     do {
-        loop.push_back(mesh.to_vertex(hh));
+        loop.push_back(mesh.from_vertex(hh));
         hh = mesh.next_halfedge(hh);
     } while (hh != mesh.halfedge(vh));
 
@@ -55,7 +55,6 @@ void SquareBorderHelper::setup_square_boundary_constraints()
 
     // compute length of boundary loop
     for (vertice_id = 0, length = 0.0; vertice_id < N; ++vertice_id) {
-        // std::cout << points[loop[vertice_id]] << '\n';
         length += pmp::distance(points[loop[vertice_id]], points[loop[(vertice_id + 1) % N]]);
     }
     int corner_count = 4;
@@ -88,8 +87,6 @@ void SquareBorderHelper::setup_square_boundary_constraints()
         if (t[1] < tolerance) {
             t[1] = 0.0;
         }
-        // std::cout << points[loop[vertice_id]] << '\n';
-        // std::cout << t << '\n';
 
         tex[loop[vertice_id]] = t;
 
