@@ -6,8 +6,9 @@
 #include <gtest/gtest_prod.h>
 
 #include "SurfaceParametrizationHelperInterface.h"
+#include "MeshCuttingHelperInterface.h"
 
-class CutLineHelper : public CutLineHelperInterface {
+class CutLineHelper : public MeshCuttingHelperInterface {
 public:
     CutLineHelper(
         pmp::SurfaceMesh& mesh,

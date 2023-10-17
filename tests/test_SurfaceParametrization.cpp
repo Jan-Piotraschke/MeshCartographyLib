@@ -18,7 +18,6 @@ namespace fs = boost::filesystem;
 #include <random>
 
 #include <SurfaceParametrization/SurfaceParametrization.h>
-#include <SurfaceParametrization/CutLineHelper.h>
 
 const fs::path PROJECT_PATH = MeshCartographyLib_SOURCE_DIR;
 
