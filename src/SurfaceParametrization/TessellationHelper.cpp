@@ -40,10 +40,6 @@ void Tessellation::create_kachelmuster() {
     docking_side = "down";
     process_mesh(mesh_uv_path, mesh_original, 270.0, 0, 0);  // position 3 2 -> down
 
-    // print out the equivalent vertices
-    for (size_t i = 0; i < equivalent_vertices.size(); ++i) {
-        std::cout << "Vertex " << i << " has " << equivalent_vertices[i].size() << " equivalent vertices" << std::endl;
-    }
 
     std::cout << "Finished creating the kachelmuster" << std::endl;
     std::string output_path = (MESH_FOLDER / (mesh_uv_name + "_kachelmuster.off")).string();
@@ -195,10 +191,11 @@ void Tessellation::add_mesh(
 
         if (existing_v == pmp::Vertex(-1)) {
             shifted_v = mesh_original.add_vertex(pt_3d);
+            kachelmuster_twin_v.push_back(shifted_v);
         } else {
             shifted_v = existing_v;
         }
-        kachelmuster_twin_v.push_back(shifted_v);
+
         reindexed_vertices[v] = shifted_v;
     }
 
