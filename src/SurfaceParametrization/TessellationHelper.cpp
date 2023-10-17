@@ -26,6 +26,7 @@ void Tessellation::create_kachelmuster() {
     pmp::SurfaceMesh mesh_original;
     pmp::read_off(mesh_original, mesh_uv_path);
     std::cout << "Mesh name: " << mesh_uv_name << std::endl;
+    equivalent_vertices.resize(mesh_original.n_vertices());
 
     docking_side = "left";
     process_mesh(mesh_uv_path, mesh_original, 90.0, 0, 0);   // position 2 (row) 3 (column)  -> left
@@ -38,6 +39,12 @@ void Tessellation::create_kachelmuster() {
 
     docking_side = "down";
     process_mesh(mesh_uv_path, mesh_original, 270.0, 0, 0);  // position 3 2 -> down
+
+    // print out the equivalent vertices
+    for (size_t i = 0; i < equivalent_vertices.size(); ++i) {
+        std::cout << "Vertex " << i << " has " << equivalent_vertices[i].size() << " equivalent vertices" << std::endl;
+    }
+
     std::cout << "Finished creating the kachelmuster" << std::endl;
     std::string output_path = (MESH_FOLDER / (mesh_uv_name + "_kachelmuster.off")).string();
     pmp::write(mesh_original, output_path);
@@ -158,6 +165,8 @@ pmp::Vertex Tessellation::find_vertex_by_coordinates(
 }
 
 
+// TODO: die Reihenfolge der Vertices der rotierten Meshes ist wie beim Original nur mit anderen Koordinaten
+// Das kann man gut zum Befüllen der Equivalenzliste nutzen
 void Tessellation::add_mesh(
     pmp::SurfaceMesh& mesh,
     pmp::SurfaceMesh& mesh_original
@@ -165,6 +174,8 @@ void Tessellation::add_mesh(
     // A map to relate old vertex descriptors in mesh to new ones in mesh_original
     std::map<pmp::Vertex, pmp::Vertex> reindexed_vertices;
     for (auto v : mesh.vertices()) {
+
+        std::vector<pmp::Vertex>& kachelmuster_twin_v = equivalent_vertices[v.idx()];
 
         std::vector<pmp::Vertex> border_list;
         if (docking_side == "left"){
@@ -187,7 +198,7 @@ void Tessellation::add_mesh(
         } else {
             shifted_v = existing_v;
         }
-
+        kachelmuster_twin_v.push_back(shifted_v);
         reindexed_vertices[v] = shifted_v;
     }
 

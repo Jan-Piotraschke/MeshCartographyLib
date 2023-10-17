@@ -28,6 +28,7 @@ private:
     SurfaceParametrization& parent;
     std::string docking_side;
     int target_index;
+    std::vector<std::vector<pmp::Vertex>> equivalent_vertices;
 
     Point_3_eigen get_point_3d(
         pmp::SurfaceMesh& mesh,
