@@ -3,20 +3,22 @@
 #include <iostream>
 #include <fstream>
 #include <Eigen/Dense>
+#include <vector>
 
 #include "GeodesicDistanceHelperInterface.h"
-#include "GeodesicDistanceHelper.h"
+#include "TessellationDistanceHelper.h"
 
 
-class CachedGeodesicDistanceHelper : public GeodesicDistanceHelperInterface {
+class CachedTessellationDistanceHelper : public GeodesicDistanceHelperInterface {
 public:
-    CachedGeodesicDistanceHelper(fs::path mesh_path);
+    CachedTessellationDistanceHelper(fs::path mesh_path, std::vector<std::vector<int64_t>> equivalent_vertices);
 
     Eigen::MatrixXd get_mesh_distance_matrix() override;
 
 private:
     fs::path mesh_path;
-    GeodesicDistanceHelper geodesic_distance_helper;
+    std::vector<std::vector<int64_t>> equivalent_vertices;
+    TessellationDistanceHelper geodesic_distance_helper;
 
     template<typename MatrixType>
     void save_csv(MatrixType& distance_matrix_v, fs::path cache_file) {

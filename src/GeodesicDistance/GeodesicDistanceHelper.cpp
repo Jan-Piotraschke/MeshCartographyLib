@@ -12,10 +12,7 @@
 
 #include "GeodesicDistanceHelper.h"
 
-GeodesicDistanceHelper::GeodesicDistanceHelper(fs::path mesh_path, std::vector<std::vector<int64_t>>& equivalent_vertices
-) : mesh_path(mesh_path),
-    equivalent_vertices(equivalent_vertices)
-{}
+GeodesicDistanceHelper::GeodesicDistanceHelper(fs::path mesh_path) : mesh_path(mesh_path) {}
 
 
 // ========================================
@@ -36,8 +33,6 @@ Eigen::MatrixXd GeodesicDistanceHelper::get_mesh_distance_matrix() {
     for (auto vi : mesh.vertices()) {
         fill_distance_matrix(mesh, distance_matrix_v, vi);
     }
-
-    distance_matrix_v = filter_matrix(distance_matrix_v);
 
     return distance_matrix_v;
 }
@@ -80,33 +75,4 @@ std::vector<double> GeodesicDistanceHelper::calculate_geodesic_distance(
     }
 
     return distances;
-}
-
-
-Eigen::MatrixXd GeodesicDistanceHelper::filter_matrix(Eigen::MatrixXd& distance_matrix) {
-    const size_t numVerts = equivalent_vertices.size();
-    for (auto i: equivalent_vertices[0]){
-        std::cout << i << std::endl;
-    }
-    std::cout << "numVerts: " << numVerts << std::endl;
-    const size_t numVerts_kachelmuster = distance_matrix.rows();
-    Eigen::MatrixXd distance_matrix_v(numVerts, numVerts);
-
-    for (int vertice_id = 0; vertice_id < numVerts; ++vertice_id) {
-        auto equivalent_vertices_selected = equivalent_vertices[vertice_id];
-        equivalent_vertices_selected.push_back(vertice_id);
-
-        Eigen::MatrixXd filtered_matrix = distance_matrix.block(0, 0, numVerts_kachelmuster, numVerts);
-        Eigen::VectorXi keep_cols = Eigen::VectorXi::LinSpaced(filtered_matrix.cols(), 0, filtered_matrix.cols());
-        filtered_matrix = filtered_matrix(equivalent_vertices_selected, keep_cols);
-
-        Eigen::VectorXd minValues(numVerts);
-
-        for (int i = 0; i < filtered_matrix.cols(); ++i) {
-            distance_matrix_v(vertice_id, i) = filtered_matrix.col(i).minCoeff();
-        }
-    }
-    std::cout << "Finished filtering the distance matrix" << std::endl;
-    std::cout << distance_matrix_v << std::endl;
-    return distance_matrix_v;
 }
