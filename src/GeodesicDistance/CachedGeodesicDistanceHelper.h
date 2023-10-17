@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <Eigen/Dense>
+#include <vector>
 
 #include "GeodesicDistanceHelperInterface.h"
 #include "GeodesicDistanceHelper.h"
@@ -10,12 +11,13 @@
 
 class CachedGeodesicDistanceHelper : public GeodesicDistanceHelperInterface {
 public:
-    CachedGeodesicDistanceHelper(fs::path mesh_path);
+    CachedGeodesicDistanceHelper(fs::path mesh_path, std::vector<std::vector<int64_t>> equivalent_vertices);
 
     Eigen::MatrixXd get_mesh_distance_matrix() override;
 
 private:
     fs::path mesh_path;
+    std::vector<std::vector<int64_t>> equivalent_vertices;
     GeodesicDistanceHelper geodesic_distance_helper;
 
     template<typename MatrixType>

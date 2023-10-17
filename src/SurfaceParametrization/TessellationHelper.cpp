@@ -17,7 +17,7 @@
 // Public Functions
 // ========================================
 
-void Tessellation::create_kachelmuster() {
+std::vector<std::vector<int64_t>> Tessellation::create_kachelmuster() {
     analyseSides();
 
     std::string mesh_uv_path = parent.meshmeta.mesh_path;
@@ -40,10 +40,11 @@ void Tessellation::create_kachelmuster() {
     docking_side = "down";
     process_mesh(mesh_uv_path, mesh_original, 270.0, 0, 0);  // position 3 2 -> down
 
-
     std::cout << "Finished creating the kachelmuster" << std::endl;
     std::string output_path = (MESH_FOLDER / (mesh_uv_name + "_kachelmuster.off")).string();
     pmp::write(mesh_original, output_path);
+
+    return equivalent_vertices;
 }
 
 
@@ -171,7 +172,7 @@ void Tessellation::add_mesh(
     std::map<pmp::Vertex, pmp::Vertex> reindexed_vertices;
     for (auto v : mesh.vertices()) {
 
-        std::vector<pmp::Vertex>& kachelmuster_twin_v = equivalent_vertices[v.idx()];
+        std::vector<int64_t>& kachelmuster_twin_v = equivalent_vertices[v.idx()];
 
         std::vector<pmp::Vertex> border_list;
         if (docking_side == "left"){
@@ -191,7 +192,7 @@ void Tessellation::add_mesh(
 
         if (existing_v == pmp::Vertex(-1)) {
             shifted_v = mesh_original.add_vertex(pt_3d);
-            kachelmuster_twin_v.push_back(shifted_v);
+            kachelmuster_twin_v.push_back(shifted_v.idx());
         } else {
             shifted_v = existing_v;
         }
