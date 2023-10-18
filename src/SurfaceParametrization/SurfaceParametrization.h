@@ -26,6 +26,7 @@ namespace fs = boost::filesystem;
 
 #include "MeshDefinition.h"
 #include "SurfaceParametrizationHelperInterface.h"
+#include "MeshCuttingHelperInterface.h"
 
 const fs::path PROJECT_PATH_ = MeshCartographyLib_SOURCE_DIR;
 const fs::path MESH_FOLDER = PROJECT_PATH_  / "meshes";

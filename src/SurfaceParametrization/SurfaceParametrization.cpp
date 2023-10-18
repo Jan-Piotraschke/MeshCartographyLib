@@ -12,7 +12,7 @@
 
 #include "SurfaceParametrization.h"
 
-#include "CutLineHelper.h"
+#include "MeshCutting/CutLineHelper.h"
 #include "HarmonicParametrizationHelper.h"
 
 SurfaceParametrization::SurfaceParametrization(){}
@@ -107,7 +107,7 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
 
     // Set the border edges of the UV mesh
     CutLineHelper helper = CutLineHelper(mesh, start_vertex);
-    CutLineHelperInterface& cutline_helper = helper;
+    MeshCuttingHelperInterface& cutline_helper = helper;
     cutline_helper.cut_mesh_open();
 
     // Save the open mesh for testing

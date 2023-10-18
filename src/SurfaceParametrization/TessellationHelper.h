@@ -12,7 +12,7 @@ class Tessellation {
 public:
     Tessellation(SurfaceParametrization& sp) : parent(sp) {}
 
-    void create_kachelmuster();
+    std::vector<std::vector<int64_t>> create_kachelmuster();
 
     std::tuple<
         std::vector<Point_2_eigen>,
@@ -28,6 +28,7 @@ private:
     SurfaceParametrization& parent;
     std::string docking_side;
     int target_index;
+    std::vector<std::vector<int64_t>> equivalent_vertices;
 
     Point_3_eigen get_point_3d(
         pmp::SurfaceMesh& mesh,
