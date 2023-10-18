@@ -77,6 +77,8 @@ std::vector<double> TessellationDistanceHelper::calculate_geodesic_distance(
     pmp::VertexProperty<pmp::Scalar> distance_pmap = mesh.get_vertex_property<pmp::Scalar>("geodesic:distance");
 
     std::vector<double> distances;
+    distances.reserve(mesh.n_vertices());
+
     for (pmp::Vertex vertex : mesh.vertices()) {
         distances.push_back(distance_pmap[vertex]);
     }
