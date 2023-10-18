@@ -27,4 +27,5 @@ private:
     );
 
     Eigen::MatrixXd filter_matrix(Eigen::MatrixXd& distance_matrix);
+    void make_symmetric(Eigen::MatrixXd& distance_matrix);
 };
