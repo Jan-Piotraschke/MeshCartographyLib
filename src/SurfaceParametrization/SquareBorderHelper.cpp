@@ -12,6 +12,10 @@
 
 #include "SquareBorderHelper.h"
 
+// ========================================
+// Constructor
+// ========================================
+
 SquareBorderHelper::SquareBorderHelper(
     pmp::SurfaceMesh& mesh,
     pmp::Vertex& start_vertex
@@ -19,6 +23,10 @@ SquareBorderHelper::SquareBorderHelper(
     : mesh(mesh),
     start_vertex(start_vertex)
 {};
+
+// ========================================
+// Public Functions
+// ========================================
 
 void SquareBorderHelper::setup_square_boundary_constraints()
 {
@@ -35,7 +43,6 @@ void SquareBorderHelper::setup_square_boundary_constraints()
         tex[v] = pmp::TexCoord(0.0, 0.0); // Initialize to the bottom-left corner
     }
 
-    std::cout << "start_vertex:: " << start_vertex << std::endl;
     // collect boundary loop
     hh = mesh.halfedge(start_vertex);
     do {
@@ -51,42 +58,51 @@ void SquareBorderHelper::setup_square_boundary_constraints()
     for (vertice_id = 0, length = 0.0; vertice_id < N; ++vertice_id) {
         length += pmp::distance(points[loop[vertice_id]], points[loop[(vertice_id + 1) % N]]);
     }
+
     int corner_count = 4;
-
-    // Define lengths of the square sides
     double sideLength = length / corner_count;
-    double step_size = length / N;
+    initializeCorners(sideLength);
 
+    double step_size = length / N;
     auto tolerance = 1e-4;
 
     // map length intervals to square intervals
-    for (vertice_id = 0, l = 0.0; vertice_id < N;) {
-        if (l <= sideLength) { // bottom side
-            t[0] = l / sideLength;
-            t[1] = 0.0;
-        } else if (l <= 2 * sideLength) { // right side
-            t[0] = 1.0;
-            t[1] = (l - sideLength) / sideLength;
-        } else if (l <= 3 * sideLength) { // top side
-            t[0] = 1.0 - (l - 2 * sideLength) / sideLength;
-            t[1] = 1.0;
-        } else { // left side
-            t[0] = 0.0;
-            t[1] = 1.0 - (l - 3 * sideLength) / sideLength;
-        }
+    for (auto [vertice_id, l] = std::pair<unsigned int, double>{0, 0.0}; vertice_id < N; ++vertice_id, l += step_size) {
+        pmp::TexCoord t = mapToSquare(l);
 
-        if (t[0] < tolerance) {
-            t[0] = 0.0;
-        }
-        if (t[1] < tolerance) {
-            t[1] = 0.0;
-        }
+        // Apply tolerance
+        if (t[0] < tolerance) t[0] = 0.0;
+        if (t[1] < tolerance) t[1] = 0.0;
 
         tex[loop[vertice_id]] = t;
-
-        ++vertice_id;
-        if (vertice_id < N) {
-            l += step_size;
-        }
     }
+}
+
+
+
+// ========================================
+// Private Functions
+// ========================================
+
+void SquareBorderHelper::initializeCorners(double sideLength) {
+    corners.clear();
+    corners.push_back(Corner({0.0, 0.0}, sideLength));
+    corners.push_back(Corner({1.0, 0.0}, sideLength));
+    corners.push_back(Corner({1.0, 1.0}, sideLength));
+    corners.push_back(Corner({0.0, 1.0}, sideLength));
+}
+
+
+pmp::TexCoord SquareBorderHelper::mapToSquare(double l) {
+    double sum = 0.0;
+    for (size_t i = 0; i < corners.size(); ++i) {
+        const auto& corner = corners[i];
+        const auto& nextCorner = corners[(i + 1) % corners.size()];
+        if (l <= sum + corner.sideLength) {
+            double frac = (l - sum) / corner.sideLength;
+            return corner.position * (1.0 - frac) + nextCorner.position * frac;
+        }
+        sum += corner.sideLength;
+    }
+    return pmp::TexCoord(0.0, 0.0);
 }
