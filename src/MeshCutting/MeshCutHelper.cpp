@@ -1,5 +1,5 @@
 /**
- * @file        CutLineHelper.cpp
+ * @file        MeshCutHelper.cpp
  * @brief       Calculate the cut line of the mesh
  *
  * @author      Jan-Piotraschke
@@ -10,10 +10,10 @@
  * @todo        -
  */
 
-#include "CutLineHelper.h"
+#include "MeshCutHelper.h"
 #include "GaussianCutLineHelper.h"
 
-CutLineHelper::CutLineHelper(
+MeshCutHelper::MeshCutHelper(
     pmp::SurfaceMesh& mesh,
     pmp::Vertex& start_vertex
 )
@@ -28,7 +28,7 @@ CutLineHelper::CutLineHelper(
 /**
 * @brief Calculate the border of the mesh
 */
-void CutLineHelper::cut_mesh_open(){
+void MeshCutHelper::cut_mesh_open(){
     // Get the cutline
     GaussianCutLineHelper cutline_helper = GaussianCutLineHelper(mesh, start_vertex);
     auto edge_path = cutline_helper.get_gaussian_cutline();
@@ -42,7 +42,7 @@ void CutLineHelper::cut_mesh_open(){
 // Private Functions
 // ========================================
 
-std::map<pmp::Vertex, int> CutLineHelper::get_vertex_neighbors_count() const {
+std::map<pmp::Vertex, int> MeshCutHelper::get_vertex_neighbors_count() const {
     std::map<pmp::Vertex, int> vertex_neighbors_count;
     for (const auto& v : mesh.vertices()) {
         if (std::find(cut_line_vertices.begin(), cut_line_vertices.end(), v) == cut_line_vertices.end()) {
@@ -53,7 +53,7 @@ std::map<pmp::Vertex, int> CutLineHelper::get_vertex_neighbors_count() const {
 }
 
 
-void CutLineHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges) {
+void MeshCutHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges) {
     pmp::SurfaceMesh mesh_uv;
 
     std::vector<pmp::Vertex> edge_direction;
