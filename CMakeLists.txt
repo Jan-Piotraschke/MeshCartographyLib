@@ -1,28 +1,58 @@
 cmake_minimum_required(VERSION 3.22)
-
-project(MeshCartographyLib VERSION 1.0)
+project(
+  MeshCartographyLib
+  VERSION 1.0
+  DESCRIPTION "Mesh Cartography Library"
+  LANGUAGES CXX
+)
+# cmake_policy(SET CMP0072 NEW)
 
 # Make the project foulder path available to the source code
 add_definitions("-DMeshCartographyLib_SOURCE_DIR=\"${PROJECT_SOURCE_DIR}\"")
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/pmp-library/cmake)
 
 # Specify the required C++ standard
 set(CMAKE_CXX_STANDARD 17)
 
-# Find required packages
-find_package(PMP REQUIRED)
-find_package(Boost COMPONENTS filesystem REQUIRED)
-find_package(Eigen3 REQUIRED)
-find_package(GTest REQUIRED)
+if(EMSCRIPTEN)
+  add_compile_options(--no-heap-copy)
+  add_compile_options(-fexceptions)
+  add_link_options(-fexceptions)
+  add_link_options(
+    "SHELL:-sWASM=1 -sUSE_WEBGL2=1 -sUSE_GLFW=3 -sALLOW_MEMORY_GROWTH=1 -sALLOW_TABLE_GROWTH=1 -sSTACK_SIZE=5MB"
+  )
+  set(CMAKE_EXECUTABLE_SUFFIX ".html")
+endif()
 
-include_directories(${GTEST_INCLUDE_DIRS})
+# which directories to process
+if(EMSCRIPTEN)
+  add_subdirectory(pmp-library/src/pmp)
+else()
+  find_package(PMP REQUIRED)
+  find_package(GTest REQUIRED)
+  include_directories(${GTEST_INCLUDE_DIRS})
+endif()
+
+# SET(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} "/opt/homebrew/Cellar/boost/1.82.0_1/include")
+# SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} "/opt/homebrew/Cellar/boost/1.82.0_1/lib")
+# set(BOOST_INCLUDE_DIR "/opt/homebrew/Cellar/boost/1.82.0_1/include")
+find_package(Boost COMPONENTS filesystem REQUIRED)
+
+
+# Find required packages
+set(EIGEN3_INCLUDE_DIR "${MeshCartographyLib_SOURCE_DIR}/pmp-library/external/eigen-3.4.0")
 
 # Add the source files of your library
 file(GLOB_RECURSE SIMULATION_SOURCES src/*.cpp)
 add_library(MeshCartographyLib STATIC ${SIMULATION_SOURCES})
 
+# Include the Eigen directory
+target_include_directories(MeshCartographyLib PUBLIC
+    ${EIGEN3_INCLUDE_DIR}
+)
+
 # Link the library with the required packages
 target_link_libraries(MeshCartographyLib PUBLIC
-    Eigen3::Eigen
     pmp
     Boost::filesystem
 )
@@ -33,15 +63,17 @@ target_include_directories(MeshCartographyLib PUBLIC src)
 # Add C++ source files
 add_executable(MeshCartography MeshCartography.cpp)
 target_link_libraries(MeshCartography PUBLIC
-        MeshCartographyLib
-        pmp
+    MeshCartographyLib
+    pmp
 )
 
-# Collect all test source files
-file(GLOB_RECURSE TEST_SOURCES tests/*.cpp)
+if (NOT EMSCRIPTEN)
+  # Collect all test source files
+  file(GLOB_RECURSE TEST_SOURCES tests/*.cpp)
 
-# Create a test executable for all available tests
-add_executable(MeshCartography_test ${TEST_SOURCES})
+  # Create a test executable for all available tests
+  add_executable(MeshCartography_test ${TEST_SOURCES})
 
-# Link your libraries to the test executable
-target_link_libraries(MeshCartography_test PRIVATE MeshCartographyLib ${GTEST_BOTH_LIBRARIES} pthread)
+  # Link your libraries to the test executable
+  target_link_libraries(MeshCartography_test PRIVATE MeshCartographyLib ${GTEST_BOTH_LIBRARIES} pthread)
+endif()
