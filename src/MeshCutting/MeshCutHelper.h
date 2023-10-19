@@ -8,9 +8,9 @@
 #include "SurfaceParametrizationHelperInterface.h"
 #include "MeshCuttingHelperInterface.h"
 
-class CutLineHelper : public MeshCuttingHelperInterface {
+class MeshCutHelper : public MeshCuttingHelperInterface {
 public:
-    CutLineHelper(
+    MeshCutHelper(
         pmp::SurfaceMesh& mesh,
         pmp::Vertex& start_vertex
     );
