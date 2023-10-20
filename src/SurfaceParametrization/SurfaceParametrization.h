@@ -15,15 +15,6 @@
 // Eigen
 #include <Eigen/Dense>
 
-// Boost libraries
-#include <boost/optional.hpp>
-#include <boost/optional/optional_io.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/graph_traits.hpp>
-#include <boost/property_map/property_map.hpp>
-namespace fs = boost::filesystem;
-
 #include "MeshDefinition.h"
 #include "SurfaceParametrizationHelperInterface.h"
 #include "MeshCuttingHelperInterface.h"
