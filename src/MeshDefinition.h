@@ -1,13 +1,13 @@
 #pragma once
 
-// Boost libraries
 #include <filesystem>
-#include <boost/optional.hpp>
-#include <boost/optional/optional_io.hpp>
+#include <optional>
+namespace fs = std::filesystem;
+
+// Boost libraries
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <boost/property_map/property_map.hpp>
-namespace fs = std::filesystem;
 
 // PMP libraries
 #include <pmp/surface_mesh.h>
