@@ -25,10 +25,7 @@ if(EMSCRIPTEN)
 endif()
 
 # which directories to process
-if(EMSCRIPTEN)
-  add_subdirectory(pmp-library/src/pmp)
-else()
-  find_package(PMP REQUIRED)
+if(NOT EMSCRIPTEN)
   find_package(GTest REQUIRED)
   include_directories(${GTEST_INCLUDE_DIRS})
 endif()
@@ -45,10 +42,13 @@ target_include_directories(MeshCartographyLib PUBLIC
     ${EIGEN3_INCLUDE_DIR}
 )
 
+include_directories(${MeshCartographyLib_SOURCE_DIR}/pmp-library/src/)
+add_subdirectory("${MeshCartographyLib_SOURCE_DIR}/pmp-library/src/pmp")
+
+target_include_directories(MeshCartographyLib PUBLIC "${MeshCartographyLib_SOURCE_DIR}/pmp-library/src")
+
 # Link the library with the required packages
-target_link_libraries(MeshCartographyLib PUBLIC
-    pmp
-)
+target_link_libraries(MeshCartographyLib PUBLIC pmp)
 
 # Add include directories
 target_include_directories(MeshCartographyLib PUBLIC src)
