@@ -4,11 +4,6 @@
 #include <optional>
 namespace fs = std::filesystem;
 
-// Boost libraries
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/graph_traits.hpp>
-#include <boost/property_map/property_map.hpp>
-
 // PMP libraries
 #include <pmp/surface_mesh.h>
 #include <pmp/io/read_off.h>

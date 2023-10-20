@@ -33,12 +33,6 @@ else()
   include_directories(${GTEST_INCLUDE_DIRS})
 endif()
 
-# SET(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} "/opt/homebrew/Cellar/boost/1.82.0_1/include")
-# SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} "/opt/homebrew/Cellar/boost/1.82.0_1/lib")
-# set(BOOST_INCLUDE_DIR "/opt/homebrew/Cellar/boost/1.82.0_1/include")
-find_package(Boost COMPONENTS filesystem REQUIRED)
-
-
 # Find required packages
 set(EIGEN3_INCLUDE_DIR "${MeshCartographyLib_SOURCE_DIR}/pmp-library/external/eigen-3.4.0")
 
@@ -54,7 +48,6 @@ target_include_directories(MeshCartographyLib PUBLIC
 # Link the library with the required packages
 target_link_libraries(MeshCartographyLib PUBLIC
     pmp
-    Boost::filesystem
 )
 
 # Add include directories
