@@ -36,7 +36,7 @@ private:
         indata.open(cache_file.string());
         std::string line;
         std::vector<double> values;
-        uint rows = 0;
+        unsigned int rows = 0;
         while (std::getline(indata, line)) {
             std::stringstream lineStream(line);
             std::string cell;

@@ -12,12 +12,12 @@
  */
 
 #include <iostream>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include "SurfaceParametrization/SurfaceParametrization.h"
 #include "SurfaceParametrization/TessellationHelper.h"
 
-const boost::filesystem::path PROJECT_PATH = MeshCartographyLib_SOURCE_DIR;
+const std::filesystem::path PROJECT_PATH = MeshCartographyLib_SOURCE_DIR;
 
 int main()
 {

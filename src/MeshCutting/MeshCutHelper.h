@@ -3,7 +3,6 @@
 #include <vector>
 #include <string>
 #include <Eigen/Dense>
-#include <gtest/gtest_prod.h>
 
 #include "SurfaceParametrizationHelperInterface.h"
 #include "MeshCuttingHelperInterface.h"
