@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Eigen/Dense>
+#include <set>
 
 #include "MeshDefinition.h"
 #include "GeodesicDistanceHelperInterface.h"
@@ -21,6 +22,11 @@ private:
     fs::path mesh_path;
 
     std::vector<double> calculate_geodesic_distance(
+        pmp::SurfaceMesh& mesh,
+        pmp::Vertex start_vertex
+    );
+
+    std::vector<double> calculate_edge_count_distance(
         pmp::SurfaceMesh& mesh,
         pmp::Vertex start_vertex
     );
