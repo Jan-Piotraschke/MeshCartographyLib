@@ -37,12 +37,6 @@ Eigen::MatrixXd DijkstraDistanceHelper::get_mesh_distance_matrix() {
     return distance_matrix_v;
 }
 
-
-
-// ========================================
-// Private Functions
-// ========================================
-
 /**
  * @brief Variable to keep track of the current index of the vector of distances, and each thread processes a
  * different index until all the distances have been added to the distance matrix.
@@ -59,6 +53,11 @@ void DijkstraDistanceHelper::fill_distance_matrix(
     }
 }
 
+
+
+// ========================================
+// Private Functions
+// ========================================
 
 std::vector<double> DijkstraDistanceHelper::calculate_geodesic_distance(
     pmp::SurfaceMesh& mesh,
