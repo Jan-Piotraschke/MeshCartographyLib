@@ -5,9 +5,9 @@
 #include "MeshDefinition.h"
 #include "GeodesicDistanceHelperInterface.h"
 
-class GeodesicDistanceHelper : public GeodesicDistanceHelperInterface {
+class HeatDistanceHelper : public GeodesicDistanceHelperInterface {
 public:
-    GeodesicDistanceHelper(fs::path mesh_path);
+    HeatDistanceHelper(fs::path mesh_path);
 
     Eigen::MatrixXd get_mesh_distance_matrix() override;
 
