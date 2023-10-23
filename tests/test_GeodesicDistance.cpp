@@ -7,7 +7,7 @@
  * @license     Apache License 2.0
  *
  * @bug         -
- * @todo        -
+ * @todo        - fix the comparison between the 3D and the tessellation distance matrix, because the UV mesh has more vertices than the 3D mesh
  */
 
 #include <gtest/gtest.h>
@@ -43,7 +43,7 @@ protected:
         GeodesicDistanceHelperInterface& geodesic_distance_helper = helper;
         distance_matrix_tessellation = geodesic_distance_helper.get_mesh_distance_matrix();
 
-        CachedGeodesicDistanceHelper helper_3D = CachedGeodesicDistanceHelper(mesh_open);
+        CachedGeodesicDistanceHelper helper_3D = CachedGeodesicDistanceHelper(mesh);
         GeodesicDistanceHelperInterface& geodesic_distance_helper_3D = helper_3D;
         distance_matrix_3D = geodesic_distance_helper_3D.get_mesh_distance_matrix();
     }
