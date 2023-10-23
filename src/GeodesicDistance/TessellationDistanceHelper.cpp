@@ -33,12 +33,12 @@ Eigen::MatrixXd TessellationDistanceHelper::get_mesh_distance_matrix() {
     size_t numVerts = mesh.n_vertices();
     const size_t original_vertices_num = equivalent_vertices.size();
     Eigen::MatrixXd distance_matrix_v(original_vertices_num, numVerts);
-    HeatDistanceHelper geodesic_distance_helper(mesh_path);
+    HeatDistanceHelper heat_distance_helper(mesh_path);
 
     // loop over the original vertices and fill the distance matrix
     for (int i = 0; i < original_vertices_num; ++i) {
         if (i % 100 == 0) std::cout << "i: " << i << std::endl;
-        geodesic_distance_helper.fill_distance_matrix(mesh, distance_matrix_v, pmp::Vertex(i));
+        heat_distance_helper.fill_distance_matrix(mesh, distance_matrix_v, pmp::Vertex(i));
     }
 
     distance_matrix_v = filter_matrix(distance_matrix_v);
