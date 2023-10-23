@@ -37,12 +37,6 @@ Eigen::MatrixXd HeatDistanceHelper::get_mesh_distance_matrix() {
     return distance_matrix_v;
 }
 
-
-
-// ========================================
-// Private Functions
-// ========================================
-
 /**
  * @brief Variable to keep track of the current index of the vector of distances, and each thread processes a
  * different index until all the distances have been added to the distance matrix.
@@ -60,6 +54,10 @@ void HeatDistanceHelper::fill_distance_matrix(
 }
 
 
+// ========================================
+// Private Functions
+// ========================================
+
 std::vector<double> HeatDistanceHelper::calculate_geodesic_distance(
     pmp::SurfaceMesh& mesh,
     pmp::Vertex start_vertex
@@ -70,6 +68,8 @@ std::vector<double> HeatDistanceHelper::calculate_geodesic_distance(
     pmp::VertexProperty<pmp::Scalar> distance_pmap = mesh.get_vertex_property<pmp::Scalar>("geodesic:distance");
 
     std::vector<double> distances;
+    distances.reserve(mesh.n_vertices());
+
     for (pmp::Vertex vertex : mesh.vertices()) {
         distances.push_back(distance_pmap[vertex]);
     }

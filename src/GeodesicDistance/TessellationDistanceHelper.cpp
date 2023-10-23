@@ -11,6 +11,7 @@
 */
 
 #include "TessellationDistanceHelper.h"
+#include "HeatDistanceHelper.h"
 
 TessellationDistanceHelper::TessellationDistanceHelper(fs::path mesh_path, std::vector<std::vector<int64_t>> equivalent_vertices
 ) : mesh_path(mesh_path),
@@ -32,11 +33,12 @@ Eigen::MatrixXd TessellationDistanceHelper::get_mesh_distance_matrix() {
     size_t numVerts = mesh.n_vertices();
     const size_t original_vertices_num = equivalent_vertices.size();
     Eigen::MatrixXd distance_matrix_v(original_vertices_num, numVerts);
+    HeatDistanceHelper geodesic_distance_helper(mesh_path);
 
     // loop over the original vertices and fill the distance matrix
     for (int i = 0; i < original_vertices_num; ++i) {
         if (i % 100 == 0) std::cout << "i: " << i << std::endl;
-        fill_distance_matrix(mesh, distance_matrix_v, pmp::Vertex(i));
+        geodesic_distance_helper.fill_distance_matrix(mesh, distance_matrix_v, pmp::Vertex(i));
     }
 
     distance_matrix_v = filter_matrix(distance_matrix_v);
@@ -49,43 +51,6 @@ Eigen::MatrixXd TessellationDistanceHelper::get_mesh_distance_matrix() {
 // ========================================
 // Private Functions
 // ========================================
-
-/**
- * @brief Variable to keep track of the current index of the vector of distances, and each thread processes a
- * different index until all the distances have been added to the distance matrix.
-*/
-void TessellationDistanceHelper::fill_distance_matrix(
-    pmp::SurfaceMesh& mesh,
-    Eigen::MatrixXd& distance_matrix,
-    pmp::Vertex vertex
-){
-    if (distance_matrix.row(vertex.idx()).head(2).isZero()) {
-        // get the distance of all vertices to all other vertices
-        std::vector<double> vertices_3D_distance_map = calculate_geodesic_distance(mesh, vertex);
-        distance_matrix.row(vertex.idx()) = Eigen::Map<Eigen::VectorXd>(vertices_3D_distance_map.data(), vertices_3D_distance_map.size());
-    }
-}
-
-
-std::vector<double> TessellationDistanceHelper::calculate_geodesic_distance(
-    pmp::SurfaceMesh& mesh,
-    pmp::Vertex start_vertex
-){
-    std::vector<pmp::Vertex> seeds{start_vertex};
-    pmp::geodesics_heat(mesh, seeds);
-
-    pmp::VertexProperty<pmp::Scalar> distance_pmap = mesh.get_vertex_property<pmp::Scalar>("geodesic:distance");
-
-    std::vector<double> distances;
-    distances.reserve(mesh.n_vertices());
-
-    for (pmp::Vertex vertex : mesh.vertices()) {
-        distances.push_back(distance_pmap[vertex]);
-    }
-
-    return distances;
-}
-
 
 Eigen::MatrixXd TessellationDistanceHelper::filter_matrix(Eigen::MatrixXd& distance_matrix) {
     const size_t numVerts = equivalent_vertices.size();
