@@ -15,14 +15,14 @@ jobs:
     - name: Check out source code
       uses: actions/checkout@v3
 
-    - name: Initialize and update submodules
-      run: |
-        make check_submodule
-
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install -y cmake ninja-build g++ googletest libgtest-dev llvm clang
+        sudo apt install -y cmake ninja-build g++ googletest libgtest-dev llvm clang libxrandr-dev
+
+    - name: Initialize and update submodules
+      run: |
+        make check_submodule
 
     - name: Set environment
       run: |
