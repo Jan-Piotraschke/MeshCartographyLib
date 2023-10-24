@@ -5,20 +5,20 @@
 #include "MeshDefinition.h"
 #include "GeodesicDistanceHelperInterface.h"
 
-class GeodesicDistanceHelper : public GeodesicDistanceHelperInterface {
+class HeatDistanceHelper : public GeodesicDistanceHelperInterface {
 public:
-    GeodesicDistanceHelper(fs::path mesh_path);
+    HeatDistanceHelper(fs::path mesh_path);
 
     Eigen::MatrixXd get_mesh_distance_matrix() override;
-
-private:
-    fs::path mesh_path;
 
     void fill_distance_matrix(
         pmp::SurfaceMesh& mesh,
         Eigen::MatrixXd& distance_matrix,
         pmp::Vertex vertex
     );
+
+private:
+    fs::path mesh_path;
 
     std::vector<double> calculate_geodesic_distance(
         pmp::SurfaceMesh& mesh,

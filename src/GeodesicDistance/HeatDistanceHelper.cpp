@@ -1,5 +1,5 @@
 /**
- * @file        GeodesicDistanceHelper.cpp
+ * @file        HeatDistanceHelper.cpp
  * @brief       Zuständing für die Berechnung
  *
  * @author      Jan-Piotraschke
@@ -10,9 +10,9 @@
  * @todo        - check, ob man nicht hier Eigen:: durch std::vector ersetzen kann
  */
 
-#include "GeodesicDistanceHelper.h"
+#include "HeatDistanceHelper.h"
 
-GeodesicDistanceHelper::GeodesicDistanceHelper(fs::path mesh_path) : mesh_path(mesh_path) {}
+HeatDistanceHelper::HeatDistanceHelper(fs::path mesh_path) : mesh_path(mesh_path) {}
 
 
 // ========================================
@@ -22,7 +22,7 @@ GeodesicDistanceHelper::GeodesicDistanceHelper(fs::path mesh_path) : mesh_path(m
 /**
  * @brief Calculate the distance using the Heat Method
 */
-Eigen::MatrixXd GeodesicDistanceHelper::get_mesh_distance_matrix() {
+Eigen::MatrixXd HeatDistanceHelper::get_mesh_distance_matrix() {
     pmp::SurfaceMesh mesh;
     pmp::read_off(mesh, mesh_path.string());
 
@@ -37,17 +37,11 @@ Eigen::MatrixXd GeodesicDistanceHelper::get_mesh_distance_matrix() {
     return distance_matrix_v;
 }
 
-
-
-// ========================================
-// Private Functions
-// ========================================
-
 /**
  * @brief Variable to keep track of the current index of the vector of distances, and each thread processes a
  * different index until all the distances have been added to the distance matrix.
 */
-void GeodesicDistanceHelper::fill_distance_matrix(
+void HeatDistanceHelper::fill_distance_matrix(
     pmp::SurfaceMesh& mesh,
     Eigen::MatrixXd& distance_matrix,
     pmp::Vertex vertex
@@ -60,7 +54,11 @@ void GeodesicDistanceHelper::fill_distance_matrix(
 }
 
 
-std::vector<double> GeodesicDistanceHelper::calculate_geodesic_distance(
+// ========================================
+// Private Functions
+// ========================================
+
+std::vector<double> HeatDistanceHelper::calculate_geodesic_distance(
     pmp::SurfaceMesh& mesh,
     pmp::Vertex start_vertex
 ){
@@ -70,6 +68,8 @@ std::vector<double> GeodesicDistanceHelper::calculate_geodesic_distance(
     pmp::VertexProperty<pmp::Scalar> distance_pmap = mesh.get_vertex_property<pmp::Scalar>("geodesic:distance");
 
     std::vector<double> distances;
+    distances.reserve(mesh.n_vertices());
+
     for (pmp::Vertex vertex : mesh.vertices()) {
         distances.push_back(distance_pmap[vertex]);
     }

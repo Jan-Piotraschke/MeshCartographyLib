@@ -5,8 +5,8 @@
 #include <Eigen/Dense>
 
 #include "GeodesicDistanceHelperInterface.h"
-#include "GeodesicDistanceHelper.h"
-
+#include "HeatDistanceHelper.h"
+#include "DijkstraDistanceHelper.h"
 
 class CachedGeodesicDistanceHelper : public GeodesicDistanceHelperInterface {
 public:
@@ -16,7 +16,7 @@ public:
 
 private:
     fs::path mesh_path;
-    GeodesicDistanceHelper geodesic_distance_helper;
+    DijkstraDistanceHelper geodesic_distance_helper;
 
     template<typename MatrixType>
     void save_csv(MatrixType& distance_matrix_v, fs::path cache_file) {
