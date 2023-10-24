@@ -31,7 +31,6 @@ jobs:
 
     - name: Build the project
       run: |
-        mkdir build
         cd build
         cmake -DCMAKE_CXX_STANDARD=20 -G Ninja ..
         ninja -j $(nproc)
