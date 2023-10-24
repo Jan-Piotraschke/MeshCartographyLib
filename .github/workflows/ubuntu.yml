@@ -17,8 +17,7 @@ jobs:
 
     - name: Initialize and update submodules
       run: |
-        git submodule update --init -- pmp-library
-        make install_pmp
+        make check_submodule
 
     - name: Install dependencies
       run: |
