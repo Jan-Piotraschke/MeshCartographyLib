@@ -16,3 +16,30 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+
+    # - name: Set up Homebrew
+    #   run: |
+    #     brew update
+
+    # - name: Install dependencies
+    #   run: |
+    #     brew install llvm
+    #     brew install cmake
+    #     brew install ninja
+    #     brew install googletest
+
+    # - name: Set environment
+    #   run: |
+    #     LLVM_PATH=$(brew --prefix llvm)
+    #     echo "C_COMPILER=$LLVM_PATH/bin/clang" >> $GITHUB_ENV
+    #     echo "CXX_COMPILER=$LLVM_PATH/bin/clang++" >> $GITHUB_ENV
+
+    # - name: Build the project
+    #   run: |
+    #     mkdir build
+    #     cd build
+    #     cmake -DCMAKE_CXX_STANDARD=20 -G Ninja ..
+    #     ninja
+
+    # - name: Test
+    #   run: ./build/MeshCartography_test
