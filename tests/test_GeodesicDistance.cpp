@@ -27,17 +27,27 @@ fs::path mesh = MESH_CARTOGRAPHY / "meshes/ellipsoid_x4.off";
 fs::path mesh_open = MESH_CARTOGRAPHY / "meshes/ellipsoid_x4_open.off";
 fs::path mesh_kachelmuster = MESH_CARTOGRAPHY / "meshes/ellipsoid_x4_uv_kachelmuster.off";
 
+// fs::path mesh = MESH_CARTOGRAPHY / "meshes/bear.off";
+// fs::path mesh_open = MESH_CARTOGRAPHY / "meshes/bear_open.off";
+// fs::path mesh_kachelmuster = MESH_CARTOGRAPHY / "meshes/bear_uv_kachelmuster.off";
+
+// fs::path mesh = MESH_CARTOGRAPHY / "meshes/bunny.off";
+// fs::path mesh_open = MESH_CARTOGRAPHY / "meshes/bunny_open.off";
+// fs::path mesh_kachelmuster = MESH_CARTOGRAPHY / "meshes/bunny_uv_kachelmuster.off";
+
 SurfaceParametrization _surface_parametrization = SurfaceParametrization();
 Tessellation tessellation(_surface_parametrization);
 
 class GeodesicDistanceTest : public ::testing::Test {
 protected:
-    Eigen::MatrixXd distance_matrix_tessellation;
-    Eigen::MatrixXd distance_matrix_3D;
+    static Eigen::MatrixXd distance_matrix_tessellation;
+    static Eigen::MatrixXd distance_matrix_3D;
 
-    void SetUp() override {
-        _surface_parametrization.create_uv_surface(mesh, 0);
+    static void SetUpTestCase() {
+         _surface_parametrization.create_uv_surface(mesh, 0);
         // Original Ellipsoid mesh has 4670 vertices
+        // Bear: 13826
+        // Bunny: 34835
         int n_mesh = 4670;
 
         std::vector<std::vector<int64_t>> equivalent_vertices = tessellation.create_kachelmuster();
@@ -55,6 +65,14 @@ protected:
         distance_matrix_3D = geodesic_distance_helper_3D.get_mesh_distance_matrix();
     }
 
+    // If you need any per-test setup
+    void SetUp() override {}
+
+    static void TearDownTestCase() {
+        distance_matrix_tessellation.resize(0, 0);
+        distance_matrix_3D.resize(0, 0);
+    }
+
     double calculateSimilarityPercentage() {
         const double THRESHOLD = 1e-5;
 
@@ -69,6 +87,10 @@ protected:
     }
 };
 
+// Static members initialization
+Eigen::MatrixXd GeodesicDistanceTest::distance_matrix_tessellation;
+Eigen::MatrixXd GeodesicDistanceTest::distance_matrix_3D;
+
 TEST_F(GeodesicDistanceTest, DistanceMatrixSaved) {
     fs::path distance_matrix_path = MESH_CARTOGRAPHY / "meshes/data/ellipsoid_x4_distance_matrix_static.csv";
     std::ifstream infile(distance_matrix_path.string());
@@ -79,4 +101,29 @@ TEST_F(GeodesicDistanceTest, MatricesSimilarity) {
     double similarity = calculateSimilarityPercentage();
     std::cout << "Similarity: " << similarity << "%" << std::endl;
     ASSERT_GT(similarity, 90.0);
+}
+
+TEST_F(GeodesicDistanceTest, DistanceMatrixNonNegativity) {
+    // Count the number of negative elements in both matrices
+    int countNegativeTessellation = (distance_matrix_tessellation.array() < 0.0).count();
+    int countNegative3D = (distance_matrix_3D.array() < 0.0).count();
+
+    ASSERT_EQ(countNegativeTessellation, 0);
+    ASSERT_EQ(countNegative3D, 0);
+}
+
+TEST_F(GeodesicDistanceTest, DistanceMatrixNoNaN) {
+    // Check if any element is NaN
+    int countNaNInTessellation = (distance_matrix_tessellation.array().isNaN()).count();
+    int countNaNIn3D = (distance_matrix_3D.array().isNaN()).count();
+
+    ASSERT_EQ(countNaNInTessellation, 0);
+    ASSERT_EQ(countNaNIn3D, 0);
+}
+
+TEST_F(GeodesicDistanceTest, DistanceMatrixDiagonalCheck) {
+    for (int i = 0; i < distance_matrix_tessellation.rows(); ++i) {
+        ASSERT_DOUBLE_EQ(distance_matrix_tessellation(i, i), 0.0);
+        ASSERT_DOUBLE_EQ(distance_matrix_3D(i, i), 0.0);
+    }
 }
