@@ -30,6 +30,6 @@ jobs:
 
         git config user.email "github-actions[bot]@users.noreply.github.com"
         git config user.name "GitHub Actions Bot"
-        git commit -m "Updated @date tag" || echo "No changes to commit"
+        git commit -m "Updated date tag" || echo "No changes to commit"
         git push
 
