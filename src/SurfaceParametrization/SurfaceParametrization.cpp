@@ -143,11 +143,6 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     LengthDistortionHelper length_distortion_helper = LengthDistortionHelper(mesh_open, mesh_uv);
     double length_distortion = length_distortion_helper.computeLengthDistortion();
 
-    // Values nearish to 0 are good
-    std::cout << "Angle distortion: " << angle_distortion << std::endl;
-    std::cout << "Face distortion: " << face_distortion << std::endl;
-    std::cout << "Length distortion: " << length_distortion << std::endl;
-
     std::vector<int64_t> h_v_mapping_vector;
     int number_of_vertices = mesh.n_vertices();
     vertice_3D.resize(number_of_vertices, 3);
