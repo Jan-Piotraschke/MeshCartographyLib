@@ -27,17 +27,17 @@ jobs:
       # Install required dependencies using Homebrew
       - name: Install Dependencies
         run: |
-          brew install ninja llvm googletest
+          brew install ninja googletest
 
       # Initialize submodule
       - name: Initialize Submodule
         run: make check_submodule
 
-      # Set up the C and C++ compiler environment variables using the Homebrew path for LLVM
+      # Set up the C and C++ compiler to use native macOS compilers
       - name: Set Compiler Environment
         run: |
-          echo "C_COMPILER=$LLVM_PATH/bin/clang" >> $GITHUB_ENV
-          echo "CXX_COMPILER=$LLVM_PATH/bin/clang++" >> $GITHUB_ENV
+          echo "C_COMPILER=clang" >> $GITHUB_ENV
+          echo "CXX_COMPILER=clang++" >> $GITHUB_ENV
 
       # Build the project using CMake and Ninja
       - name: Build Project
