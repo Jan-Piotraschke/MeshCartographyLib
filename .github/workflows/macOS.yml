@@ -3,6 +3,8 @@ name: C/C++ CI on macOS
 on:
   # Trigger workflow on push and pull requests to the 'main' branch
   push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
