@@ -14,6 +14,7 @@
 
 #include "MeshCutting/MeshCutHelper.h"
 #include "HarmonicParametrizationHelper.h"
+#include "MeshMetric/AngleDistortionHelper.h"
 
 SurfaceParametrization::SurfaceParametrization(){}
 
@@ -114,10 +115,19 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     fs::path mesh_uv_path_test = MESH_FOLDER / (get_mesh_name(mesh_3D_file_path) + "_open.off");
     pmp::write(mesh, mesh_uv_path_test.string());
 
+    pmp::SurfaceMesh mesh_open;
+    pmp::read_off(mesh_open, mesh_uv_path_test.string());
+
     // Perform the parameterization
     HarmonicParametrizationHelper helper_p = HarmonicParametrizationHelper(mesh, start_vertex);
     ParametrizationHelperInterface& parametrization_helper = helper_p;
     parametrization_helper.parameterize_UV_mesh();
+
+    // Calculate the angle distortion
+    AngleDistortionHelper angle_distortion_helper = AngleDistortionHelper(mesh_open, mesh);
+    double angle_distortion = angle_distortion_helper.computeAngleDistortion();
+    std::cout << "Angle distortion: " << angle_distortion << std::endl;
+
 
     // Save the uv mesh
     fs::path mesh_uv_path = MESH_FOLDER / (get_mesh_name(mesh_3D_file_path) + "_uv.off");
