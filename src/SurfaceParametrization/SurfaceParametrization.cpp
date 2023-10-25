@@ -15,6 +15,10 @@
 #include "MeshCutting/MeshCutHelper.h"
 #include "HarmonicParametrizationHelper.h"
 
+#include "MeshMetric/AngleDistortionHelper.h"
+#include "MeshMetric/FaceDistortionHelper.h"
+#include "MeshMetric/LengthDistortionHelper.h"
+
 SurfaceParametrization::SurfaceParametrization(){}
 
 
@@ -117,11 +121,27 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     // Perform the parameterization
     HarmonicParametrizationHelper helper_p = HarmonicParametrizationHelper(mesh, start_vertex);
     ParametrizationHelperInterface& parametrization_helper = helper_p;
-    parametrization_helper.parameterize_UV_mesh();
+    parametrization_helper.parameterize_UV_mesh(false);
 
-    // Save the uv mesh
+   // Save the uv mesh
     fs::path mesh_uv_path = MESH_FOLDER / (get_mesh_name(mesh_3D_file_path) + "_uv.off");
     save_uv_as_mesh(mesh, mesh_uv_path);
+
+    pmp::SurfaceMesh mesh_open, mesh_uv;
+    pmp::read_off(mesh_open, mesh_uv_path_test.string());
+    pmp::read_off(mesh_uv, mesh_uv_path.string());
+
+    // Calculate the angle distortion
+    AngleDistortionHelper angle_distortion_helper = AngleDistortionHelper(mesh_open, mesh_uv);
+    double angle_distortion = angle_distortion_helper.computeAngleDistortion();
+
+    // Calculate the face distortion
+    FaceDistortionHelper face_distortion_helper = FaceDistortionHelper(mesh_open, mesh_uv);
+    double face_distortion = face_distortion_helper.computeFaceDistortion();
+
+    // Calculate the length distortion
+    LengthDistortionHelper length_distortion_helper = LengthDistortionHelper(mesh_open, mesh_uv);
+    double length_distortion = length_distortion_helper.computeLengthDistortion();
 
     std::vector<int64_t> h_v_mapping_vector;
     int number_of_vertices = mesh.n_vertices();
