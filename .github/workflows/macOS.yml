@@ -27,14 +27,15 @@ jobs:
       # Install required dependencies using Homebrew
       - name: Install Dependencies
         run: |
-          brew link --overwrite python@3.11
-          brew services start php
-          brew install llvm cmake ninja googletest
+          brew install llvm ninja googletest
+
+      # Initialize submodule
+      - name: Initialize Submodule
+        run: make check_submodule
 
       # Set up the C and C++ compiler environment variables using the Homebrew path for LLVM
       - name: Set Compiler Environment
         run: |
-          LLVM_PATH=$(brew --prefix llvm)
           echo "C_COMPILER=$LLVM_PATH/bin/clang" >> $GITHUB_ENV
           echo "CXX_COMPILER=$LLVM_PATH/bin/clang++" >> $GITHUB_ENV
 
