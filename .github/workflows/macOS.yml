@@ -27,7 +27,7 @@ jobs:
       # Install required dependencies using Homebrew
       - name: Install Dependencies
         run: |
-          brew install llvm ninja googletest
+          brew install ninja llvm googletest
 
       # Initialize submodule
       - name: Initialize Submodule
