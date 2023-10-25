@@ -23,6 +23,7 @@ public:
         return {left_border, right_border, up_border, down_border};
     };
     std::vector<Point_2_eigen> left_border, right_border, up_border, down_border;
+    void rotate_and_shift_mesh(pmp::SurfaceMesh& mesh, double angle_degrees, int shift_x_coordinates, int shift_y_coordinates);
 
 private:
     SurfaceParametrization& parent;
@@ -38,7 +39,6 @@ private:
     Point_2_eigen customRotate(const Point_2_eigen& pt, double angle_radians);
     void process_mesh(const std::string& mesh_path, pmp::SurfaceMesh& mesh_original, double rotation_angle, int shift_x, int shift_y);
     void find_vertex_index(const Point_2_eigen& target);
-    void rotate_and_shift_mesh(pmp::SurfaceMesh& mesh, double angle_degrees, int shift_x_coordinates, int shift_y_coordinates);
     void add_mesh(pmp::SurfaceMesh& mesh, pmp::SurfaceMesh& mesh_original);
     bool are_almost_equal(float a, float b);
     pmp::Vertex find_vertex_by_coordinates(

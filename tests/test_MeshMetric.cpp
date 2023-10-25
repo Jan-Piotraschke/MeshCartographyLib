@@ -7,7 +7,7 @@
  * @license     Apache License 2.0
  *
  * @bug         -
- * @todo        -
+ * @todo        - investigate the behaviour of TestAngleDistortionRotatedUV
  */
 
 #include <gtest/gtest.h>
@@ -17,6 +17,7 @@
 namespace fs = std::filesystem;
 
 #include "SurfaceParametrization/SurfaceParametrization.h"
+#include "SurfaceParametrization/TessellationHelper.h"
 
 #include "MeshMetric/AngleDistortionHelper.h"
 #include "MeshMetric/FaceDistortionHelper.h"
@@ -28,6 +29,7 @@ fs::path mesh_open_path = _MESH_CARTOGRAPHY / "meshes/ellipsoid_x4_open.off";
 fs::path mesh_uv_path = _MESH_CARTOGRAPHY / "meshes/ellipsoid_x4_uv.off";
 
 SurfaceParametrization surface_parametrization_metric = SurfaceParametrization();
+Tessellation tessellation_metric(surface_parametrization_metric);
 
 class MeshMetricTest : public ::testing::Test {
 protected:
@@ -98,3 +100,17 @@ TEST_F(MeshMetricTest, TestFaceDistortionUV)
     ASSERT_EQ(faceDistortion, 0.0);
 }
 
+TEST_F(MeshMetricTest, TestAngleDistortionRotatedUV)
+{
+    pmp::SurfaceMesh mesh_uv_rotated;
+    pmp::read_off(mesh_uv_rotated, mesh_uv_path);
+
+    // Rotate the mesh
+    tessellation_metric.rotate_and_shift_mesh(mesh_uv_rotated, 180.0, 0, 0);
+
+    AngleDistortionHelper angleDistHelper(mesh_uv, mesh_uv_rotated);
+    double angleDistortion = angleDistHelper.computeAngleDistortion();
+
+    ASSERT_EQ(angleDistortion, 0.0);
+
+}
