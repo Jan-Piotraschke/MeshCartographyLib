@@ -47,6 +47,33 @@ std::vector<std::vector<int64_t>> Tessellation::create_kachelmuster() {
     return equivalent_vertices;
 }
 
+void Tessellation::rotate_and_shift_mesh(
+    pmp::SurfaceMesh& mesh,
+    double angle_degrees,
+    int shift_x_coordinates,
+    int shift_y_coordinates
+) {
+    double angle_radians = M_PI * angle_degrees / 180.0; // Convert angle to radians
+    double threshold = 1e-10; // or any other small value you consider appropriate
+
+    // Rotate and shift the mesh
+    for (auto v : mesh.vertices()){
+        Point_3_eigen pt_3d = mesh.position(v);
+        Point_2_eigen pt_2d(pt_3d.x(), pt_3d.y());
+        Point_2_eigen transformed_2d = customRotate(pt_2d, angle_radians);
+
+        // Remove the memory errors by setting the coordinates to 0
+        if (std::abs(transformed_2d.x()) < threshold) {
+            transformed_2d = Point_2_eigen(0, transformed_2d.y());
+        }
+        if (std::abs(transformed_2d.y()) < threshold) {
+            transformed_2d = Point_2_eigen(transformed_2d.x(), 0);
+        }
+
+        Point_3_eigen transformed_3d(transformed_2d.x() + shift_x_coordinates, transformed_2d.y() + shift_y_coordinates, 0.0);
+        mesh.position(v) = transformed_3d;
+    }
+}
 
 
 // ========================================
@@ -97,35 +124,6 @@ void Tessellation::process_mesh(
 
     rotate_and_shift_mesh(mesh, rotation_angle, shift_x, shift_y);
     add_mesh(mesh, mesh_original);
-}
-
-
-void Tessellation::rotate_and_shift_mesh(
-    pmp::SurfaceMesh& mesh,
-    double angle_degrees,
-    int shift_x_coordinates,
-    int shift_y_coordinates
-) {
-    double angle_radians = M_PI * angle_degrees / 180.0; // Convert angle to radians
-    double threshold = 1e-10; // or any other small value you consider appropriate
-
-    // Rotate and shift the mesh
-    for (auto v : mesh.vertices()){
-        Point_3_eigen pt_3d = mesh.position(v);
-        Point_2_eigen pt_2d(pt_3d.x(), pt_3d.y());
-        Point_2_eigen transformed_2d = customRotate(pt_2d, angle_radians);
-
-        // Remove the memory errors by setting the coordinates to 0
-        if (std::abs(transformed_2d.x()) < threshold) {
-            transformed_2d = Point_2_eigen(0, transformed_2d.y());
-        }
-        if (std::abs(transformed_2d.y()) < threshold) {
-            transformed_2d = Point_2_eigen(transformed_2d.x(), 0);
-        }
-
-        Point_3_eigen transformed_3d(transformed_2d.x() + shift_x_coordinates, transformed_2d.y() + shift_y_coordinates, 0.0);
-        mesh.position(v) = transformed_3d;
-    }
 }
 
 
