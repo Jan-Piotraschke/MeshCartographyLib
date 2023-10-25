@@ -121,7 +121,7 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     // Perform the parameterization
     HarmonicParametrizationHelper helper_p = HarmonicParametrizationHelper(mesh, start_vertex);
     ParametrizationHelperInterface& parametrization_helper = helper_p;
-    parametrization_helper.parameterize_UV_mesh();
+    parametrization_helper.parameterize_UV_mesh(false);
 
    // Save the uv mesh
     fs::path mesh_uv_path = MESH_FOLDER / (get_mesh_name(mesh_3D_file_path) + "_uv.off");
