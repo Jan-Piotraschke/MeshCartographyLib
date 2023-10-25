@@ -27,6 +27,8 @@ jobs:
       # Install required dependencies using Homebrew
       - name: Install Dependencies
         run: |
+          brew link --overwrite python@3.11
+          brew services start php
           brew install llvm cmake ninja googletest
 
       # Set up the C and C++ compiler environment variables using the Homebrew path for LLVM
