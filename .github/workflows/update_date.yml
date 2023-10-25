@@ -1,0 +1,35 @@
+name: Update @date tag
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-date:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 2 # This fetches the last two commits
+
+    - name: Update @date tag for modified .cpp files
+      run: |
+        all_files=$(find src -type f -name "*.cpp")
+        changed_files=$(git diff --name-only HEAD~1 HEAD)
+        echo "Changed files in the last commit:"
+        echo "$changed_files"
+
+        for file in $all_files; do
+          if [[ $changed_files == *"$file"* ]]; then
+            sed -i "s/@date[[:space:]]\+[0-9]\{4\}-[A-Za-z]\{3\}-[0-9]\{2\}/@date        $(date '+%Y-%b-%d')/g" $file
+            git add $file
+          fi
+        done
+
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git config user.name "GitHub Actions Bot"
+        git commit -m "Updated @date tag" || echo "No changes to commit"
+        git push
+
