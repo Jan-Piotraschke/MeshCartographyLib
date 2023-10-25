@@ -21,32 +21,55 @@ private:
     TessellationDistanceHelper geodesic_distance_helper;
 
     template<typename MatrixType>
-    void save_csv(MatrixType& distance_matrix_v, fs::path cache_file) {
-
-        const static Eigen::IOFormat CSVFormat(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", "\n");
-
+    void save_csv(const MatrixType& distance_matrix_v, fs::path cache_file) {
         std::cout << "Saving distance matrix to file..." << std::endl;
         std::ofstream file(cache_file.string());
-        file << distance_matrix_v.format(CSVFormat);
+
+        // Iterate over the lower triangular part and write to the file.
+        for (int i = 0; i < distance_matrix_v.rows(); ++i) {
+            for (int j = 0; j <= i; ++j) {
+                file << distance_matrix_v(i, j);
+                if (j != i) {
+                    file << ", ";
+                }
+            }
+            file << "\n";
+        }
+
         file.close();
         std::cout << "saved" << std::endl;
-    };
+    }
 
     template<typename MatrixType>
     MatrixType load_csv(fs::path cache_file) {
         std::ifstream indata;
         indata.open(cache_file.string());
         std::string line;
-        std::vector<double> values;
-        unsigned int rows = 0;
+        std::vector<std::vector<double>> values;
+
         while (std::getline(indata, line)) {
             std::stringstream lineStream(line);
             std::string cell;
+            std::vector<double> rowValues;
             while (std::getline(lineStream, cell, ',')) {
-                values.push_back(std::stod(cell));
+                rowValues.push_back(std::stod(cell));
             }
-            ++rows;
+            values.push_back(rowValues);
         }
-        return Eigen::Map<const Eigen::Matrix<typename MatrixType::Scalar, MatrixType::RowsAtCompileTime, MatrixType::ColsAtCompileTime, Eigen::RowMajor>>(values.data(), rows, values.size()/rows);
+
+        // The number of rows in the full symmetric matrix will be the size of values
+        int matrix_size = values.size();
+        MatrixType symmetric_matrix(matrix_size, matrix_size);
+        symmetric_matrix.setZero();
+
+        // Fill the symmetric matrix using the triangular data
+        for (int i = 0; i < matrix_size; ++i) {
+            for (int j = 0; j <= i; ++j) {
+                symmetric_matrix(i, j) = values[i][j];
+                symmetric_matrix(j, i) = values[i][j];
+            }
+        }
+
+        return symmetric_matrix;
     }
 };
