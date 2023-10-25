@@ -14,7 +14,10 @@
 
 #include "MeshCutting/MeshCutHelper.h"
 #include "HarmonicParametrizationHelper.h"
+
 #include "MeshMetric/AngleDistortionHelper.h"
+#include "MeshMetric/FaceDistortionHelper.h"
+#include "MeshMetric/LengthDistortionHelper.h"
 
 SurfaceParametrization::SurfaceParametrization(){}
 
@@ -126,7 +129,18 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     // Calculate the angle distortion
     AngleDistortionHelper angle_distortion_helper = AngleDistortionHelper(mesh_open, mesh);
     double angle_distortion = angle_distortion_helper.computeAngleDistortion();
+
+    // Calculate the face distortion
+    FaceDistortionHelper face_distortion_helper = FaceDistortionHelper(mesh_open, mesh);
+    double face_distortion = face_distortion_helper.computeFaceDistortion();
+
+    // Calculate the length distortion
+    LengthDistortionHelper length_distortion_helper = LengthDistortionHelper(mesh_open, mesh);
+    double length_distortion = length_distortion_helper.computeLengthDistortion();
+
     std::cout << "Angle distortion: " << angle_distortion << std::endl;
+    std::cout << "Face distortion: " << face_distortion << std::endl;
+    std::cout << "Length distortion: " << length_distortion << std::endl;
 
 
     // Save the uv mesh
