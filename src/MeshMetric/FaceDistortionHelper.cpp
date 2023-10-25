@@ -31,9 +31,7 @@ double FaceDistortionHelper::computeFaceDistortion()
     for (auto f : mesh_open.faces())
     {
         double areaOpen = triangle_area(mesh_open, f);
-        std::cout << "areaOpen: " << areaOpen << std::endl;
         double areaUV = triangle_area(mesh_UV, f);
-        std::cout << "areaUV: " << areaUV << std::endl;
         totalDistortion += std::fabs(areaOpen - areaUV);
     }
 
