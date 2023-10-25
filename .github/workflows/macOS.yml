@@ -1,45 +1,48 @@
-name: macOS C/C++ CI
+name: C/C++ CI on macOS
 
 on:
+  # Trigger workflow on push and pull requests to the 'main' branch
   push:
-    branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
+
+  # Schedule the workflow to run at 00:00 every Sunday
   schedule:
-    - cron: '0 0 * * 0' # runs at 00:00 on every Sunday
+    - cron: '0 0 * * 0'
 
 jobs:
   build:
-
     runs-on: macos-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      # Check out the source code
+      - name: Checkout Source
+        uses: actions/checkout@v3
 
-    # - name: Set up Homebrew
-    #   run: |
-    #     brew update
+      # Update Homebrew
+      - name: Update Homebrew
+        run: brew update
 
-    # - name: Install dependencies
-    #   run: |
-    #     brew install llvm
-    #     brew install cmake
-    #     brew install ninja
-    #     brew install googletest
+      # Install required dependencies using Homebrew
+      - name: Install Dependencies
+        run: |
+          brew install llvm cmake ninja googletest
 
-    # - name: Set environment
-    #   run: |
-    #     LLVM_PATH=$(brew --prefix llvm)
-    #     echo "C_COMPILER=$LLVM_PATH/bin/clang" >> $GITHUB_ENV
-    #     echo "CXX_COMPILER=$LLVM_PATH/bin/clang++" >> $GITHUB_ENV
+      # Set up the C and C++ compiler environment variables using the Homebrew path for LLVM
+      - name: Set Compiler Environment
+        run: |
+          LLVM_PATH=$(brew --prefix llvm)
+          echo "C_COMPILER=$LLVM_PATH/bin/clang" >> $GITHUB_ENV
+          echo "CXX_COMPILER=$LLVM_PATH/bin/clang++" >> $GITHUB_ENV
 
-    # - name: Build the project
-    #   run: |
-    #     mkdir build
-    #     cd build
-    #     cmake -DCMAKE_CXX_STANDARD=20 -G Ninja ..
-    #     ninja
+      # Build the project using CMake and Ninja
+      - name: Build Project
+        run: |
+          cd build
+          cmake -DCMAKE_CXX_STANDARD=20 -G Ninja ..
+          ninja
 
-    # - name: Test
-    #   run: ./build/MeshCartography_test
+      # Run tests
+      - name: Run Tests
+        run: ./build/MeshCartography_test
