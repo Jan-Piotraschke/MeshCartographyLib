@@ -5,7 +5,16 @@ SHELL := /bin/bash
 # Paths
 PROJECT_DIR := $(shell pwd)
 ARCHITECTURE := $(shell uname -m)
-CMAKE_CMD := cmake
+
+# Platform selection
+PLATFORM ?= executive
+ifeq ($(PLATFORM), wasm)
+	CMAKE_CMD = emcmake cmake
+	BUILD_CMD = emmake ninja
+else
+	CMAKE_CMD = cmake
+	BUILD_CMD = ninja
+endif
 
 # Determine OS
 OS := $(shell uname -s)
@@ -79,9 +88,9 @@ build:
 			-DCMAKE_OSX_ARCHITECTURES=$(ARCHITECTURE) \
 			-GNinja
 ifeq ($(OS), Darwin)
-	ninja -C $(PROJECT_DIR)/build -j $(shell sysctl -n hw.logicalcpu)
+	$(BUILD_CMD) -C $(PROJECT_DIR)/build -j $(shell sysctl -n hw.logicalcpu)
 else ifeq ($(OS), Linux)
-	ninja -C $(PROJECT_DIR)/build -j $(shell nproc)
+	$(BUILD_CMD) -C $(PROJECT_DIR)/build -j $(shell nproc)
 endif
 
 # Cleaning
