@@ -125,7 +125,7 @@ int main() {
     std::cout << "Initial area: " << initial_area << "\n";
 
     OptimizationProblem optimization_problem;
-    optimization_problem.SetBounds(-18.0, 3.0);
+    optimization_problem.SetBounds(0.2, 2.0);
     optimization_problem.Run(a, b, curve_strength);
 
     return 0;
