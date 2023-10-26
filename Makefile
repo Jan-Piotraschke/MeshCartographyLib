@@ -31,21 +31,45 @@ check_submodule:
 		git submodule update --init -- pmp-library; \
 		$(MAKE) install_pmp; \
 	fi
+	@if [ ! "$(shell git submodule status | grep ceres-solver | cut -c 1)" = "-" ]; then \
+		echo "Ceres solver submodule already initialized and updated."; \
+	else \
+		echo "Ceres solver submodule is empty. Initializing and updating..."; \
+		git submodule update --init -- ceres-solver; \
+		$(MAKE) install_ceres; \
+	fi
 
-.PHONY: update_submodule
-update_submodule:
+.PHONY: update_pmp
+update_pmp:
 	@echo "Updating PMP library submodule..."; \
 	git submodule update --remote pmp-library;
+
+.PHONY: update_ceres
+update_ceres:
+	@echo "Updating Ceres solver submodule..."; \
+	git submodule update --remote ceres-solver;
 
 .PHONY: install_pmp
 install_pmp:
 	@echo "Installing PMP library..."; \
 	mkdir -p build/pmp-library; \
-	cd build/pmp-library && $(CMAKE_CMD) $(PROJECT_DIR)/pmp-library -DCMAKE_BUILD_TYPE=Release && make && sudo make install;
+	cd build/pmp-library && \
+	$(CMAKE_CMD) -G Ninja $(PROJECT_DIR)/pmp-library -DCMAKE_BUILD_TYPE=Release && \
+	ninja && \
+	sudo ninja install;
+
+.PHONY: install_ceres
+install_ceres:
+	@echo "Installing Ceres solver..."; \
+	mkdir -p build/ceres-solver; \
+	cd build/ceres-solver && \
+	$(CMAKE_CMD) -G Ninja $(PROJECT_DIR)/ceres-solver -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCERES_BUILD_EXAMPLES=OFF -DCERES_BUILD_TESTS=OFF && \
+	ninja && \
+	sudo ninja install;
 
 .PHONY: build
 build:
-	echo "Building for platform: $(PLATFORM)"; \
+	@echo "Building for platform: $(PLATFORM)"; \
 	$(CMAKE_CMD) -S $(PROJECT_DIR) \
 			-B $(PROJECT_DIR)/build \
 			-DCMAKE_BUILD_TYPE=Release \
