@@ -26,7 +26,6 @@ endif()
 
 # which directories to process
 if(NOT EMSCRIPTEN)
-  # find_package(Ceres REQUIRED)
   find_package(GTest REQUIRED)
   include_directories(${GTEST_INCLUDE_DIRS})
 endif()
