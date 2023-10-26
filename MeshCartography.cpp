@@ -52,7 +52,8 @@ struct MonotileAreaCostFunction {
         T cs = Clamp(*curve_strength, T(0), T(3));
 
         std::vector<T> x_vals, y_vals;
-        draw_monotile(T(a_), T(b_), cs, x_vals, y_vals);
+        // Collect the monotile borders
+        spectre_border(T(a_), T(b_), cs, x_vals, y_vals);
 
         // Calculate the area using the Shoelace formula
         T area = area_calculator.ComputeArea(x_vals, y_vals);
@@ -69,8 +70,11 @@ struct MonotileAreaCostFunction {
 class OptimizationProblem {
 public:
     void Run(double a, double b, double& curve_strength) {
+        // Build the problem.
         ceres::Problem problem;
 
+        // Set up the only cost function (also known as residual). This uses
+        // auto-differentiation to obtain the derivative (jacobian).
         MonotileAreaCostFunction* cost_function = new MonotileAreaCostFunction(a, b);
         problem.AddResidualBlock(
             new ceres::AutoDiffCostFunction<MonotileAreaCostFunction, 1, 1>(cost_function),
@@ -79,14 +83,16 @@ public:
         problem.SetParameterLowerBound(&curve_strength, 0, lower_bound_);
         problem.SetParameterUpperBound(&curve_strength, 0, upper_bound_);
 
+        // Run the solver!
         ceres::Solver::Options options;
-        options.minimizer_progress_to_stdout = true;
         options.linear_solver_type = ceres::DENSE_QR;
+        options.minimizer_progress_to_stdout = true;
 
+        // Get the final report
         ceres::Solver::Summary summary;
         ceres::Solve(options, &problem, &summary);
 
-        std::cout << summary.FullReport() << "\n";
+        std::cout << summary.BriefReport() << "\n";
         std::cout << "Final curve_strength: " << curve_strength << "\n";
     }
 
