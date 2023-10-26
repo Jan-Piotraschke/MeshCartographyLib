@@ -1,3 +1,6 @@
 [submodule "pmp-library"]
 	path = pmp-library
 	url = https://github.com/pmp-library/pmp-library.git
+[submodule "ceres-solver"]
+	path = ceres-solver
+	url = https://github.com/ceres-solver/ceres-solver.git
