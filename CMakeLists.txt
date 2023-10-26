@@ -26,13 +26,20 @@ endif()
 
 # which directories to process
 if(NOT EMSCRIPTEN)
-  find_package(Ceres REQUIRED)
+  # find_package(Ceres REQUIRED)
   find_package(GTest REQUIRED)
   include_directories(${GTEST_INCLUDE_DIRS})
 endif()
 
 # Find required packages
 set(EIGEN3_INCLUDE_DIR "${MeshCartographyLib_SOURCE_DIR}/pmp-library/external/eigen-3.4.0")
+
+add_library(Eigen3::Eigen INTERFACE IMPORTED)
+set_target_properties(Eigen3::Eigen PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${MeshCartographyLib_SOURCE_DIR}/pmp-library/external/eigen-3.4.0"
+)
+
+add_subdirectory("${MeshCartographyLib_SOURCE_DIR}/ceres-solver")
 
 # Add the source files of your library
 file(GLOB_RECURSE SIMULATION_SOURCES src/*.cpp)
@@ -41,7 +48,7 @@ add_library(MeshCartographyLib STATIC ${SIMULATION_SOURCES})
 # Include the Eigen directory
 target_include_directories(MeshCartographyLib PUBLIC
     ${EIGEN3_INCLUDE_DIR}
-    ${CERES_INCLUDE_DIRS}
+    ceres
 )
 
 include_directories(${MeshCartographyLib_SOURCE_DIR}/pmp-library/src/)
@@ -50,7 +57,7 @@ add_subdirectory("${MeshCartographyLib_SOURCE_DIR}/pmp-library/src/pmp")
 target_include_directories(MeshCartographyLib PUBLIC "${MeshCartographyLib_SOURCE_DIR}/pmp-library/src")
 
 # Link the library with the required packages
-target_link_libraries(MeshCartographyLib PUBLIC pmp ${CERES_LIBRARIES})
+target_link_libraries(MeshCartographyLib PUBLIC pmp ceres)
 
 # Add include directories
 target_include_directories(MeshCartographyLib PUBLIC src)
@@ -60,7 +67,7 @@ add_executable(MeshCartography MeshCartography.cpp)
 target_link_libraries(MeshCartography PUBLIC
     MeshCartographyLib
     pmp
-    ${CERES_LIBRARIES}
+    ceres
 )
 
 if (NOT EMSCRIPTEN)
