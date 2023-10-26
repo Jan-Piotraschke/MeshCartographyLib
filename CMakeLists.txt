@@ -26,6 +26,7 @@ endif()
 
 # which directories to process
 if(NOT EMSCRIPTEN)
+  find_package(Ceres REQUIRED)
   find_package(GTest REQUIRED)
   include_directories(${GTEST_INCLUDE_DIRS})
 endif()
@@ -40,6 +41,7 @@ add_library(MeshCartographyLib STATIC ${SIMULATION_SOURCES})
 # Include the Eigen directory
 target_include_directories(MeshCartographyLib PUBLIC
     ${EIGEN3_INCLUDE_DIR}
+    ${CERES_INCLUDE_DIRS}
 )
 
 include_directories(${MeshCartographyLib_SOURCE_DIR}/pmp-library/src/)
@@ -48,7 +50,7 @@ add_subdirectory("${MeshCartographyLib_SOURCE_DIR}/pmp-library/src/pmp")
 target_include_directories(MeshCartographyLib PUBLIC "${MeshCartographyLib_SOURCE_DIR}/pmp-library/src")
 
 # Link the library with the required packages
-target_link_libraries(MeshCartographyLib PUBLIC pmp)
+target_link_libraries(MeshCartographyLib PUBLIC pmp ${CERES_LIBRARIES})
 
 # Add include directories
 target_include_directories(MeshCartographyLib PUBLIC src)
@@ -58,6 +60,7 @@ add_executable(MeshCartography MeshCartography.cpp)
 target_link_libraries(MeshCartography PUBLIC
     MeshCartographyLib
     pmp
+    ${CERES_LIBRARIES}
 )
 
 if (NOT EMSCRIPTEN)
