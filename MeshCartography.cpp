@@ -43,7 +43,7 @@ public:
 struct MonotileAreaCostFunction {
     MonotileAreaCostFunction(double a, double b) : a_(a), b_(b) {}
 
-    double final_area = 0.0;
+    mutable double final_area = 0.0;
     AreaCalculator area_calculator;
 
     template <typename T>
@@ -57,10 +57,17 @@ struct MonotileAreaCostFunction {
 
         // Calculate the area using the Shoelace formula
         T area = area_calculator.ComputeArea(x_vals, y_vals);
+        final_area = ceres::Jet<double, 1>(area).a;
 
         // Since Ceres performs minimization, we return the negative area to maximize it
         residual[0] = -area;
         return true;
+    }
+
+    double ComputeArea(double curve_strength) const {
+        std::vector<double> x_vals, y_vals;
+        spectre_border(a_, b_, curve_strength, x_vals, y_vals);
+        return area_calculator.ComputeArea(x_vals, y_vals);
     }
 
     double a_, b_;
@@ -94,6 +101,7 @@ public:
 
         std::cout << summary.BriefReport() << "\n";
         std::cout << "Final curve_strength: " << curve_strength << "\n";
+        std::cout << "Final area: " << cost_function->final_area << "\n";
     }
 
     void SetBounds(double lower_bound, double upper_bound) {
@@ -112,14 +120,16 @@ int main() {
     double b = 1.0;
     double curve_strength = 1.0; // Initial guess
 
+    MonotileAreaCostFunction cost_function(a, b);
+    double initial_area = cost_function.ComputeArea(curve_strength);
+    std::cout << "Initial area: " << initial_area << "\n";
+
     OptimizationProblem optimization_problem;
     optimization_problem.SetBounds(-18.0, 3.0);
     optimization_problem.Run(a, b, curve_strength);
 
     return 0;
 }
-
-
 
 
 // int main()
