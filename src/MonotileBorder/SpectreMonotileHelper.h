@@ -3,7 +3,10 @@
 #include <cmath>
 #include <vector>
 #include <utility>
+#include <ceres/ceres.h>
 
-std::pair<std::vector<double>, std::vector<double>> calculate_control_points(const std::pair<double, double>& point, double curve_strength);
+template <typename T>
+std::pair<std::vector<T>, std::vector<T>> calculate_control_points(const std::pair<T, T>& point, T curve_strength);
 
-void draw_monotile(double a, double b, double curve_strength, std::vector<double>& x_vals, std::vector<double>& y_vals);
+template <typename T>
+void spectre_border(T a, T b, T curve_strength, std::vector<T>& x_vals, std::vector<T>& y_vals);
