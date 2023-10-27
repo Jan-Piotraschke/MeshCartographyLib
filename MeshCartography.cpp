@@ -16,6 +16,7 @@
 #include "SurfaceParametrization/SurfaceParametrization.h"
 #include "SurfaceParametrization/TessellationHelper.h"
 #include "SurfaceParametrization/AutoDiffMonotileOptimizerHelper.h"
+#include "MonotileBorder/SpectreMonotileHelper.h"
 
 const std::filesystem::path PROJECT_PATH = MeshCartographyLib_SOURCE_DIR;
 
@@ -44,8 +45,15 @@ int main()
     std::cout << "Initial area: " << initial_area << "\n";
 
     OptimizationProblem optimization_problem;
-    optimization_problem.setBounds(0.2, 2.0);
+    optimization_problem.setBounds(0, 2.0);
     optimization_problem.run(a, b, curve_strength);
+
+    std::vector<double> x_vals, y_vals;
+    spectre_border(a, b, curve_strength, x_vals, y_vals);
+
+    // for (int i = 0; i < x_vals.size(); ++i) {
+    //     std::cout << x_vals[i] << " " << y_vals[i] << "\n";
+    // }
 
     return 0;
 }
