@@ -29,7 +29,7 @@ else ifeq ($(OS), Linux)
 endif
 
 .PHONY: all
-all: check_submodule build
+all: check_submodule install_glog build
 
 .PHONY: check_submodule
 check_submodule:
@@ -45,6 +45,13 @@ check_submodule:
 	else \
 		echo "Ceres solver submodule is empty. Initializing and updating..."; \
 		git submodule update --init -- ceres-solver; \
+		$(MAKE) install_ceres; \
+	fi
+	@if [ ! "$(shell git submodule status | grep glog | cut -c 1)" = "-" ]; then \
+		echo "Ceres solver submodule already initialized and updated."; \
+	else \
+		echo "Ceres solver submodule is empty. Initializing and updating..."; \
+		git submodule update --init -- glog; \
 		$(MAKE) install_ceres; \
 	fi
 
@@ -66,6 +73,15 @@ install_pmp:
 	$(CMAKE_CMD) -G Ninja $(PROJECT_DIR)/pmp-library -DCMAKE_BUILD_TYPE=Release && \
 	ninja && \
 	sudo ninja install;
+
+.PHONY: install_glog
+install_glog:
+	@echo "Installing Google glog library..."
+	@mkdir -p $(PROJECT_DIR)/glog/build
+	@cd $(PROJECT_DIR)/glog && \
+	$(CMAKE_CMD) -S . -B build -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX=$(PROJECT_DIR)/glog/install && \
+	cmake --build build && \
+	cmake --build build --target install
 
 .PHONY: install_ceres
 install_ceres:
