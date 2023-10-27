@@ -5,7 +5,6 @@ project(
   DESCRIPTION "Mesh Cartography Library"
   LANGUAGES CXX
 )
-# cmake_policy(SET CMP0072 NEW)
 
 # Make the project foulder path available to the source code
 add_definitions("-DMeshCartographyLib_SOURCE_DIR=\"${PROJECT_SOURCE_DIR}\"")
