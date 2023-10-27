@@ -8,9 +8,11 @@ ARCHITECTURE := $(shell uname -m)
 
 # Platform selection
 PLATFORM ?= executive
+BUILD_DIR = build
 ifeq ($(PLATFORM), wasm)
 	CMAKE_CMD = emcmake cmake
 	BUILD_CMD = emmake ninja
+	BUILD_DIR = embuild
 else
 	CMAKE_CMD = cmake
 	BUILD_CMD = ninja
@@ -68,8 +70,8 @@ update_ceres:
 .PHONY: install_pmp
 install_pmp:
 	@echo "Installing PMP library..."; \
-	mkdir -p build/pmp-library; \
-	cd build/pmp-library && \
+	mkdir -p $(BUILD_DIR)/pmp-library; \
+	cd $(BUILD_DIR)/pmp-library && \
 	$(CMAKE_CMD) -G Ninja $(PROJECT_DIR)/pmp-library -DCMAKE_BUILD_TYPE=Release && \
 	ninja && \
 	sudo ninja install;
@@ -77,17 +79,17 @@ install_pmp:
 .PHONY: install_glog
 install_glog:
 	@echo "Installing Google glog library..."
-	@mkdir -p $(PROJECT_DIR)/glog/build
+	@mkdir -p $(PROJECT_DIR)/glog/$(BUILD_DIR)
 	@cd $(PROJECT_DIR)/glog && \
-	$(CMAKE_CMD) -S . -B build -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX=$(PROJECT_DIR)/glog/install && \
-	cmake --build build && \
-	cmake --build build --target install
+	$(CMAKE_CMD) -S . -B $(BUILD_DIR) -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX=$(PROJECT_DIR)/glog/install && \
+	cmake --build $(BUILD_DIR) && \
+	cmake --build $(BUILD_DIR) --target install
 
 .PHONY: install_ceres
 install_ceres:
 	@echo "Installing Ceres solver..."; \
-	mkdir -p build/ceres-solver; \
-	cd build/ceres-solver && \
+	mkdir -p $(BUILD_DIR)/ceres-solver; \
+	cd $(BUILD_DIR)/ceres-solver && \
 	$(CMAKE_CMD) -G Ninja $(PROJECT_DIR)/ceres-solver -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCERES_BUILD_EXAMPLES=OFF -DCERES_BUILD_TESTS=OFF && \
 	ninja && \
 	sudo ninja install;
@@ -96,7 +98,7 @@ install_ceres:
 build:
 	@echo "Building for platform: $(PLATFORM)"; \
 	$(CMAKE_CMD) -S $(PROJECT_DIR) \
-			-B $(PROJECT_DIR)/build \
+			-B $(PROJECT_DIR)/$(BUILD_DIR) \
 			-DCMAKE_BUILD_TYPE=Release \
 			-DCMAKE_C_COMPILER=$(C_COMPILER) \
 			-DCMAKE_CXX_COMPILER=$(CXX_COMPILER) \
@@ -104,12 +106,16 @@ build:
 			-DCMAKE_OSX_ARCHITECTURES=$(ARCHITECTURE) \
 			-GNinja
 ifeq ($(OS), Darwin)
-	$(BUILD_CMD) -C $(PROJECT_DIR)/build -j $(shell sysctl -n hw.logicalcpu)
+	$(BUILD_CMD) -C $(PROJECT_DIR)/$(BUILD_DIR) -j $(shell sysctl -n hw.logicalcpu)
 else ifeq ($(OS), Linux)
-	$(BUILD_CMD) -C $(PROJECT_DIR)/build -j $(shell nproc)
+	$(BUILD_CMD) -C $(PROJECT_DIR)/$(BUILD_DIR) -j $(shell nproc)
 endif
 
 # Cleaning
 .PHONY: clean
 clean:
 	rm -rf $(PROJECT_DIR)/build
+	rm -rf $(PROJECT_DIR)/embuild
+	rm -rf $(PROJECT_DIR)/glog/build
+	rm -rf $(PROJECT_DIR)/glog/install
+	rm -rf $(PROJECT_DIR)/glog/embuild
