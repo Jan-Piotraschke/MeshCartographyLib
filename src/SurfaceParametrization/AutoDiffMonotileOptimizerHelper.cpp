@@ -13,6 +13,7 @@
 #include "AutoDiffMonotileOptimizerHelper.h"
 #include "MonotileBorder/SpectreMonotileHelper.h"
 
+// Utilizing a clamp function to ensure our values stay within a specific range
 template <typename T>
 T clamp(const T& value, const T& low, const T& high) {
     return std::max(low, std::min(value, high));
@@ -22,6 +23,7 @@ T clamp(const T& value, const T& low, const T& high) {
 // AreaCalculator Implementation
 // ========================================
 
+// Optimization objective of the cost function: Area of the border
 template <typename T>
 T AreaCalculator::computeArea(const std::vector<T>& x_vals, const std::vector<T>& y_vals) const {
     T area = T(0);
@@ -40,19 +42,24 @@ T AreaCalculator::computeArea(const std::vector<T>& x_vals, const std::vector<T>
 // MonotileAreaCostFunction Implementation
 // ========================================
 
+// The cost function represents our optimization objective
 MonotileAreaCostFunction::MonotileAreaCostFunction(double a, double b)
     : a_(a), b_(b) {}
 
+// Operator() overloading to define the behavior of our cost function
 template <typename T>
 bool MonotileAreaCostFunction::operator()(const T* const curve_strength, T* residual) const {
-    T cs = clamp(*curve_strength, T(0), T(3));
+    T cs = clamp(*curve_strength, T(0), T(3));  // Clamping to ensure curve_strength stays within [0, 3]
 
     std::vector<T> x_vals, y_vals;
     spectre_border(T(a_), T(b_), cs, x_vals, y_vals);
     T area = area_calculator.computeArea(x_vals, y_vals);
+
+    // The next line involves Automatic Differentiation (AutoDiff) where gradients are calculated
+    // Jet is an operation that takes a differentiable function f and produces a polynomial, the truncated Taylor polynomial of f
     final_area = ceres::Jet<double, 1>(area).a;
 
-    residual[0] = -area;
+    residual[0] = -area;  // The residual, which the optimizer aims to minimize
     return true;
 }
 
@@ -67,21 +74,29 @@ double MonotileAreaCostFunction::computeArea(double curve_strength) const {
 // OptimizationProblem Implementation
 // ========================================
 
+// Set up and run the optimization problem
 void OptimizationProblem::run(double a, double b, double& curve_strength) {
     ceres::Problem problem;
+    // Create a custom cost function
     MonotileAreaCostFunction* cost_function = new MonotileAreaCostFunction(a, b);
+
+    // Automatically compute derivatives for optimization
     problem.AddResidualBlock(
         new ceres::AutoDiffCostFunction<MonotileAreaCostFunction, 1, 1>(cost_function),
         nullptr, &curve_strength);
 
+    // Setting bounds for curve_strength
     problem.SetParameterLowerBound(&curve_strength, 0, lower_bound_);
     problem.SetParameterUpperBound(&curve_strength, 0, upper_bound_);
 
+    // Configure the solver options
     ceres::Solver::Options options;
-    options.linear_solver_type = ceres::DENSE_QR;
-    options.minimizer_progress_to_stdout = true;
+    options.linear_solver_type = ceres::DENSE_QR;  // Use a dense QR decomposition based solver
+    options.minimizer_progress_to_stdout = true;  // Print progress to stdout
 
-    ceres::Solver::Summary summary;
+    ceres::Solver::Summary summary;  // Store informations about the optimization process
+
+    // Run the optimization
     ceres::Solve(options, &problem, &summary);
 
     std::cout << summary.BriefReport() << "\n";
