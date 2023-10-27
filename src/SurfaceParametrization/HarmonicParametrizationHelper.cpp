@@ -11,7 +11,7 @@
  */
 
 #include "HarmonicParametrizationHelper.h"
-#include "SquareBorderHelper.h"
+#include "MonotileBorder/SquareBorderHelper.h"
 
 HarmonicParametrizationHelper::HarmonicParametrizationHelper(
     pmp::SurfaceMesh& mesh,
