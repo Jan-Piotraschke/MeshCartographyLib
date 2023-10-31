@@ -30,16 +30,16 @@ std::vector<std::vector<int64_t>> Tessellation::create_kachelmuster() {
 
     // Calculate the angle of the twin-borders on the fly
     docking_side = "left";
-    process_mesh(mesh_uv_path, mesh_original, calculateAngle(left_border, down_border), 0, 0);   // position 2 (row) 3 (column)  -> left
+    process_mesh(mesh_uv_path, mesh_original, calculateAngle(left_border, down_border), 0);   // position 2 (row) 3 (column)  -> left
 
     docking_side = "right";
-    process_mesh(mesh_uv_path, mesh_original, calculateAngle(right_border, up_border), 2, 0);  // position 2 1  -> right
+    process_mesh(mesh_uv_path, mesh_original, calculateAngle(right_border, up_border), 1);  // position 2 1  -> right
 
     docking_side = "up";
-    process_mesh(mesh_uv_path, mesh_original, calculateAngle(up_border, right_border), 0, 2);  // position 1 2 -> up
+    process_mesh(mesh_uv_path, mesh_original, calculateAngle(up_border, right_border), 2);  // position 1 2 -> up
 
     docking_side = "down";
-    process_mesh(mesh_uv_path, mesh_original, calculateAngle(down_border, left_border), 0, 0);  // position 3 2 -> down
+    process_mesh(mesh_uv_path, mesh_original, calculateAngle(down_border, left_border), 3);  // position 3 2 -> down
 
     std::cout << "Finished creating the kachelmuster" << std::endl;
     std::string output_path = (MESH_FOLDER / (mesh_uv_name + "_kachelmuster.off")).string();
@@ -48,15 +48,31 @@ std::vector<std::vector<int64_t>> Tessellation::create_kachelmuster() {
     return equivalent_vertices;
 }
 
+// TODO: find automatically the correct shift by comparing the affected border to the rotated polygon
 void Tessellation::rotate_and_shift_mesh(
     pmp::SurfaceMesh& mesh,
     double angle_degrees,
-    int shift_x_coordinates,
-    int shift_y_coordinates
+    int twin_border_id
 ) {
     double angle_radians = M_PI * angle_degrees / 180.0; // Convert angle to radians
-    double threshold = 1e-10; // or any other small value you consider appropriate
+    double threshold = 1e-10;
 
+    std::vector<Point_2_eigen> twin_border;
+    if (twin_border_id == 0) {
+        twin_border = down_border;
+    } else if (twin_border_id == 1) {
+        twin_border = up_border;
+    } else if (twin_border_id == 2) {
+        twin_border = right_border;
+    } else if (twin_border_id == 3) {
+        twin_border = left_border;
+    }
+    std::cout << "Twin border: " << std::endl;
+    for (auto pt : twin_border) {
+        std::cout << pt << std::endl;
+    }
+
+    std::cout << twin_border_id << std::endl;
     // Rotate and shift the mesh
     for (auto v : mesh.vertices()){
         Point_3_eigen pt_3d = mesh.position(v);
@@ -70,8 +86,14 @@ void Tessellation::rotate_and_shift_mesh(
         if (std::abs(transformed_2d.y()) < threshold) {
             transformed_2d = Point_2_eigen(transformed_2d.x(), 0);
         }
+        std::cout << "Transformed point: " << transformed_2d << std::endl;
 
-        Point_3_eigen transformed_3d(transformed_2d.x() + shift_x_coordinates, transformed_2d.y() + shift_y_coordinates, 0.0);
+        Point_3_eigen transformed_3d(transformed_2d.x(), transformed_2d.y(), 0.0);
+
+        // Compare the transformed point to the twin border and its difference
+
+
+        // Point_3_eigen transformed_3d(transformed_2d.x() + shift_x_coordinates, transformed_2d.y() + shift_y_coordinates, 0.0);
         mesh.position(v) = transformed_3d;
     }
 }
@@ -145,13 +167,12 @@ void Tessellation::process_mesh(
     const std::string& mesh_path,
     pmp::SurfaceMesh& mesh_original,
     double rotation_angle,
-    int shift_x,
-    int shift_y
+    int twin_border_id
 ) {
     pmp::SurfaceMesh mesh;
     pmp::read_off(mesh, mesh_path);
 
-    rotate_and_shift_mesh(mesh, rotation_angle, shift_x, shift_y);
+    rotate_and_shift_mesh(mesh, rotation_angle, twin_border_id);
     add_mesh(mesh, mesh_original);
 }
 
