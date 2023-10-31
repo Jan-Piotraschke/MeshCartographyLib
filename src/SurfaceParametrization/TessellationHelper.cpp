@@ -28,17 +28,18 @@ std::vector<std::vector<int64_t>> Tessellation::create_kachelmuster() {
     std::cout << "Mesh name: " << mesh_uv_name << std::endl;
     equivalent_vertices.resize(mesh_original.n_vertices());
 
+    // Calculate the angle of the twin-borders on the fly
     docking_side = "left";
-    process_mesh(mesh_uv_path, mesh_original, 90.0, 0, 0);   // position 2 (row) 3 (column)  -> left
+    process_mesh(mesh_uv_path, mesh_original, calculateAngle(left_border, down_border), 0, 0);   // position 2 (row) 3 (column)  -> left
 
     docking_side = "right";
-    process_mesh(mesh_uv_path, mesh_original, 90.0, 2, 0);  // position 2 1  -> right
+    process_mesh(mesh_uv_path, mesh_original, calculateAngle(right_border, up_border), 2, 0);  // position 2 1  -> right
 
     docking_side = "up";
-    process_mesh(mesh_uv_path, mesh_original, 270.0, 0, 2);  // position 1 2 -> up
+    process_mesh(mesh_uv_path, mesh_original, calculateAngle(up_border, right_border), 0, 2);  // position 1 2 -> up
 
     docking_side = "down";
-    process_mesh(mesh_uv_path, mesh_original, 270.0, 0, 0);  // position 3 2 -> down
+    process_mesh(mesh_uv_path, mesh_original, calculateAngle(down_border, left_border), 0, 0);  // position 3 2 -> down
 
     std::cout << "Finished creating the kachelmuster" << std::endl;
     std::string output_path = (MESH_FOLDER / (mesh_uv_name + "_kachelmuster.off")).string();
@@ -109,6 +110,34 @@ void Tessellation::analyseSides() {
             up_border.push_back(eigen_point);
         }
     }
+}
+
+
+double Tessellation::calculateAngle(const std::vector<Eigen::Vector2d>& border1, const std::vector<Eigen::Vector2d>& border2) {
+    // Calculate direction vectors
+    Eigen::Vector2d dir1 = border1.back() - border1.front();
+    Eigen::Vector2d dir2 = border2.back() - border2.front();
+
+    // Normalize direction vectors
+    dir1.normalize();
+    dir2.normalize();
+
+    // Calculate dot product and determinant
+    double dot = dir1.dot(dir2);
+    double det = dir1.x() * dir2.y() - dir1.y() * dir2.x();
+
+    // Calculate angle in radians
+    double angle = std::atan2(det, dot);
+
+    // Convert angle to degrees
+    double angleInDegrees = angle * (180.0 / M_PI);
+
+    // Normalize to [0, 360)
+    if (angleInDegrees < 0) {
+        angleInDegrees += 360;
+    }
+
+    return angleInDegrees;
 }
 
 

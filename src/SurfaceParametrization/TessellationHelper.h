@@ -36,6 +36,7 @@ private:
         pmp::Vertex& v,
         std::vector<pmp::Vertex>& border_list
     );
+    double calculateAngle(const std::vector<Eigen::Vector2d>& border1, const std::vector<Eigen::Vector2d>& border2);
     Point_2_eigen customRotate(const Point_2_eigen& pt, double angle_radians);
     void process_mesh(const std::string& mesh_path, pmp::SurfaceMesh& mesh_original, double rotation_angle, int shift_x, int shift_y);
     void find_vertex_index(const Point_2_eigen& target);
