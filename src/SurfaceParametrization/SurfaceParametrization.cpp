@@ -223,15 +223,14 @@ void SurfaceParametrization::extract_polygon_border_edges(
     auto points = mesh.vertex_property<pmp::Point>("v:point");
     auto tex = mesh.vertex_property<pmp::TexCoord>("v:tex");
 
-    pmp::SurfaceMesh::VertexIterator vit, vend = mesh.vertices_end();
-    // find 1st boundary vertex
+    // find 1st boundary vertex here, as all UV meshes have this as the origin of their parameterization
     pmp::Vertex vh;
-    for (vit = mesh.vertices_begin(); vit != vend; ++vit) {
-        if (mesh.is_boundary(*vit)) {
+    for (auto v : mesh.vertices()) {
+        if (points[v] == pmp::Point(0, 0, 0)) {
+            vh = v;
             break;
         }
     }
-    vh = *vit;
 
     // collect boundary edges
     pmp::Halfedge hh = mesh.halfedge(vh);
@@ -240,9 +239,7 @@ void SurfaceParametrization::extract_polygon_border_edges(
         hh = mesh.next_halfedge(hh);
     } while (hh != mesh.halfedge(vh));
 
-
     // Extract the coordinates of the vertices in the correct order
-    std::map<int, std::vector<Eigen::Vector2d>> border_map;
     int current_border = 0;
     for (const auto& h : border_edges) {
         auto v = mesh.to_vertex(h);
@@ -252,6 +249,7 @@ void SurfaceParametrization::extract_polygon_border_edges(
         Eigen::Vector2d point = Eigen::Vector2d(position[0], position[1]);
         polygon.push_back(point);
 
+        border_v_map[current_border].push_back(v);
         border_map[current_border].push_back(point);
 
         // Check if we crossed a corner and need to start a new border
@@ -261,5 +259,13 @@ void SurfaceParametrization::extract_polygon_border_edges(
                 break;
             }
         }
+    }
+
+    // create the twin border map
+    int corner_count = corners.size();
+    int half_corner_count = corner_count / 2;
+    for (int i = 0; i < half_corner_count; ++i) {
+        twin_border_map[i] = current_border - 1 - i;
+        twin_border_map[current_border - 1 - i] = i;
     }
 }
