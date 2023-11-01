@@ -37,6 +37,8 @@ private:
         std::vector<pmp::Vertex>& border_list
     );
     double calculateAngle(const std::vector<Eigen::Vector2d>& border1, const std::vector<Eigen::Vector2d>& border2);
+    Eigen::Vector2d fitLine(const std::vector<Eigen::Vector2d>& points);
+    void order_data(std::vector<Eigen::Vector2d>& vec);
     Point_2_eigen customRotate(const Point_2_eigen& pt, double angle_radians);
     void process_mesh(const std::string& mesh_path, pmp::SurfaceMesh& mesh_original, double rotation_angle, int twin_border_id);
     void find_vertex_index(const Point_2_eigen& target);
