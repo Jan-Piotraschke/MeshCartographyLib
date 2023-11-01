@@ -18,8 +18,6 @@
 // ========================================
 
 std::vector<std::vector<int64_t>> Tessellation::create_kachelmuster() {
-    analyseSides();
-
     std::string mesh_uv_path = parent.meshmeta.mesh_path;
     auto mesh_uv_name = parent.get_mesh_name(mesh_uv_path);
 
@@ -28,18 +26,18 @@ std::vector<std::vector<int64_t>> Tessellation::create_kachelmuster() {
     std::cout << "Mesh name: " << mesh_uv_name << std::endl;
     equivalent_vertices.resize(mesh_original.n_vertices());
 
-    // Calculate the angle of the twin-borders on the fly
-    docking_side = 0;
-    process_mesh(mesh_uv_path, mesh_original, calculateAngle(down_border, left_border));   // position 2 (row) 3 (column)  -> left
+    size_t size = parent.border_map.size();
+    for (size_t i = 0; i < size; ++i) {
+        docking_side = i;
+        size_t nextIndex = (i + 1) % size;
+        double rotation_angle = calculateAngle(parent.border_map[nextIndex], parent.border_map[i]);
 
-    docking_side = 1;
-    process_mesh(mesh_uv_path, mesh_original, calculateAngle(up_border, right_border));  // position 2 1  -> right
+        pmp::SurfaceMesh mesh;
+        pmp::read_off(mesh, mesh_uv_path);
 
-    docking_side = 2;
-    process_mesh(mesh_uv_path, mesh_original, calculateAngle(right_border, up_border));  // position 1 2 -> up
-
-    docking_side = 3;
-    process_mesh(mesh_uv_path, mesh_original, calculateAngle(left_border, down_border));  // position 3 2 -> down
+        rotate_and_shift_mesh(mesh, rotation_angle);
+        add_mesh(mesh, mesh_original);
+    }
 
     std::cout << "Finished creating the kachelmuster" << std::endl;
     std::string output_path = (MESH_FOLDER / (mesh_uv_name + "_kachelmuster.off")).string();
@@ -58,8 +56,8 @@ void Tessellation::rotate_and_shift_mesh(
 
     // Get the border of the mesh
     std::vector<Point_2_eigen> main_border, connection_side;
-    main_border = border_map[docking_side];
-    connection_side = border_map[twin_border_map[docking_side]];
+    main_border = parent.border_map[docking_side];
+    connection_side = parent.border_map[parent.twin_border_map[docking_side]];
 
     order_data(main_border);
 
@@ -155,56 +153,6 @@ void Tessellation::order_data(std::vector<Eigen::Vector2d>& vec) {
 // Tessellation - Private Functions
 // ========================================
 
-void Tessellation::analyseSides() {
-    // Check each vertex
-    for(std::size_t i = 0; i < parent.polygon.size(); ++i) {
-        Point_2_eigen eigen_point = parent.polygon[i];
-
-        // Check for left side
-        if(std::abs(eigen_point(0)) < 1e-9) {
-            left.push_back(parent.polygon_v[i]);
-            left_border.push_back(eigen_point);
-        }
-
-        // Check for right side
-        if(std::abs(eigen_point(0) - 1) < 1e-9) {
-            right.push_back(parent.polygon_v[i]);
-            right_border.push_back(eigen_point);
-        }
-
-        // Check for bottom side
-        if(std::abs(eigen_point(1)) < 1e-9) {
-            down.push_back(parent.polygon_v[i]);
-            down_border.push_back(eigen_point);
-        }
-
-        // Check for top side
-        if(std::abs(eigen_point(1) - 1) < 1e-9) {
-            up.push_back(parent.polygon_v[i]);
-            up_border.push_back(eigen_point);
-        }
-    }
-
-    // Collect all borders in a map
-    border_map[0] = left_border;
-    border_map[1] = right_border;
-    border_map[2] = up_border;
-    border_map[3] = down_border;
-
-    // Collect all vertices in a map
-    border_v_map[0] = left;
-    border_v_map[1] = right;
-    border_v_map[2] = up;
-    border_v_map[3] = down;
-
-    // Show which borders are 3D twins
-    twin_border_map[0] = 3;
-    twin_border_map[1] = 2;
-    twin_border_map[2] = 1;
-    twin_border_map[3] = 0;
-}
-
-
 double Tessellation::calculateAngle(const std::vector<Eigen::Vector2d>& border1, const std::vector<Eigen::Vector2d>& border2) {
     Eigen::Vector2d dir1 = fitLine(border1);
     Eigen::Vector2d dir2 = fitLine(border2);
@@ -247,19 +195,6 @@ Eigen::Vector2d Tessellation::fitLine(const std::vector<Eigen::Vector2d>& points
     Eigen::Vector2d dir = solver.eigenvectors().col(1);
 
     return dir;
-}
-
-
-void Tessellation::process_mesh(
-    const std::string& mesh_path,
-    pmp::SurfaceMesh& mesh_original,
-    double rotation_angle
-) {
-    pmp::SurfaceMesh mesh;
-    pmp::read_off(mesh, mesh_path);
-
-    rotate_and_shift_mesh(mesh, rotation_angle);
-    add_mesh(mesh, mesh_original);
 }
 
 
@@ -308,7 +243,7 @@ void Tessellation::add_mesh(
         std::vector<int64_t>& kachelmuster_twin_v = equivalent_vertices[v.idx()];
 
         std::vector<pmp::Vertex> border_list;
-        border_list = border_v_map[twin_border_map[docking_side]];
+        border_list = parent.border_v_map[parent.twin_border_map[docking_side]];
 
         auto pt_3d = get_point_3d(mesh, v, border_list);
 

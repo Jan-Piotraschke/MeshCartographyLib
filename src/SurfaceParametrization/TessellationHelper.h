@@ -45,7 +45,6 @@ private:
     Eigen::Vector2d fitLine(const std::vector<Eigen::Vector2d>& points);
     void order_data(std::vector<Eigen::Vector2d>& vec);
     Point_2_eigen customRotate(const Point_2_eigen& pt, double angle_radians);
-    void process_mesh(const std::string& mesh_path, pmp::SurfaceMesh& mesh_original, double rotation_angle);
     void find_vertex_index(const Point_2_eigen& target);
     void add_mesh(pmp::SurfaceMesh& mesh, pmp::SurfaceMesh& mesh_original);
     bool are_almost_equal(float a, float b);
@@ -53,7 +52,6 @@ private:
         const pmp::SurfaceMesh& m,
         const Point_3_eigen& pt
     );
-    void analyseSides();
     std::vector<pmp::Vertex> left, right, up, down;
 
     static constexpr double EPSILON = 1e-6;
