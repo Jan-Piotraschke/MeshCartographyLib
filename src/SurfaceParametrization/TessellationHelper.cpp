@@ -57,19 +57,19 @@ void Tessellation::rotate_and_shift_mesh(
     double angle_radians = M_PI * angle_degrees / 180.0; // Convert angle to radians
     double threshold = 1e-10;
 
-    std::vector<pmp::Vertex> connection_side;
+    std::vector<Point_2_eigen> connection_side;
     std::vector<Point_2_eigen> main_border;
     if (twin_border_id == 0) {
-        connection_side = down;
+        connection_side = down_border;
         main_border = left_border;
     } else if (twin_border_id == 1) {
-        connection_side = up;
+        connection_side = up_border;
         main_border = right_border;
     } else if (twin_border_id == 2) {
-        connection_side = right;
+        connection_side = right_border;
         main_border = up_border;
     } else if (twin_border_id == 3) {
-        connection_side = left;
+        connection_side = left_border;
         main_border = down_border;
     }
 
@@ -84,9 +84,7 @@ void Tessellation::rotate_and_shift_mesh(
 
     // pre-rotation: rotate only the border_vertices of the main and compare them to its twin border to get the shift
     std::vector<Eigen::Vector2d> vec;
-    for (auto v : connection_side) {
-        Point_3_eigen pt_3d = mesh.position(v);
-        Point_2_eigen pt_2d(pt_3d.x(), pt_3d.y());
+    for (auto pt_2d : connection_side) {
         Point_2_eigen transformed_2d = customRotate(pt_2d, angle_radians);
 
         // Remove the memory errors by setting the coordinates to 0
