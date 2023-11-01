@@ -85,17 +85,15 @@ void HexagonBorderHelper::setup_hexagon_boundary_constraints()
 void HexagonBorderHelper::initializeCorners(double sideLength) {
     corners.clear();
     double angle = M_PI / 3;  // 60 degrees
-    std::vector<Eigen::Vector2d> cornerPositions;
-    for (int i = 0; i < 6; ++i) {
-        double x = 0.5 + 0.5 * std::cos(i * angle);
-        double y = 0.5 + 0.5 * std::sin(i * angle);
-        cornerPositions.push_back(Eigen::Vector2d(x, y));
-    }
 
-    // Ensure the first corner is at (0, 0)
-    Eigen::Vector2d offset = cornerPositions[0];
-    for (const auto& pos : cornerPositions) {
-        corners.push_back(Corner(pos - offset, sideLength));
+    // Initialize the first corner to be at (0, 0)
+    corners.push_back(Corner(Eigen::Vector2d(0.0, 0.0), sideLength));
+
+    // Calculate positions for the other corners
+    for (int i = 1; i < 6; ++i) {
+        double x = corners[i-1].position(0) + sideLength * std::cos(i * angle);
+        double y = corners[i-1].position(1) + sideLength * std::sin(i * angle);
+        corners.push_back(Corner(Eigen::Vector2d(x, y), sideLength));
     }
 }
 
