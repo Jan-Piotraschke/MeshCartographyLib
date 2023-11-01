@@ -224,36 +224,42 @@ void SurfaceParametrization::extract_polygon_border_edges(
     auto tex = mesh.vertex_property<pmp::TexCoord>("v:tex");
 
     pmp::SurfaceMesh::VertexIterator vit, vend = mesh.vertices_end();
-    pmp::Vertex vh;
-    pmp::Halfedge hh;
-
-    // Initialize all texture coordinates to the origin.
-    for (auto v : mesh.vertices()) {
-        tex[v] = pmp::TexCoord(0.0, 0.0); // Initialize to the bottom-left corner
-    }
-
     // find 1st boundary vertex
+    pmp::Vertex vh;
     for (vit = mesh.vertices_begin(); vit != vend; ++vit) {
         if (mesh.is_boundary(*vit)) {
             break;
         }
     }
+    vh = *vit;
 
     // collect boundary edges
-    vh = *vit;
-    hh = mesh.halfedge(vh);
+    pmp::Halfedge hh = mesh.halfedge(vh);
     do {
         border_edges.push_back(hh);
         hh = mesh.next_halfedge(hh);
     } while (hh != mesh.halfedge(vh));
 
 
-
-
     // Extract the coordinates of the vertices in the correct order
-    for (const pmp::Halfedge& h : border_edges) {
-        polygon_v.push_back(mesh.to_vertex(h));
-        auto position = mesh.position(mesh.to_vertex(h));
-        polygon.push_back(Point_2_eigen(position[0], position[1]));
+    std::map<int, std::vector<Eigen::Vector2d>> border_map;
+    int current_border = 0;
+    for (const auto& h : border_edges) {
+        auto v = mesh.to_vertex(h);
+        polygon_v.push_back(v);
+
+        auto position = mesh.position(v);
+        Eigen::Vector2d point = Eigen::Vector2d(position[0], position[1]);
+        polygon.push_back(point);
+
+        border_map[current_border].push_back(point);
+
+        // Check if we crossed a corner and need to start a new border
+        for (size_t i = 0; i < corners.size(); ++i) {
+            if (point.isApprox(corners[i], 1e-4)) {
+                ++current_border;
+                break;
+            }
+        }
     }
 }
