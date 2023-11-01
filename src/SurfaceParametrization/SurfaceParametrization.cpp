@@ -241,6 +241,12 @@ void SurfaceParametrization::extract_polygon_border_edges(
 
     // Extract the coordinates of the vertices in the correct order
     int current_border = 0;
+    auto first_v = mesh.from_vertex(border_edges[0]);
+    auto first_position = mesh.position(first_v);
+    Eigen::Vector2d first_point(first_position[0], first_position[1]);
+    border_v_map[current_border].push_back(first_v);
+    border_map[current_border].push_back(first_point);
+
     for (const auto& h : border_edges) {
         auto v = mesh.to_vertex(h);
         polygon_v.push_back(v);
@@ -254,8 +260,10 @@ void SurfaceParametrization::extract_polygon_border_edges(
 
         // Check if we crossed a corner and need to start a new border
         for (size_t i = 0; i < corners.size(); ++i) {
-            if (point.isApprox(corners[i], 1e-4)) {
+            if (point.isApprox(corners[i], 1e-4) && v != first_v) {
                 ++current_border;
+                border_v_map[current_border].push_back(v);
+                border_map[current_border].push_back(point);
                 break;
             }
         }
