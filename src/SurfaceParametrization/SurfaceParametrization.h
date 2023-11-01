@@ -40,6 +40,7 @@ public:
 
     bool check_point_in_polygon(const Point_2_eigen& point);
 
+    std::vector<Eigen::Vector2d> corners;
     Polygon_eigen polygon;
     std::vector<pmp::Vertex> polygon_v;
     MeshMeta meshmeta;

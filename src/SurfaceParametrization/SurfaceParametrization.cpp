@@ -119,7 +119,7 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     pmp::write(mesh, mesh_uv_path_test.string());
 
     // Perform the parameterization
-    HarmonicParametrizationHelper helper_p = HarmonicParametrizationHelper(mesh, start_vertex);
+    HarmonicParametrizationHelper helper_p = HarmonicParametrizationHelper(mesh, start_vertex, corners);
     ParametrizationHelperInterface& parametrization_helper = helper_p;
     parametrization_helper.parameterize_UV_mesh(false);
 
@@ -246,6 +246,9 @@ void SurfaceParametrization::extract_polygon_border_edges(
         border_edges.push_back(hh);
         hh = mesh.next_halfedge(hh);
     } while (hh != mesh.halfedge(vh));
+
+
+
 
     // Extract the coordinates of the vertices in the correct order
     for (const pmp::Halfedge& h : border_edges) {
