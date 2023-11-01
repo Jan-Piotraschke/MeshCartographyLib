@@ -23,11 +23,11 @@ public:
         return {left_border, right_border, up_border, down_border};
     };
     std::vector<Point_2_eigen> left_border, right_border, up_border, down_border;
-    void rotate_and_shift_mesh(pmp::SurfaceMesh& mesh, double angle_degrees, int twin_border_id);
+    void rotate_and_shift_mesh(pmp::SurfaceMesh& mesh, double angle_degrees);
 
 private:
     SurfaceParametrization& parent;
-    std::string docking_side;
+    int docking_side;
     int target_index;
     std::vector<std::vector<int64_t>> equivalent_vertices;
 
@@ -36,11 +36,16 @@ private:
         pmp::Vertex& v,
         std::vector<pmp::Vertex>& border_list
     );
+
+    std::map<int, std::vector<Eigen::Vector2d>> border_map;
+    std::map<int, int> twin_border_map;
+    std::map<int, std::vector<pmp::Vertex>> border_v_map;
+
     double calculateAngle(const std::vector<Eigen::Vector2d>& border1, const std::vector<Eigen::Vector2d>& border2);
     Eigen::Vector2d fitLine(const std::vector<Eigen::Vector2d>& points);
     void order_data(std::vector<Eigen::Vector2d>& vec);
     Point_2_eigen customRotate(const Point_2_eigen& pt, double angle_radians);
-    void process_mesh(const std::string& mesh_path, pmp::SurfaceMesh& mesh_original, double rotation_angle, int twin_border_id);
+    void process_mesh(const std::string& mesh_path, pmp::SurfaceMesh& mesh_original, double rotation_angle);
     void find_vertex_index(const Point_2_eigen& target);
     void add_mesh(pmp::SurfaceMesh& mesh, pmp::SurfaceMesh& mesh_original);
     bool are_almost_equal(float a, float b);

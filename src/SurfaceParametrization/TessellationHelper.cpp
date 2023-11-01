@@ -29,17 +29,17 @@ std::vector<std::vector<int64_t>> Tessellation::create_kachelmuster() {
     equivalent_vertices.resize(mesh_original.n_vertices());
 
     // Calculate the angle of the twin-borders on the fly
-    docking_side = "left";
-    process_mesh(mesh_uv_path, mesh_original, calculateAngle(down_border, left_border), 0);   // position 2 (row) 3 (column)  -> left
+    docking_side = 0;
+    process_mesh(mesh_uv_path, mesh_original, calculateAngle(down_border, left_border));   // position 2 (row) 3 (column)  -> left
 
-    docking_side = "right";
-    process_mesh(mesh_uv_path, mesh_original, calculateAngle(up_border, right_border), 1);  // position 2 1  -> right
+    docking_side = 1;
+    process_mesh(mesh_uv_path, mesh_original, calculateAngle(up_border, right_border));  // position 2 1  -> right
 
-    docking_side = "up";
-    process_mesh(mesh_uv_path, mesh_original, calculateAngle(right_border, up_border), 2);  // position 1 2 -> up
+    docking_side = 2;
+    process_mesh(mesh_uv_path, mesh_original, calculateAngle(right_border, up_border));  // position 1 2 -> up
 
-    docking_side = "down";
-    process_mesh(mesh_uv_path, mesh_original, calculateAngle(left_border, down_border), 3);  // position 3 2 -> down
+    docking_side = 3;
+    process_mesh(mesh_uv_path, mesh_original, calculateAngle(left_border, down_border));  // position 3 2 -> down
 
     std::cout << "Finished creating the kachelmuster" << std::endl;
     std::string output_path = (MESH_FOLDER / (mesh_uv_name + "_kachelmuster.off")).string();
@@ -51,27 +51,15 @@ std::vector<std::vector<int64_t>> Tessellation::create_kachelmuster() {
 
 void Tessellation::rotate_and_shift_mesh(
     pmp::SurfaceMesh& mesh,
-    double angle_degrees,
-    int twin_border_id
+    double angle_degrees
 ) {
     double angle_radians = M_PI * angle_degrees / 180.0; // Convert angle to radians
     double threshold = 1e-10;
 
-    std::vector<Point_2_eigen> connection_side;
-    std::vector<Point_2_eigen> main_border;
-    if (twin_border_id == 0) {
-        connection_side = down_border;
-        main_border = left_border;
-    } else if (twin_border_id == 1) {
-        connection_side = up_border;
-        main_border = right_border;
-    } else if (twin_border_id == 2) {
-        connection_side = right_border;
-        main_border = up_border;
-    } else if (twin_border_id == 3) {
-        connection_side = left_border;
-        main_border = down_border;
-    }
+    // Get the border of the mesh
+    std::vector<Point_2_eigen> main_border, connection_side;
+    main_border = border_map[docking_side];
+    connection_side = border_map[twin_border_map[docking_side]];
 
     order_data(main_border);
 
@@ -196,6 +184,24 @@ void Tessellation::analyseSides() {
             up_border.push_back(eigen_point);
         }
     }
+
+    // Collect all borders in a map
+    border_map[0] = left_border;
+    border_map[1] = right_border;
+    border_map[2] = up_border;
+    border_map[3] = down_border;
+
+    // Collect all vertices in a map
+    border_v_map[0] = left;
+    border_v_map[1] = right;
+    border_v_map[2] = up;
+    border_v_map[3] = down;
+
+    // Show which borders are 3D twins
+    twin_border_map[0] = 3;
+    twin_border_map[1] = 2;
+    twin_border_map[2] = 1;
+    twin_border_map[3] = 0;
 }
 
 
@@ -247,13 +253,12 @@ Eigen::Vector2d Tessellation::fitLine(const std::vector<Eigen::Vector2d>& points
 void Tessellation::process_mesh(
     const std::string& mesh_path,
     pmp::SurfaceMesh& mesh_original,
-    double rotation_angle,
-    int twin_border_id
+    double rotation_angle
 ) {
     pmp::SurfaceMesh mesh;
     pmp::read_off(mesh, mesh_path);
 
-    rotate_and_shift_mesh(mesh, rotation_angle, twin_border_id);
+    rotate_and_shift_mesh(mesh, rotation_angle);
     add_mesh(mesh, mesh_original);
 }
 
@@ -303,15 +308,8 @@ void Tessellation::add_mesh(
         std::vector<int64_t>& kachelmuster_twin_v = equivalent_vertices[v.idx()];
 
         std::vector<pmp::Vertex> border_list;
-        if (docking_side == "left"){
-            border_list = down;
-        } else if (docking_side == "right"){
-            border_list = up;
-        } else if (docking_side == "up"){
-            border_list = right;
-        } else if (docking_side == "down"){
-            border_list = left;
-        }
+        border_list = border_v_map[twin_border_map[docking_side]];
+
         auto pt_3d = get_point_3d(mesh, v, border_list);
 
         pmp::Vertex shifted_v;
