@@ -45,9 +45,7 @@ private:
     Eigen::Vector2d fitLine(const std::vector<Eigen::Vector2d>& points);
     void order_data(std::vector<Eigen::Vector2d>& vec);
     Point_2_eigen customRotate(const Point_2_eigen& pt, double angle_radians);
-    void find_vertex_index(const Point_2_eigen& target);
     void add_mesh(pmp::SurfaceMesh& mesh, pmp::SurfaceMesh& mesh_original);
-    bool are_almost_equal(float a, float b);
     pmp::Vertex find_vertex_by_coordinates(
         const pmp::SurfaceMesh& m,
         const Point_3_eigen& pt

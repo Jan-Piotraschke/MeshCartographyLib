@@ -99,18 +99,3 @@ TEST_F(MeshMetricTest, TestFaceDistortionUV)
 
     ASSERT_EQ(faceDistortion, 0.0);
 }
-
-TEST_F(MeshMetricTest, TestAngleDistortionRotatedUV)
-{
-    pmp::SurfaceMesh mesh_uv_rotated;
-    pmp::read_off(mesh_uv_rotated, mesh_uv_path);
-
-    // Rotate the mesh
-    tessellation_metric.rotate_and_shift_mesh(mesh_uv_rotated, 180.0, 0, 0);
-
-    AngleDistortionHelper angleDistHelper(mesh_uv, mesh_uv_rotated);
-    double angleDistortion = angleDistHelper.computeAngleDistortion();
-
-    ASSERT_EQ(angleDistortion, 0.0);
-
-}

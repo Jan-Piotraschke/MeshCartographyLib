@@ -7,7 +7,7 @@
  * @license     Apache License 2.0
  *
  * @bug         -
- * @todo        - improve the find_vertex_by_coordinates function, as we only have to check on the border of the mesh
+ * @todo        -
  */
 
 #include <math.h>
@@ -117,37 +117,6 @@ void Tessellation::rotate_and_shift_mesh(
 }
 
 
-void Tessellation::order_data(std::vector<Eigen::Vector2d>& vec) {
-    Eigen::VectorXd X(vec.size());
-    Eigen::VectorXd Y(vec.size());
-    for (size_t i = 0; i < vec.size(); ++i) {
-        X[i] = vec[i](0);
-        Y[i] = vec[i](1);
-    }
-
-    Eigen::VectorXd A = Eigen::VectorXd::Ones(vec.size());
-    Eigen::MatrixXd B(vec.size(), 2);
-    B << X, A;
-    Eigen::Vector2d coeffs = B.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(Y);
-    double m = coeffs(0), b = coeffs(1);
-
-    // Check if all x-values are the same (vertical line)
-    bool verticalLine = (X.maxCoeff() - X.minCoeff()) < std::numeric_limits<double>::epsilon();
-
-    // Sort the vector based on the parameter t
-    std::sort(vec.begin(), vec.end(),
-        [m, b, verticalLine](const Eigen::Vector2d& a, const Eigen::Vector2d& c) {
-            if (verticalLine) {
-                return a[1] < c[1];
-            } else {
-                double ta = (a[0] + m * (a[1] - b)) / std::sqrt(1 + m * m);
-                double tc = (c[0] + m * (c[1] - b)) / std::sqrt(1 + m * m);
-                return ta < tc;
-            }
-        });
-}
-
-
 
 // ========================================
 // Tessellation - Private Functions
@@ -195,6 +164,37 @@ Eigen::Vector2d Tessellation::fitLine(const std::vector<Eigen::Vector2d>& points
     Eigen::Vector2d dir = solver.eigenvectors().col(1);
 
     return dir;
+}
+
+
+void Tessellation::order_data(std::vector<Eigen::Vector2d>& vec) {
+    Eigen::VectorXd X(vec.size());
+    Eigen::VectorXd Y(vec.size());
+    for (size_t i = 0; i < vec.size(); ++i) {
+        X[i] = vec[i](0);
+        Y[i] = vec[i](1);
+    }
+
+    Eigen::VectorXd A = Eigen::VectorXd::Ones(vec.size());
+    Eigen::MatrixXd B(vec.size(), 2);
+    B << X, A;
+    Eigen::Vector2d coeffs = B.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(Y);
+    double m = coeffs(0), b = coeffs(1);
+
+    // Check if all x-values are the same (vertical line)
+    bool verticalLine = (X.maxCoeff() - X.minCoeff()) < std::numeric_limits<double>::epsilon();
+
+    // Sort the vector based on the parameter t
+    std::sort(vec.begin(), vec.end(),
+        [m, b, verticalLine](const Eigen::Vector2d& a, const Eigen::Vector2d& c) {
+            if (verticalLine) {
+                return a[1] < c[1];
+            } else {
+                double ta = (a[0] + m * (a[1] - b)) / std::sqrt(1 + m * m);
+                double tc = (c[0] + m * (c[1] - b)) / std::sqrt(1 + m * m);
+                return ta < tc;
+            }
+        });
 }
 
 
@@ -285,23 +285,6 @@ void Tessellation::add_mesh(
 
         mesh_original.add_face(face_vertices);
     }
-}
-
-
-void Tessellation::find_vertex_index(const Point_2_eigen& target) {
-    for (size_t i = 0; i < parent.polygon.size(); ++i) {
-
-        if (are_almost_equal(parent.polygon[i](0), target(0)) &&
-            are_almost_equal(parent.polygon[i](1), target(1))) {
-            target_index = i;
-            break;
-        }
-    }
-}
-
-
-bool Tessellation::are_almost_equal(float a, float b) {
-    return std::fabs(a - b) < EPSILON;
 }
 
 
