@@ -46,11 +46,11 @@ void HarmonicParametrizationHelper::parameterize_UV_mesh(bool use_uniform_weight
     }
 
     // create boundary
-    HexagonBorderHelper border_helper = HexagonBorderHelper(mesh, start_vertex);
-    border_helper.setup_hexagon_boundary_constraints();
+    // HexagonBorderHelper border_helper = HexagonBorderHelper(mesh, start_vertex);
+    // border_helper.setup_hexagon_boundary_constraints();
 
-    // SquareBorderHelper border_helper = SquareBorderHelper(mesh, start_vertex);
-    // border_helper.setup_square_boundary_constraints();
+    SquareBorderHelper border_helper = SquareBorderHelper(mesh, start_vertex);
+    border_helper.setup_square_boundary_constraints();
 
     // get the border corners
     const auto& corners = border_helper.getCorners();
