@@ -271,9 +271,8 @@ void SurfaceParametrization::extract_polygon_border_edges(
 
     // create the twin border map
     int corner_count = corners.size();
-    int half_corner_count = corner_count / 2;
-    for (int i = 0; i < half_corner_count; ++i) {
-        twin_border_map[i] = current_border - 1 - i;
-        twin_border_map[current_border - 1 - i] = i;
+    for (int i = 0; i < corner_count - 1; ++i) {
+        twin_border_map[i] = current_border - i;
+        twin_border_map[current_border - i] = i;
     }
 }
