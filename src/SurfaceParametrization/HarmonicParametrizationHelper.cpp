@@ -3,7 +3,7 @@
  * @brief       Parameterize the mesh with the harmonic parametrization
  *
  * @author      Jan-Piotraschke
- * @date        2023-Sep-27
+ * @date        2023-Nov-01
  * @license     Apache License 2.0
  *
  * @bug         - beim Entfalten des Kamels sind manche Knoten dutzendfach vorhanden

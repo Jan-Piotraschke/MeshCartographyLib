@@ -3,7 +3,7 @@
  * @brief       Create the 2D maps based on the 3D mesh
  *
  * @author      Jan-Piotraschke
- * @date        2023-Oct-25
+ * @date        2023-Nov-01
  * @license     Apache License 2.0
  *
  * @bug         -

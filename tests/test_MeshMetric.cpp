@@ -3,7 +3,7 @@
  * @brief       Testing the DistortionHelper classes
  *
  * @author      Jan-Piotraschke
- * @date        2023-Sep-08
+ * @date        2023-Nov-01
  * @license     Apache License 2.0
  *
  * @bug         -
