@@ -28,7 +28,7 @@ HexagonBorderHelper::HexagonBorderHelper(
 // Public Functions
 // ========================================
 
-void HexagonBorderHelper::setup_square_boundary_constraints()
+void HexagonBorderHelper::setup_hexagon_boundary_constraints()
 {
     // get properties
     auto points = mesh.vertex_property<pmp::Point>("v:point");
@@ -59,26 +59,24 @@ void HexagonBorderHelper::setup_square_boundary_constraints()
         length += pmp::distance(points[loop[vertice_id]], points[loop[(vertice_id + 1) % N]]);
     }
 
-    int corner_count = 4;
-    double sideLength = length / corner_count;
+    // Initialize the hexagon corners
+    double sideLength = length / 6.0;
     initializeCorners(sideLength);
 
     double step_size = length / N;
     auto tolerance = 1e-4;
 
-    // map length intervals to square intervals
+    // map length intervals to hexagon intervals
     for (auto [vertice_id, l] = std::pair<unsigned int, double>{0, 0.0}; vertice_id < N; ++vertice_id, l += step_size) {
-        pmp::TexCoord t = mapToSquare(l);
+        pmp::TexCoord t = mapToHexagon(l);
 
         // Apply tolerance
-        if (t[0] < tolerance) t[0] = 0.0;
-        if (t[1] < tolerance) t[1] = 0.0;
+        if (std::abs(t[0]) < tolerance) t[0] = 0.0;
+        if (std::abs(t[1]) < tolerance) t[1] = 0.0;
 
         tex[loop[vertice_id]] = t;
     }
 }
-
-
 
 // ========================================
 // Private Functions
@@ -86,21 +84,30 @@ void HexagonBorderHelper::setup_square_boundary_constraints()
 
 void HexagonBorderHelper::initializeCorners(double sideLength) {
     corners.clear();
-    corners.push_back(Corner({0.0, 0.0}, sideLength));
-    corners.push_back(Corner({1.0, 0.0}, sideLength));
-    corners.push_back(Corner({1.0, 1.0}, sideLength));
-    corners.push_back(Corner({0.0, 1.0}, sideLength));
+    double angle = M_PI / 3;  // 60 degrees
+    std::vector<Eigen::Vector2d> cornerPositions;
+    for (int i = 0; i < 6; ++i) {
+        double x = 0.5 + 0.5 * std::cos(i * angle);
+        double y = 0.5 + 0.5 * std::sin(i * angle);
+        cornerPositions.push_back(Eigen::Vector2d(x, y));
+    }
+
+    // Ensure the first corner is at (0, 0)
+    Eigen::Vector2d offset = cornerPositions[0];
+    for (const auto& pos : cornerPositions) {
+        corners.push_back(Corner(pos - offset, sideLength));
+    }
 }
 
 
-pmp::TexCoord HexagonBorderHelper::mapToSquare(double l) {
+pmp::TexCoord HexagonBorderHelper::mapToHexagon(double l) {
     double sum = 0.0;
     for (size_t i = 0; i < corners.size(); ++i) {
         const auto& corner = corners[i];
         const auto& nextCorner = corners[(i + 1) % corners.size()];
         if (l <= sum + corner.sideLength) {
             double frac = (l - sum) / corner.sideLength;
-            return corner.position * (1.0 - frac) + nextCorner.position * frac;
+            return pmp::TexCoord((corner.position * (1.0 - frac) + nextCorner.position * frac).cast<float>());
         }
         sum += corner.sideLength;
     }
