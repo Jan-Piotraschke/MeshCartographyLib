@@ -40,6 +40,12 @@ public:
 
     bool check_point_in_polygon(const Point_2_eigen& point);
 
+    std::vector<Eigen::Vector2d> corners;
+
+    std::map<int, std::vector<Eigen::Vector2d>> border_map;
+    std::map<int, int> twin_border_map;
+    std::map<int, std::vector<pmp::Vertex>> border_v_map;
+
     Polygon_eigen polygon;
     std::vector<pmp::Vertex> polygon_v;
     MeshMeta meshmeta;

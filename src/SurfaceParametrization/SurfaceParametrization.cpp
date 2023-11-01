@@ -119,7 +119,7 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     pmp::write(mesh, mesh_uv_path_test.string());
 
     // Perform the parameterization
-    HarmonicParametrizationHelper helper_p = HarmonicParametrizationHelper(mesh, start_vertex);
+    HarmonicParametrizationHelper helper_p = HarmonicParametrizationHelper(mesh, start_vertex, corners);
     ParametrizationHelperInterface& parametrization_helper = helper_p;
     parametrization_helper.parameterize_UV_mesh(false);
 
@@ -223,34 +223,56 @@ void SurfaceParametrization::extract_polygon_border_edges(
     auto points = mesh.vertex_property<pmp::Point>("v:point");
     auto tex = mesh.vertex_property<pmp::TexCoord>("v:tex");
 
-    pmp::SurfaceMesh::VertexIterator vit, vend = mesh.vertices_end();
+    // find 1st boundary vertex here, as all UV meshes have this as the origin of their parameterization
     pmp::Vertex vh;
-    pmp::Halfedge hh;
-
-    // Initialize all texture coordinates to the origin.
     for (auto v : mesh.vertices()) {
-        tex[v] = pmp::TexCoord(0.0, 0.0); // Initialize to the bottom-left corner
-    }
-
-    // find 1st boundary vertex
-    for (vit = mesh.vertices_begin(); vit != vend; ++vit) {
-        if (mesh.is_boundary(*vit)) {
+        if (points[v] == pmp::Point(0, 0, 0)) {
+            vh = v;
             break;
         }
     }
 
     // collect boundary edges
-    vh = *vit;
-    hh = mesh.halfedge(vh);
+    pmp::Halfedge hh = mesh.halfedge(vh);
     do {
         border_edges.push_back(hh);
         hh = mesh.next_halfedge(hh);
     } while (hh != mesh.halfedge(vh));
 
     // Extract the coordinates of the vertices in the correct order
-    for (const pmp::Halfedge& h : border_edges) {
-        polygon_v.push_back(mesh.to_vertex(h));
-        auto position = mesh.position(mesh.to_vertex(h));
-        polygon.push_back(Point_2_eigen(position[0], position[1]));
+    int current_border = 0;
+    auto first_v = mesh.from_vertex(border_edges[0]);
+    auto first_position = mesh.position(first_v);
+    Eigen::Vector2d first_point(first_position[0], first_position[1]);
+    border_v_map[current_border].push_back(first_v);
+    border_map[current_border].push_back(first_point);
+
+    for (const auto& h : border_edges) {
+        auto v = mesh.to_vertex(h);
+        polygon_v.push_back(v);
+
+        auto position = mesh.position(v);
+        Eigen::Vector2d point = Eigen::Vector2d(position[0], position[1]);
+        polygon.push_back(point);
+
+        border_v_map[current_border].push_back(v);
+        border_map[current_border].push_back(point);
+
+        // Check if we crossed a corner and need to start a new border
+        for (size_t i = 0; i < corners.size(); ++i) {
+            if (point.isApprox(corners[i], 1e-4) && v != first_v) {
+                ++current_border;
+                border_v_map[current_border].push_back(v);
+                border_map[current_border].push_back(point);
+                break;
+            }
+        }
+    }
+
+    // create the twin border map
+    int corner_count = corners.size();
+    for (int i = 0; i < corner_count - 1; ++i) {
+        twin_border_map[i] = current_border - i;
+        twin_border_map[current_border - i] = i;
     }
 }

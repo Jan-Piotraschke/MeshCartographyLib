@@ -15,10 +15,12 @@
 
 HarmonicParametrizationHelper::HarmonicParametrizationHelper(
     pmp::SurfaceMesh& mesh,
-    pmp::Vertex& start_vertex
+    pmp::Vertex& start_vertex,
+    std::vector<Eigen::Vector2d>& corner_coordinates
 )
     : mesh(mesh),
-    start_vertex(start_vertex)
+    start_vertex(start_vertex),
+    corner_coordinates(corner_coordinates)
 {};
 
 
@@ -45,6 +47,12 @@ void HarmonicParametrizationHelper::parameterize_UV_mesh(bool use_uniform_weight
     // create boundary
     SquareBorderHelper border_helper = SquareBorderHelper(mesh, start_vertex);
     border_helper.setup_square_boundary_constraints();
+
+    // get the border corners
+    const auto& corners = border_helper.getCorners();
+    for (auto v : corners) {
+        corner_coordinates.push_back(v.position);
+    }
 
     // get properties
     auto UV_coord = mesh.vertex_property<pmp::TexCoord>("v:tex");
