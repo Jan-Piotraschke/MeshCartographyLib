@@ -12,6 +12,7 @@
 
 #include "HarmonicParametrizationHelper.h"
 #include "MonotileBorder/SquareBorderHelper.h"
+#include "MonotileBorder/HexagonBorderHelper.h"
 
 HarmonicParametrizationHelper::HarmonicParametrizationHelper(
     pmp::SurfaceMesh& mesh,
@@ -45,6 +46,9 @@ void HarmonicParametrizationHelper::parameterize_UV_mesh(bool use_uniform_weight
     }
 
     // create boundary
+    // HexagonBorderHelper border_helper = HexagonBorderHelper(mesh, start_vertex);
+    // border_helper.setup_hexagon_boundary_constraints();
+
     SquareBorderHelper border_helper = SquareBorderHelper(mesh, start_vertex);
     border_helper.setup_square_boundary_constraints();
 
