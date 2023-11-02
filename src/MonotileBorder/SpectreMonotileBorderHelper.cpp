@@ -35,19 +35,54 @@ void SpectreMonotileBorderHelper::setup_spectre_monotile_boundary_constraints(do
     std::vector<double> x_vals, y_vals;
     spectre_border(a, b, curve_strength, x_vals, y_vals);
 
-    // // Compute the total length of the border
-    // double totalLength = 0.0;
-    // for (size_t i = 0; i < x_vals.size() - 1; ++i) {
-    //     double dx = x_vals[i+1] - x_vals[i];
-    //     double dy = y_vals[i+1] - y_vals[i];
-    //     totalLength += std::sqrt(dx * dx + dy * dy);
-    // }
+    // Compute the total length of the border
+    double totalLength = 0.0;
+    for (size_t i = 0; i < x_vals.size() - 1; ++i) {
+        double dx = x_vals[i+1] - x_vals[i];
+        double dy = y_vals[i+1] - y_vals[i];
+        totalLength += std::sqrt(dx * dx + dy * dy);
+    }
 
-    // // Assuming the spectre has 14 edges
-    // double sideLength = totalLength / 14.0;
+    // spectre has 14 edges
+    sideLength = totalLength / 14.0;
 
     // Initialize corners
     initializeCorners(a, b, curve_strength);
+
+    // map to spectre monotile
+    pmp::SurfaceMesh::VertexIterator vit, vend = mesh.vertices_end();
+    pmp::Halfedge hh;
+    std::vector<pmp::Vertex> loop;
+
+    // collect boundary loop
+    hh = mesh.halfedge(start_vertex);
+    do {
+        loop.push_back(mesh.from_vertex(hh));
+        hh = mesh.next_halfedge(hh);
+    } while (hh != mesh.halfedge(start_vertex));
+
+    unsigned int vertice_id, N = loop.size();
+    double l, length;
+    pmp::TexCoord t;
+
+    // compute length of boundary loop
+    for (vertice_id = 0, length = 0.0; vertice_id < N; ++vertice_id) {
+        length += pmp::distance(points[loop[vertice_id]], points[loop[(vertice_id + 1) % N]]);
+    }
+
+    double step_size = length / N;
+    auto tolerance = 1e-4;
+
+    // map length intervals to spectre monotile intervals
+    for (auto [vertice_id, l] = std::pair<unsigned int, double>{0, 0.0}; vertice_id < N; ++vertice_id, l += step_size) {
+        pmp::TexCoord t = mapToSpectreMonotile(l);
+
+        // Apply tolerance
+        if (std::abs(t[0]) < tolerance) t[0] = 0.0;
+        if (std::abs(t[1]) < tolerance) t[1] = 0.0;
+
+        tex[loop[vertice_id]] = t;
+    }
 }
 
 
@@ -91,4 +126,17 @@ void SpectreMonotileBorderHelper::initializeCorners(double a, double b, double c
 
     // delete the last corner
     corners.pop_back();
+}
+
+
+pmp::TexCoord SpectreMonotileBorderHelper::mapToSpectreMonotile(double length) {
+    double total_length = 14.0 * sideLength;
+    double t = std::fmod(length, total_length) / total_length;
+    int segment = static_cast<int>(length / sideLength);
+    double segment_t = (length - segment * sideLength) / sideLength;
+    const auto& corner = corners[segment];
+    const auto& nextCorner = corners[(segment + 1) % corners.size()];
+    double x = corner.position.x() * (1.0 - segment_t) + nextCorner.position.x() * segment_t;
+    double y = corner.position.y() * (1.0 - segment_t) + nextCorner.position.y() * segment_t;
+    return pmp::TexCoord(x, y);
 }
