@@ -47,7 +47,8 @@ void SpectreMonotileBorderHelper::setup_spectre_monotile_boundary_constraints(do
     std::vector<double> x_vals, y_vals;
 
     // multiply by 14 because spectre has 14 edges
-    size_t desired_num_points = loop.size() * 14;
+    int multiplier = 140;
+    size_t desired_num_points = loop.size() * multiplier;
 
     // reserve space for the vectors
     spectre_border(a, b, curve_strength, x_vals, y_vals, desired_num_points);
@@ -55,22 +56,16 @@ void SpectreMonotileBorderHelper::setup_spectre_monotile_boundary_constraints(do
     x_vals.pop_back();
     y_vals.pop_back();
 
+    pmp::TexCoord t;
+    int j = 0;
     for (int i = 0; i < x_vals.size(); ++i) {
-        if (i % loop.size() == 0) {
+        if (i % 1120 == 0) {
             corners.push_back(Eigen::Vector2d(x_vals[i], y_vals[i]));
         }
-    }
-
-    // Assign each 14th point to the texture coordinate
-    std::vector<Eigen::Vector2d> corners_placeholder;
-    for (size_t i = 0; i < x_vals.size(); i += 14) {
-        corners_placeholder.push_back(Eigen::Vector2d(x_vals[i], y_vals[i]));
-    }
-
-    // Assign each 14th point to the texture coordinate
-    pmp::TexCoord t;
-    for (size_t i = 0; i < loop.size(); ++i) {
-        t = pmp::TexCoord(corners_placeholder[i][0], corners_placeholder[i][1]);
-        tex[loop[i]] = t;
+        if (i % multiplier == 0) {
+            t = pmp::TexCoord(x_vals[i], y_vals[i]);
+            tex[loop[j]] = t;
+            ++j;
+        }
     }
 }
