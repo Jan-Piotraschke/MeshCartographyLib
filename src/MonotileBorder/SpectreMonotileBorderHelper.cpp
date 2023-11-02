@@ -83,8 +83,12 @@ void SpectreMonotileBorderHelper::initializeCorners(double a, double b, double c
         corners.push_back(Eigen::Vector2d(corner_point[0], corner_point[1]));
     }
 
+    // Round the corners values to 0 if they are close enough
     for (auto& corner : corners) {
-        if (std::abs(corner.position[0]) < 1e-5) corner.position[0] = 0.0;
-        if (std::abs(corner.position[1]) < 1e-5) corner.position[1] = 0.0;
+        if (std::abs(corner.position[0]) < TOLERANCE) corner.position[0] = 0.0;
+        if (std::abs(corner.position[1]) < TOLERANCE) corner.position[1] = 0.0;
     }
+
+    // delete the last corner
+    corners.pop_back();
 }
