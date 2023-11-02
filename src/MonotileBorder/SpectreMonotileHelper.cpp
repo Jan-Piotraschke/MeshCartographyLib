@@ -49,10 +49,10 @@ void spectre_border(T a, T b, T curve_strength, std::vector<T>& x_vals, std::vec
 
     for (const auto& [dx, dy] : direction_vectors) {
         auto [control1, control2] = calculate_control_points<T>({dx, dy}, curve_strength);
-        std::vector<T> P0 = {x_vals.back(), y_vals.back()};
-        std::vector<T> P1 = {control1[0] + x_vals.back(), control1[1] + y_vals.back()};
-        std::vector<T> P2 = {control2[0] + x_vals.back(), control2[1] + y_vals.back()};
-        std::vector<T> P3 = {dx + x_vals.back(), dy + y_vals.back()};
+        std::vector<T> corner_point = {x_vals.back(), y_vals.back()};
+        std::vector<T> between_corners_point = {control1[0] + x_vals.back(), control1[1] + y_vals.back()};
+        std::vector<T> between_corners_point_2 = {control2[0] + x_vals.back(), control2[1] + y_vals.back()};
+        std::vector<T> direction_point = {dx + x_vals.back(), dy + y_vals.back()};
 
         for (double t = 0; t <= 1; t += 0.02) {
             T T_t = T(t);
@@ -60,8 +60,8 @@ void spectre_border(T a, T b, T curve_strength, std::vector<T>& x_vals, std::vec
             T mt2 = mt * mt;
             T t2 = T_t * T_t;
 
-            T x = mt2 * mt * P0[0] + T(3) * mt2 * T_t * P1[0] + T(3) * mt * t2 * P2[0] + t2 * T_t * P3[0];
-            T y = mt2 * mt * P0[1] + T(3) * mt2 * T_t * P1[1] + T(3) * mt * t2 * P2[1] + t2 * T_t * P3[1];
+            T x = mt2 * mt * corner_point[0] + T(3) * mt2 * T_t * between_corners_point[0] + T(3) * mt * t2 * between_corners_point_2[0] + t2 * T_t * direction_point[0];
+            T y = mt2 * mt * corner_point[1] + T(3) * mt2 * T_t * between_corners_point[1] + T(3) * mt * t2 * between_corners_point_2[1] + t2 * T_t * direction_point[1];
 
             x_vals.push_back(x);
             y_vals.push_back(y);
