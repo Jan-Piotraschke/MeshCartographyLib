@@ -23,7 +23,7 @@ std::pair<std::vector<T>, std::vector<T>> calculate_control_points(const std::pa
 }
 
 template <typename T>
-void spectre_border(T a, T b, T curve_strength, std::vector<T>& x_vals, std::vector<T>& y_vals) {
+void spectre_border(T a, T b, T curve_strength, std::vector<T>& x_vals, std::vector<T>& y_vals, size_t desired_num_points) {
     T cos_angle = ceres::cos(T(M_PI) / T(3));
     T sin_angle = ceres::sin(T(M_PI) / T(3));
 
@@ -47,6 +47,9 @@ void spectre_border(T a, T b, T curve_strength, std::vector<T>& x_vals, std::vec
     x_vals.push_back(T(0));
     y_vals.push_back(T(0));
 
+    size_t current_num_points = x_vals.size();
+    size_t points_per_segment = (desired_num_points - current_num_points) / direction_vectors.size();
+
     for (const auto& [dx, dy] : direction_vectors) {
         auto [control1, control2] = calculate_control_points<T>({dx, dy}, curve_strength);
         std::vector<T> corner_point = {x_vals.back(), y_vals.back()};
@@ -54,14 +57,14 @@ void spectre_border(T a, T b, T curve_strength, std::vector<T>& x_vals, std::vec
         std::vector<T> between_corners_point_2 = {control2[0] + x_vals.back(), control2[1] + y_vals.back()};
         std::vector<T> direction_point = {dx + x_vals.back(), dy + y_vals.back()};
 
-        for (double t = 0; t <= 1; t += 0.02) {
-            T T_t = T(t);
-            T mt = T(1) - T_t;
+        T step_size = T(1) / static_cast<T>(points_per_segment);
+        for (T t = T(0); t <= T(1); t += step_size) {
+            T mt = T(1) - t;
             T mt2 = mt * mt;
-            T t2 = T_t * T_t;
+            T t2 = t * t;
 
-            T x = mt2 * mt * corner_point[0] + T(3) * mt2 * T_t * between_corners_point[0] + T(3) * mt * t2 * between_corners_point_2[0] + t2 * T_t * direction_point[0];
-            T y = mt2 * mt * corner_point[1] + T(3) * mt2 * T_t * between_corners_point[1] + T(3) * mt * t2 * between_corners_point_2[1] + t2 * T_t * direction_point[1];
+            T x = mt2 * mt * corner_point[0] + T(3) * mt2 * t * between_corners_point[0] + T(3) * mt * t2 * between_corners_point_2[0] + t2 * t * direction_point[0];
+            T y = mt2 * mt * corner_point[1] + T(3) * mt2 * t * between_corners_point[1] + T(3) * mt * t2 * between_corners_point_2[1] + t2 * t * direction_point[1];
 
             x_vals.push_back(x);
             y_vals.push_back(y);
@@ -70,6 +73,6 @@ void spectre_border(T a, T b, T curve_strength, std::vector<T>& x_vals, std::vec
 }
 
 // Explicit template instantiation
-template void spectre_border<double>(double a, double b, double curve_strength, std::vector<double>& x_vals, std::vector<double>& y_vals);
-template void spectre_border<ceres::Jet<double, 1>>(ceres::Jet<double, 1> a, ceres::Jet<double, 1> b, ceres::Jet<double, 1> curve_strength, std::vector<ceres::Jet<double, 1>>& x_vals, std::vector<ceres::Jet<double, 1>>& y_vals);
+template void spectre_border<double>(double a, double b, double curve_strength, std::vector<double>& x_vals, std::vector<double>& y_vals, size_t desired_num_points);
+template void spectre_border<ceres::Jet<double, 1>>(ceres::Jet<double, 1> a, ceres::Jet<double, 1> b, ceres::Jet<double, 1> curve_strength, std::vector<ceres::Jet<double, 1>>& x_vals, std::vector<ceres::Jet<double, 1>>& y_vals, size_t desired_num_points);
 

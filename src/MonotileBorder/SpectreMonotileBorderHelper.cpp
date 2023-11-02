@@ -31,24 +31,6 @@ void SpectreMonotileBorderHelper::setup_spectre_monotile_boundary_constraints(do
         tex[v] = pmp::TexCoord(0.0, 0.0);
     }
 
-    // Calculate spectre monotile border
-    std::vector<double> x_vals, y_vals;
-    spectre_border(a, b, curve_strength, x_vals, y_vals);
-
-    // Compute the total length of the border
-    double totalLength = 0.0;
-    for (size_t i = 0; i < x_vals.size() - 1; ++i) {
-        double dx = x_vals[i+1] - x_vals[i];
-        double dy = y_vals[i+1] - y_vals[i];
-        totalLength += std::sqrt(dx * dx + dy * dy);
-    }
-
-    // spectre has 14 edges
-    sideLength = totalLength / 14.0;
-
-    // Initialize corners
-    initializeCorners(a, b, curve_strength);
-
     // map to spectre monotile
     pmp::SurfaceMesh::VertexIterator vit, vend = mesh.vertices_end();
     pmp::Halfedge hh;
@@ -61,82 +43,34 @@ void SpectreMonotileBorderHelper::setup_spectre_monotile_boundary_constraints(do
         hh = mesh.next_halfedge(hh);
     } while (hh != mesh.halfedge(start_vertex));
 
-    unsigned int vertice_id, N = loop.size();
-    double l, length;
+    // Calculate spectre monotile border
+    std::vector<double> x_vals, y_vals;
+
+    // multiply by 14 because spectre has 14 edges
+    size_t desired_num_points = loop.size() * 14;
+
+    // reserve space for the vectors
+    spectre_border(a, b, curve_strength, x_vals, y_vals, desired_num_points);
+
+    x_vals.pop_back();
+    y_vals.pop_back();
+
+    for (int i = 0; i < x_vals.size(); ++i) {
+        if (i % loop.size() == 0) {
+            corners.push_back(Eigen::Vector2d(x_vals[i], y_vals[i]));
+        }
+    }
+
+    // Assign each 14th point to the texture coordinate
+    std::vector<Eigen::Vector2d> corners_placeholder;
+    for (size_t i = 0; i < x_vals.size(); i += 14) {
+        corners_placeholder.push_back(Eigen::Vector2d(x_vals[i], y_vals[i]));
+    }
+
+    // Assign each 14th point to the texture coordinate
     pmp::TexCoord t;
-
-    // compute length of boundary loop
-    for (vertice_id = 0, length = 0.0; vertice_id < N; ++vertice_id) {
-        length += pmp::distance(points[loop[vertice_id]], points[loop[(vertice_id + 1) % N]]);
+    for (size_t i = 0; i < loop.size(); ++i) {
+        t = pmp::TexCoord(corners_placeholder[i][0], corners_placeholder[i][1]);
+        tex[loop[i]] = t;
     }
-
-    double step_size = length / N;
-    auto tolerance = 1e-4;
-
-    // map length intervals to spectre monotile intervals
-    for (auto [vertice_id, l] = std::pair<unsigned int, double>{0, 0.0}; vertice_id < N; ++vertice_id, l += step_size) {
-        pmp::TexCoord t = mapToSpectreMonotile(l);
-
-        // Apply tolerance
-        if (std::abs(t[0]) < tolerance) t[0] = 0.0;
-        if (std::abs(t[1]) < tolerance) t[1] = 0.0;
-
-        tex[loop[vertice_id]] = t;
-    }
-}
-
-
-void SpectreMonotileBorderHelper::initializeCorners(double a, double b, double curve_strength) {
-    corners.clear();
-
-    // Define the direction vectors for your spectre shape
-    double cos_angle = ceres::cos(M_PI / 3.0);
-    double sin_angle = ceres::sin(M_PI / 3.0);
-    std::vector<std::pair<double, double>> direction_vectors = {
-        {cos_angle * b, sin_angle * b},
-        {b, 0},
-        {0, a},
-        {sin_angle * a, cos_angle * a},
-        {cos_angle * b, -sin_angle * b},
-        {-cos_angle * b, -sin_angle * b},
-        {sin_angle * a, -cos_angle * a},
-        {0, -a},
-        {0, -a},
-        {-sin_angle * a, -cos_angle * a},
-        {-cos_angle * b, sin_angle * b},
-        {-b, 0},
-        {0, a},
-        {-sin_angle * a, cos_angle * a},
-    };
-
-    // Push the initial point to the corners
-    corners.push_back(Eigen::Vector2d(0.0, 0.0));
-
-    // Calculate corner points based on the direction vectors
-    for (const auto& [dx, dy] : direction_vectors) {
-        Eigen::Vector2d corner_point = {corners.back().position[0] + dx, corners.back().position[1] + dy};
-        corners.push_back(Eigen::Vector2d(corner_point[0], corner_point[1]));
-    }
-
-    // Round the corners values to 0 if they are close enough
-    for (auto& corner : corners) {
-        if (std::abs(corner.position[0]) < TOLERANCE) corner.position[0] = 0.0;
-        if (std::abs(corner.position[1]) < TOLERANCE) corner.position[1] = 0.0;
-    }
-
-    // delete the last corner
-    corners.pop_back();
-}
-
-
-pmp::TexCoord SpectreMonotileBorderHelper::mapToSpectreMonotile(double length) {
-    double total_length = 14.0 * sideLength;
-    double t = std::fmod(length, total_length) / total_length;
-    int segment = static_cast<int>(length / sideLength);
-    double segment_t = (length - segment * sideLength) / sideLength;
-    const auto& corner = corners[segment];
-    const auto& nextCorner = corners[(segment + 1) % corners.size()];
-    double x = corner.position.x() * (1.0 - segment_t) + nextCorner.position.x() * segment_t;
-    double y = corner.position.y() * (1.0 - segment_t) + nextCorner.position.y() * segment_t;
-    return pmp::TexCoord(x, y);
 }

@@ -30,7 +30,5 @@ private:
     std::vector<Corner> corners;
     double sideLength;
 
-    void initializeCorners(double a, double b, double curve_strength);
-    pmp::TexCoord mapToSpectreMonotile(double length);
     static constexpr double TOLERANCE = 1e-5;
 };

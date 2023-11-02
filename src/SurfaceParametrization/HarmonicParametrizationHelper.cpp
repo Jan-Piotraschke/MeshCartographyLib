@@ -13,6 +13,7 @@
 #include "HarmonicParametrizationHelper.h"
 #include "MonotileBorder/SquareBorderHelper.h"
 #include "MonotileBorder/HexagonBorderHelper.h"
+#include "MonotileBorder/SpectreMonotileBorderHelper.h"
 
 HarmonicParametrizationHelper::HarmonicParametrizationHelper(
     pmp::SurfaceMesh& mesh,
@@ -49,8 +50,11 @@ void HarmonicParametrizationHelper::parameterize_UV_mesh(bool use_uniform_weight
     // HexagonBorderHelper border_helper = HexagonBorderHelper(mesh, start_vertex);
     // border_helper.setup_hexagon_boundary_constraints();
 
-    SquareBorderHelper border_helper = SquareBorderHelper(mesh, start_vertex);
-    border_helper.setup_square_boundary_constraints();
+    // SquareBorderHelper border_helper = SquareBorderHelper(mesh, start_vertex);
+    // border_helper.setup_square_boundary_constraints();
+
+    SpectreMonotileBorderHelper border_helper = SpectreMonotileBorderHelper(mesh, start_vertex);
+    border_helper.setup_spectre_monotile_boundary_constraints(1.0, 1.0, 0.0);
 
     // get the border corners
     const auto& corners = border_helper.getCorners();

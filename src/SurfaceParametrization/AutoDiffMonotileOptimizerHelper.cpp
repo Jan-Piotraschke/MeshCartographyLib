@@ -52,7 +52,7 @@ bool MonotileAreaCostFunction::operator()(const T* const curve_strength, T* resi
     T cs = clamp(*curve_strength, T(0), T(3));  // Clamping to ensure curve_strength stays within [0, 3]
 
     std::vector<T> x_vals, y_vals;
-    spectre_border(T(a_), T(b_), cs, x_vals, y_vals);
+    spectre_border(T(a_), T(b_), cs, x_vals, y_vals, 1000);
     T area = area_calculator.computeArea(x_vals, y_vals);
 
     // The next line involves Automatic Differentiation (AutoDiff) where gradients are calculated
@@ -65,7 +65,7 @@ bool MonotileAreaCostFunction::operator()(const T* const curve_strength, T* resi
 
 double MonotileAreaCostFunction::computeArea(double curve_strength) const {
     std::vector<double> x_vals, y_vals;
-    spectre_border(a_, b_, curve_strength, x_vals, y_vals);
+    spectre_border(a_, b_, curve_strength, x_vals, y_vals, 1000);
     return area_calculator.computeArea(x_vals, y_vals);
 }
 

@@ -49,7 +49,7 @@ int main()
     optimization_problem.run(a, b, curve_strength);
 
     std::vector<double> x_vals, y_vals;
-    spectre_border(a, b, curve_strength, x_vals, y_vals);
+    spectre_border(a, b, curve_strength, x_vals, y_vals, 1000);
 
     // for (int i = 0; i < x_vals.size(); ++i) {
     //     std::cout << x_vals[i] << " " << y_vals[i] << "\n";
