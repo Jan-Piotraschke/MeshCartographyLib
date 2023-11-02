@@ -58,14 +58,27 @@ void SpectreMonotileBorderHelper::setup_spectre_monotile_boundary_constraints(do
 
     pmp::TexCoord t;
     int j = 0;
+    double x, y;
     for (int i = 0; i < x_vals.size(); ++i) {
-        if (i % 1120 == 0) {
-            corners.push_back(Eigen::Vector2d(x_vals[i], y_vals[i]));
-        }
+
         if (i % multiplier == 0) {
-            t = pmp::TexCoord(x_vals[i], y_vals[i]);
+            if (x_vals[i] != x_vals[i+1] && y_vals[i] != y_vals[i+1]) {
+                x = x_vals[i-1];
+                y = y_vals[i-1];
+            } else {
+                x = x_vals[i];
+                y = y_vals[i];
+            }
+            t = pmp::TexCoord(x, y);
+
+            if (i % 1120 == 0) {
+                // std::cout << "corner  " << x << " " << y << std::endl;
+                corners.push_back(Eigen::Vector2d(x, y));
+            }
+
             tex[loop[j]] = t;
             ++j;
+            // std::cout << t << std::endl;
         }
     }
 }
