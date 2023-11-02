@@ -6,7 +6,8 @@
  * @date        2023-Nov-01
  * @license     Apache License 2.0
  *
- * @bug         - beim Entfalten des Kamels sind manche Knoten dutzendfach vorhanden
+ * @bug         - beim Entfalten des Kamels sind manche Knoten dutzendfach vorhanden,
+ *              - foldovers near the concave boundaries at the mesh parameterization for the Spectre Monotile
  * @todo        -
  */
 
