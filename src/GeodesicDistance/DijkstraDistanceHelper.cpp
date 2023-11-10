@@ -1,6 +1,8 @@
 /**
  * @file        DijkstraDistanceHelper.cpp
  * @brief       Zuständing für die Berechnung basierend auf den Dijkstra-Algorithmus
+ * @details     Dijkstra's algorithm calculates shortest paths in a graph G = (V, E) with non-negative edge weights, yielding real numbers for path lengths.
+ *              The optimal run-time here is O(|E| + |V|log|V|).
  *
  * @author      Jan-Piotraschke
  * @date        2023-Oct-23

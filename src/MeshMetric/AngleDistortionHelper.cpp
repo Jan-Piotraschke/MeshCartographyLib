@@ -1,6 +1,7 @@
 /**
  * @file        AngleDistortionHelper.cpp
  * @brief       Calculate the angle distortion of the mesh
+ * @details     The angle is preserved if the first fundamental form is a multiple of the identity, i.e., I(u) = η(u)Id
  *
  * @author      Jan-Piotraschke
  * @date        2023-Oct-25
