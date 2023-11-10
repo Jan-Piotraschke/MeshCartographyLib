@@ -1,6 +1,9 @@
 /**
  * @file        GaussianCutLineHelper.cpp
  * @brief       Create a cut line based on the Gaussian curvature
+ * @details     The idea is to concenctrate all the 3D curvature to a small number of mesh vertices (so called Cones)
+ *              and then cut the mesh through those vertices to obtain disk topology.
+ *              Cone singularities can be used to control and minimize distortions (-> see MeshMetric/ for the disortions).
  *
  * @author      Jan-Piotraschke
  * @date        2023-Oct-16
@@ -68,7 +71,8 @@ std::vector<pmp::Edge> GaussianCutLineHelper::get_gaussian_cutline() {
 
     std::reverse(edge_path.begin(), edge_path.end());
 
-    if (edge_path.size() % 2 != 0) {
+    int TWIN_EDGE_COUNT = 7;
+    while (edge_path.size() % TWIN_EDGE_COUNT != 0) {
         edge_path.pop_back();
     }
 

@@ -1,6 +1,8 @@
 /**
  * @file        FaceDistortionHelper.cpp
  * @brief       Calculate the face distortion of the mesh
+ * @details     Since the area of a mapped patch x(U), U ⊂ parameter space Ω, is computed as ∫ U √det(I)dA, the
+ *              parameterization is area-preserving if det I = 1, or equivalently σ1σ2 = 1, for all points u ∈ Ω
  *
  * @author      Jan-Piotraschke
  * @date        2023-Oct-25

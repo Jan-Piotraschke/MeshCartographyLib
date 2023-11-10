@@ -1,6 +1,9 @@
 /**
  * @file        LengthDistortionHelper.cpp
  * @brief       Calculate the length distortion of the mesh
+ * @details     A parameterization is length-preserving if it is both angle- and area-preserving.
+ *              In this case the first fundamental form is the identity, i.e., σ1 = σ2 = 1.
+ *              Only developable surfaces, where these surfaces have zero Gaussian curvature everywhere, admit a perfect length-preserving parameterization.
  *
  * @author      Jan-Piotraschke
  * @date        2023-Oct-25
