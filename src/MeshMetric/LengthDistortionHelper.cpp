@@ -6,7 +6,7 @@
  *              Only developable surfaces, where these surfaces have zero Gaussian curvature everywhere, admit a perfect length-preserving parameterization.
  *
  * @author      Jan-Piotraschke
- * @date        2023-Oct-25
+ * @date        2023-Nov-10
  * @license     Apache License 2.0
  *
  * @bug         -

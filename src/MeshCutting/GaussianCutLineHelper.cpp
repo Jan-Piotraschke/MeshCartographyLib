@@ -6,7 +6,7 @@
  *              Cone singularities can be used to control and minimize distortions (-> see MeshMetric/ for the disortions).
  *
  * @author      Jan-Piotraschke
- * @date        2023-Oct-16
+ * @date        2023-Nov-10
  * @license     Apache License 2.0
  *
  * @bug         -
