@@ -5,6 +5,7 @@ SHELL := /bin/bash
 # Paths
 PROJECT_DIR := $(shell pwd)
 ARCHITECTURE := $(shell uname -m)
+export Meshes_Dir := $(PROJECT_DIR)/meshes
 
 # Platform selection
 PLATFORM ?= executive
@@ -31,7 +32,7 @@ else ifeq ($(OS), Linux)
 endif
 
 .PHONY: all
-all: check_submodule install_glog build
+all: check_submodule install_glog build build_rust
 
 .PHONY: check_submodule
 check_submodule:
@@ -110,6 +111,24 @@ ifeq ($(OS), Darwin)
 else ifeq ($(OS), Linux)
 	$(BUILD_CMD) -C $(PROJECT_DIR)/$(BUILD_DIR) -j $(shell nproc)
 endif
+
+.PHONY: build_rust
+build_rust:
+	@echo "Building Rust dependencies..."
+	cargo build --release
+
+# Run the Rust executable
+.PHONY: run
+run:
+	cargo run --release
+
+.PHONY: doc
+doc:
+	cargo doc --no-deps --open
+
+.PHONY: wasm
+wasm:
+	wasm-pack build
 
 # Cleaning
 .PHONY: clean
