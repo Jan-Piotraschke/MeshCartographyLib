@@ -1,13 +1,20 @@
 // wasm-pack uses wasm-bindgen to provide a bridge between the types of JavaScript and Rust
 use wasm_bindgen::prelude::*;
 use std::env;
+use std::fs::File;
+use std::io::{Write, Result};
 use std::path::PathBuf;
 // use ffi::ToCppString;
 extern crate tobj;
 extern crate tri_mesh;
 
 use three_d_asset::Positions::F64;
+use three_d_asset::io::*;
 use tri_mesh::Mesh;
+
+fn print_type_of<T>(_: &T) {
+    println!("{}", std::any::type_name::<T>())
+}
 
 #[wasm_bindgen]
 pub fn read_mesh_from_file() {
@@ -37,6 +44,86 @@ pub fn read_mesh_from_file() {
     // print the number of vertices
     println!("Number of vertices: {}", surface_mesh.no_vertices());
     println!("Number of halfedges: {}", surface_mesh.no_halfedges());
+    println!("Mesh is closed: {}", surface_mesh.is_closed());
+
+    // Save the mesh to a file
+    let save_path = mesh_cartography_lib_dir.join("ellipsoid_x4_edited.obj");
+    print_type_of(&surface_mesh);
+    save_mesh_as_obj(&surface_mesh, save_path.clone()).expect("Failed to save mesh to file");
+
+    // Find the boundary vertices
+    // find_boundary_vertices(&surface_mesh);
+}
+
+
+fn save_mesh_as_obj(mesh: &tri_mesh::Mesh, file_path: PathBuf) -> Result<()> {
+    let mut file = File::create(file_path)?;
+
+    // Write vertices
+    for vertex_id in mesh.vertex_iter() {
+        let vertex = mesh.vertex_position(vertex_id);
+        writeln!(file, "v {} {} {}", vertex.x, vertex.y, vertex.z)?;
+    }
+
+    // Write faces
+    for face_id in mesh.face_iter() {
+        let face = mesh.face_vertices(face_id);
+        // Adjust for OBJ file indexing (starts at 1)
+        writeln!(file, "f {} {} {}", face.0, face.1, face.2)?;
+    }
+
+    Ok(())
+}
+
+
+pub fn find_boundary_vertices(surface_mesh: &Mesh) {
+    // Vector to store boundary vertices
+    // let mut boundary_vertices: Vec<T> = Vec::new();
+
+    // Iterate over all halfedges
+    let mut i = 0;
+    // let mut one_ring_average_position = Vec3::zero();
+    // let mut i = 0;
+    // for halfedge_id in mesh.vertex_halfedge_iter(vertex_id) {
+    //     let walker = mesh.walker_from_halfedge(halfedge_id);
+    //     one_ring_average_position += mesh.vertex_position(walker.vertex_id().unwrap());
+    //     i = i+1;
+    // }
+    // one_ring_average_position /= i as f64;
+    for halfedge in surface_mesh.halfedge_iter() {
+        // Check if the halfedge is a boundary
+        if surface_mesh.is_edge_on_boundary(halfedge) {
+
+            // Start at the current halfedge and traverse the boundary loop
+            let start = halfedge;
+            let mut current = start;
+
+            let walker = surface_mesh.walker_from_halfedge(current);
+            // println!("Walker: {:?}"s, walker.vertex_id());
+            i += 1;
+            // loop {
+            //     // Get the vertex at the start of the halfedge
+            //     let vertex = surface_mesh.walker_from_vertex(current);
+            //     boundary_vertices.push(vertex);
+
+            //     // Move to the next halfedge along the boundary
+            //     current = surface_mesh.as(current);
+
+            //     // Break the loop if we have completed the loop
+            //     if current == start {
+            //         break;
+            //     }
+            // }
+
+            // // Stop after finding one boundary loop
+            // break;
+        }
+    }
+    println!("Number of boundary loops: {}", i);
+
+    // // Process the boundary vertices as needed
+    // println!("Boundary vertices: {:?}", boundary_vertices);
+    // println!("Number of boundary vertices: {}", boundary_vertices.len());
 }
 
 #[wasm_bindgen]
