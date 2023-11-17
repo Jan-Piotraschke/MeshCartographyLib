@@ -30,6 +30,8 @@ pub fn read_mesh_from_file() {
     let (models, _materials) = mesh_object.unwrap();
     let mesh = &models[0].mesh;
 
+    // ! BUG: wir erschaffen das surface_mesh noch nicht richtig. Es hat mit 1575 viel zu wenig faces
+
     // Convert positions from tobj to the format required by three_d_asset::TriMesh
     let vertices: Vec<tri_mesh::math::Vector3<f64>> = mesh.positions.chunks(3)
         .map(|chunk| tri_mesh::vec3(chunk[0] as f64, chunk[1] as f64, chunk[2] as f64))
@@ -41,10 +43,11 @@ pub fn read_mesh_from_file() {
         ..Default::default()
     });
 
-    // print the number of vertices
-    println!("Number of vertices: {}", surface_mesh.no_vertices());
-    println!("Number of halfedges: {}", surface_mesh.no_halfedges());
-    println!("Mesh is closed: {}", surface_mesh.is_closed());
+    // Test if the mesh was created correctly
+    assert_eq!(surface_mesh.no_vertices(), 4725);
+    assert_eq!(surface_mesh.no_faces(), 9336);
+
+    // ! Ende bug
 
     // Save the mesh to a file
     let save_path = mesh_cartography_lib_dir.join("ellipsoid_x4_edited.obj");
