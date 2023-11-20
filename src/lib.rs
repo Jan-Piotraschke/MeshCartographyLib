@@ -8,6 +8,7 @@ use std::path::PathBuf;
 extern crate tobj;
 extern crate tri_mesh;
 
+use rust_3d::*;
 use three_d_asset::Positions::F64;
 use three_d_asset::io::*;
 use tri_mesh::Mesh;
@@ -23,35 +24,21 @@ pub fn read_mesh_from_file() {
     let mesh_cartography_lib_dir = PathBuf::from(mesh_cartography_lib_dir_str);
     let new_path = mesh_cartography_lib_dir.join("ellipsoid_x4_open.obj");
 
-    let mesh_object = tobj::load_obj(new_path.clone(), &tobj::LoadOptions::default());
-    assert!(mesh_object.is_ok());
-
-    // Unwrap the mesh object
-    let (models, _materials) = mesh_object.unwrap();
-    let mesh = &models[0].mesh;
-
-    // ! BUG: wir erschaffen das surface_mesh noch nicht richtig. Es hat mit 1575 viel zu wenig faces
-
-    // Convert positions from tobj to the format required by three_d_asset::TriMesh
-    let vertices: Vec<tri_mesh::math::Vector3<f64>> = mesh.positions.chunks(3)
-        .map(|chunk| tri_mesh::vec3(chunk[0] as f64, chunk[1] as f64, chunk[2] as f64))
-        .collect();
-
-    // Create a new TriMesh using the vertices
-    let surface_mesh = Mesh::new(&three_d_asset::TriMesh {
-        positions: F64(vertices),
-        ..Default::default()
-    });
+    // Load the mesh from a file
+    let model: three_d_asset::Model = three_d_asset::io::load_and_deserialize(new_path.clone()).expect("Failed loading asset");
+    let surface_mesh = Mesh::new(&model.geometries[0]);
 
     // Test if the mesh was created correctly
     assert_eq!(surface_mesh.no_vertices(), 4725);
     assert_eq!(surface_mesh.no_faces(), 9336);
 
-    // ! Ende bug
-
     // Save the mesh to a file
     let save_path = mesh_cartography_lib_dir.join("ellipsoid_x4_edited.obj");
     print_type_of(&surface_mesh);
+    let tri_mesh = surface_mesh.export();
+
+
+    // ! BUG: mesh export is buggy!
     save_mesh_as_obj(&surface_mesh, save_path.clone()).expect("Failed to save mesh to file");
 
     // Find the boundary vertices
