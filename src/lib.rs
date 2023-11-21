@@ -4,6 +4,8 @@ use std::env;
 use std::fs::File;
 use std::io::{Write, Result};
 use std::path::PathBuf;
+use std::collections::HashMap;
+
 // use ffi::ToCppString;
 extern crate tobj;
 extern crate tri_mesh;
@@ -38,7 +40,9 @@ pub fn read_mesh_from_file() {
     save_mesh_as_obj(&surface_mesh, save_path.clone()).expect("Failed to save mesh to file");
 
     // Find the boundary vertices
-    find_boundary_vertices(&surface_mesh);
+    let boundary_vertices = find_boundary_vertices(&surface_mesh);
+    // print the size
+    println!("Boundary vertices: {:?}", boundary_vertices.len());
 }
 
 
@@ -69,151 +73,45 @@ fn save_mesh_as_obj(mesh: &tri_mesh::Mesh, file_path: PathBuf) -> Result<()> {
     Ok(())
 }
 
-// pub fn find_boundary_vertices(surface_mesh: &Mesh) {
-//     for halfedge in surface_mesh.halfedge_iter() {
-//         if surface_mesh.is_edge_on_boundary(halfedge) {
-//             let boundary_vertices = get_boundary_vertices(surface_mesh, halfedge);
 
-//             if boundary_vertices.len() == 3 {
-//                 let mut test_vertices = Vec::new();
-//                 let walker = surface_mesh.walker_from_halfedge(halfedge);
-//                 let start_vertex = walker.clone().into_previous().vertex_id();
+pub fn find_boundary_vertices(surface_mesh: &Mesh) -> Vec<tri_mesh::VertexID> {
+    let mut boundary_edges = Vec::new(); // A vector to store boundary edges
 
-//                 let mut current_vertex = start_vertex;
-//                 let mut i = 0;
-//                 loop {
-//                     test_vertices.push(current_vertex);
+    for edge in surface_mesh.edge_iter() {
+        // Returns the vertex id of the two adjacent vertices to the given edge.
+        let v0 = surface_mesh.edge_vertices(edge).0;
+        let v1 = surface_mesh.edge_vertices(edge).1;
 
-//                     let mut vertex_walker = surface_mesh.walker_from_vertex(current_vertex.unwrap());
-//                     let mut found_boundary_edge = false;
-
-//                     for _ in 0..3 {
-//                         let h = vertex_walker.as_next();
-//                         if surface_mesh.is_edge_on_boundary(h.halfedge_id().unwrap()) {
-//                             current_vertex = h.vertex_id();
-//                             found_boundary_edge = true;
-//                             break;
-//                         }
-//                     }
-
-//                     if !found_boundary_edge {
-//                         println!("Error: No boundary edge found");
-//                         break;
-//                     }
-
-//                     println!("Current vertex: {:?}", current_vertex);
-
-//                     if current_vertex == start_vertex {
-//                         break;
-//                     }
-//                     i += 1;
-//                     if i > 5 {
-//                         break;
-//                     }
-//                 }
-//             }
-
-//             println!("Boundary vertices: {:?}", boundary_vertices);
-//             println!("Number of boundary vertices: {}", boundary_vertices.len());
-
-//             // Stop after finding one boundary loop
-//             break;
-//         }
-//     }
-// }
-
-
-
-pub fn find_boundary_vertices(surface_mesh: &Mesh) {
-
-    for halfedge in surface_mesh.halfedge_iter() {
-        if surface_mesh.is_edge_on_boundary(halfedge) {
-            let boundary_vertices = get_boundary_vertices(surface_mesh, halfedge);
-
-            if boundary_vertices.len() == 3 {
-                let mut test_vertices = Vec::new();
-
-                let walker = surface_mesh.walker_from_halfedge(halfedge);
-                let start_vertex = walker.clone().into_previous().vertex_id();
-
-                println!("");
-                println!("Start vertex: {:?}", start_vertex);
-                println!("");
-
-                let mut current_vertex = start_vertex;
-                let mut i = 0;
-                loop {
-                    test_vertices.push(current_vertex);
-
-                    let mut vertex_walker = surface_mesh.walker_from_vertex(current_vertex.unwrap());
-
-                    // ! TODO: check, that the corresponding halfedge is on the boundary -> schaue wir dabei auch die twins an
-                    let h0 = vertex_walker.clone().into_next();
-                    current_vertex = h0.vertex_id();
-                    let h0_twin = h0.clone().into_twin().halfedge_id().unwrap();
-
-                    println!("h0 on boundary: {:?}", surface_mesh.is_edge_on_boundary(h0.halfedge_id().unwrap()));
-                    println!("h0_twin on boundary: {:?}", surface_mesh.is_edge_on_boundary(h0_twin));
-
-                    let h1 = vertex_walker.clone().into_next().into_next();
-                    let v1 = h1.vertex_id();
-                    let h1_twin = h1.clone().into_twin().halfedge_id().unwrap();
-
-                    println!("h1 on boundary: {:?}", surface_mesh.is_edge_on_boundary(h1.halfedge_id().unwrap()));
-                    println!("h1_twin on boundary: {:?}", surface_mesh.is_edge_on_boundary(h1_twin));
-
-                    let h2 = vertex_walker.clone().into_next().into_next().into_next();
-                    let v2 = h2.vertex_id();
-                    let h2_twin = h2.clone().into_twin().halfedge_id().unwrap();
-
-                    println! ("h2 on boundary: {:?}", surface_mesh.is_edge_on_boundary(h2.halfedge_id().unwrap()));
-                    println!("h2_twin on boundary: {:?}", surface_mesh.is_edge_on_boundary(h2_twin));
-
-
-                    println!("Current vertex: {:?}", current_vertex);
-                    println!("v1: {:?}", v1);
-                    println!("v2: {:?}", v2);
-                    println!("");
-
-                    if current_vertex == start_vertex {
-                        break;
-                    }
-                    i += 1;
-                    if i > 5 {
-                        break;
-                    }
-                }
-            }
-
-            println!("Boundary vertices: {:?}", boundary_vertices);
-            println!("Number of boundary vertices: {}", boundary_vertices.len());
-
-            // Stop after finding one boundary loop
-            break;
+        if surface_mesh.is_vertex_on_boundary(v0) && surface_mesh.is_vertex_on_boundary(v1) {
+            boundary_edges.push((v0, v1));
         }
     }
-}
 
+    // Create a map for easy look-up
+    let mut edge_map = HashMap::new();
+    for &(v0, v1) in &boundary_edges {
+        edge_map.insert(v0, v1);
+    }
 
-fn get_boundary_vertices(surface_mesh: &Mesh, halfedge: tri_mesh::HalfEdgeID) -> Vec<tri_mesh::VertexID> {
+    // Get the first key from the HashMap
+    let start_key = *edge_map.keys().next().expect("HashMap is empty");
+
+    let mut current_key = start_key;
     let mut boundary_vertices = Vec::new();
-    let start = halfedge;
-    let mut current = start;
 
-    loop {
-        let walker = surface_mesh.walker_from_halfedge(current);
+    // Iterate through the HashMap
+    while let Some(&next_value) = edge_map.get(&current_key) {
+        boundary_vertices.push(next_value);
+        current_key = next_value;
 
-        // Add the vertex at the start of the halfedge to the list
-        boundary_vertices.push(walker.vertex_id().unwrap());
-
-        // Move to the next halfedge along the boundary
-        current = walker.into_next().halfedge_id().unwrap();
-
-        // Break the loop if we have completed the loop
-        if current == start {
+        // Optional: Break condition if the sequence becomes too long or cyclic
+        if boundary_vertices.len() > edge_map.len() {
             break;
         }
     }
+
+    // ? Pop the last element from the vector
+    boundary_vertices.pop();
 
     boundary_vertices
 }
