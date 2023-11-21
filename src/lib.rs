@@ -77,14 +77,39 @@ pub fn find_boundary_vertices(surface_mesh: &Mesh) {
             let boundary_vertices = get_boundary_vertices(surface_mesh, halfedge);
 
             if boundary_vertices.len() == 3 {
-                let walker = surface_mesh.walker_from_halfedge(halfedge);
-                // println!("Vertex origin position: {:?}", surface_mesh.vertex_position(vertex_id_origin));
+                let mut test_vertices = Vec::new();
 
-                let previous_vertex = walker.clone().into_previous().vertex_id();
-                let mut vertex_walker = surface_mesh.walker_from_vertex(previous_vertex.unwrap());
-                let next_vertex = vertex_walker.as_next().vertex_id();
-                println!("Next vertex: {:?}", next_vertex);
-                println!("Position of next vertex: {:?}", surface_mesh.vertex_position(next_vertex.unwrap()));
+                let walker = surface_mesh.walker_from_halfedge(halfedge);
+                let start_vertex = walker.clone().into_previous().vertex_id();
+
+                let mut current_vertex = start_vertex;
+                let mut i = 0;
+                loop {
+                    test_vertices.push(current_vertex);
+
+                    let mut vertex_walker = surface_mesh.walker_from_vertex(current_vertex.unwrap());
+                    current_vertex = vertex_walker.as_next().vertex_id();
+                    println!("Current vertex: {:?}", current_vertex);
+                    if current_vertex == start_vertex {
+                        break;
+                    }
+                    i += 1;
+                    if i > 10 {
+                        break;
+                    }
+                }
+
+                // let mut vertex_walker = surface_mesh.walker_from_vertex(start_vertex.unwrap());
+                // let mut next_vertex = vertex_walker.as_next().vertex_id();
+                // println!("Next vertex: {:?}", next_vertex);
+
+                // let mut test_walker = surface_mesh.walker_from_vertex(next_vertex.unwrap());
+                // let mut test_next_vertex = test_walker.as_next().vertex_id();
+                // println!("Test next vertex: {:?}", test_next_vertex);
+
+                // let mut test_walker2 = surface_mesh.walker_from_vertex(test_next_vertex.unwrap());
+                // let mut test_next_vertex2 = test_walker2.as_next().vertex_id();
+                // println!("Test next vertex2: {:?}", test_next_vertex2);
             }
 
             println!("Boundary vertices: {:?}", boundary_vertices);
