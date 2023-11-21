@@ -76,20 +76,26 @@ pub fn find_boundary_vertices(surface_mesh: &Mesh) {
         if surface_mesh.is_edge_on_boundary(halfedge) {
             let boundary_vertices = get_boundary_vertices(surface_mesh, halfedge);
 
-            // Process the boundary vertices as needed
+            if boundary_vertices.len() == 3 {
+                let walker = surface_mesh.walker_from_halfedge(halfedge);
+                // println!("Vertex origin position: {:?}", surface_mesh.vertex_position(vertex_id_origin));
+
+                let previous_vertex = walker.clone().into_previous().vertex_id();
+                let mut vertex_walker = surface_mesh.walker_from_vertex(previous_vertex.unwrap());
+                let next_vertex = vertex_walker.as_next().vertex_id();
+                println!("Next vertex: {:?}", next_vertex);
+                println!("Position of next vertex: {:?}", surface_mesh.vertex_position(next_vertex.unwrap()));
+            }
+
             println!("Boundary vertices: {:?}", boundary_vertices);
             println!("Number of boundary vertices: {}", boundary_vertices.len());
-
-            if boundary_vertices.len() == 3 {
-                let a = surface_mesh.walker_from_halfedge(halfedge).as_twin().halfedge_id().unwrap();
-                println!("{:?}", a);
-            }
 
             // Stop after finding one boundary loop
             break;
         }
     }
 }
+
 
 fn get_boundary_vertices(surface_mesh: &Mesh, halfedge: tri_mesh::HalfEdgeID) -> Vec<tri_mesh::VertexID> {
     let mut boundary_vertices = Vec::new();
