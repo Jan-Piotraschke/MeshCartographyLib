@@ -120,7 +120,7 @@ build_rust:
 # Run the Rust executable
 .PHONY: run
 run:
-	cargo run --release
+	RUST_LOG=info cargo run --release
 
 .PHONY: doc
 doc:

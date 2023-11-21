@@ -15,6 +15,8 @@ tobj = "4.0.0"
 miette = "5.10.0"
 tri-mesh = "0.6.0"
 three-d-asset = { version = "0.4.0", features = ["obj"] }
+log = "0.4"
+env_logger = "0.10.1"
 
 [build-dependencies]
 miette = { version = "5", features = ["fancy"] }

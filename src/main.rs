@@ -16,6 +16,8 @@ extern crate new_king_lib;
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
+    env_logger::init();
+
     new_king_lib::read_mesh_from_file();
 
     Ok(())
