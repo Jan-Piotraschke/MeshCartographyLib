@@ -10,9 +10,9 @@ extern crate tri_mesh;
 
 use tri_mesh::Mesh;
 
-fn print_type_of<T>(_: &T) {
-    println!("{}", std::any::type_name::<T>())
-}
+// fn print_type_of<T>(_: &T) {
+//     println!("{}", std::any::type_name::<T>())
+// }
 
 #[wasm_bindgen]
 pub fn read_mesh_from_file() {
@@ -71,54 +71,49 @@ fn save_mesh_as_obj(mesh: &tri_mesh::Mesh, file_path: PathBuf) -> Result<()> {
 
 
 pub fn find_boundary_vertices(surface_mesh: &Mesh) {
-    // Vector to store boundary vertices
-    // let mut boundary_vertices: Vec<T> = Vec::new();
 
-    // Iterate over all halfedges
-    let mut i = 0;
-    // let mut one_ring_average_position = Vec3::zero();
-    // let mut i = 0;
-    // for halfedge_id in mesh.vertex_halfedge_iter(vertex_id) {
-    //     let walker = mesh.walker_from_halfedge(halfedge_id);
-    //     one_ring_average_position += mesh.vertex_position(walker.vertex_id().unwrap());
-    //     i = i+1;
-    // }
-    // one_ring_average_position /= i as f64;
     for halfedge in surface_mesh.halfedge_iter() {
-        // Check if the halfedge is a boundary
         if surface_mesh.is_edge_on_boundary(halfedge) {
+            let boundary_vertices = get_boundary_vertices(surface_mesh, halfedge);
 
-            // Start at the current halfedge and traverse the boundary loop
-            let start = halfedge;
-            let mut current = start;
+            // Process the boundary vertices as needed
+            println!("Boundary vertices: {:?}", boundary_vertices);
+            println!("Number of boundary vertices: {}", boundary_vertices.len());
 
-            let walker = surface_mesh.walker_from_halfedge(current);
-            // println!("Walker: {:?}", walker.vertex_id());
-            i += 1;
-            // loop {
-            //     // Get the vertex at the start of the halfedge
-            //     let vertex = surface_mesh.walker_from_vertex(current);
-            //     boundary_vertices.push(vertex);
+            if boundary_vertices.len() == 3 {
+                let a = surface_mesh.walker_from_halfedge(halfedge).as_twin().halfedge_id().unwrap();
+                println!("{:?}", a);
+            }
 
-            //     // Move to the next halfedge along the boundary
-            //     current = surface_mesh.as(current);
-
-            //     // Break the loop if we have completed the loop
-            //     if current == start {
-            //         break;
-            //     }
-            // }
-
-            // // Stop after finding one boundary loop
-            // break;
+            // Stop after finding one boundary loop
+            break;
         }
     }
-    println!("Number of boundary loops: {}", i);
-
-    // // Process the boundary vertices as needed
-    // println!("Boundary vertices: {:?}", boundary_vertices);
-    // println!("Number of boundary vertices: {}", boundary_vertices.len());
 }
+
+fn get_boundary_vertices(surface_mesh: &Mesh, halfedge: tri_mesh::HalfEdgeID) -> Vec<tri_mesh::VertexID> {
+    let mut boundary_vertices = Vec::new();
+    let start = halfedge;
+    let mut current = start;
+
+    loop {
+        let walker = surface_mesh.walker_from_halfedge(current);
+
+        // Add the vertex at the start of the halfedge to the list
+        boundary_vertices.push(walker.vertex_id().unwrap());
+
+        // Move to the next halfedge along the boundary
+        current = walker.into_next().halfedge_id().unwrap();
+
+        // Break the loop if we have completed the loop
+        if current == start {
+            break;
+        }
+    }
+
+    boundary_vertices
+}
+
 
 #[wasm_bindgen]
 extern {
