@@ -91,19 +91,47 @@ pub fn find_boundary_vertices(surface_mesh: &Mesh) -> Vec<tri_mesh::VertexID> {
     let step_size = length / n as f64;
     let tolerance = 1e-4;
 
-    println!("Side length: {}", side_length);
-    println!("Step size: {}", step_size);
-    println!("Tolerance: {}", tolerance);
-    let corners = initialize_corners(side_length);
-    let tex_coords = distribute_vertices_around_square(&boundary_vertices, side_length, tolerance, length);
+    // let corners = initialize_corners(side_length);
 
-    for tex_coord in &tex_coords {
-        println!("TexCoord: ({}, {})", tex_coord.0, tex_coord.1);
+    let mut mesh_tex_coords = MeshTexCoords::new(&surface_mesh);
+
+    for vertex_id in surface_mesh.vertex_iter() {
+        mesh_tex_coords.set_tex_coord(vertex_id, TexCoord(0.0, 0.0)); // Initialize to the origin
+    }
+
+    let tex_coords = distribute_vertices_around_square(&boundary_vertices, side_length, tolerance, length);
+    for (&vertex_id, tex_coord) in boundary_vertices.iter().zip(tex_coords.iter()) {
+        mesh_tex_coords.set_tex_coord(vertex_id, TexCoord(tex_coord.0, tex_coord.1));
+    }
+
+    for vertex_id in surface_mesh.vertex_iter() {
+        let tex_coord = mesh_tex_coords.get_tex_coord(vertex_id).unwrap();
+        println!("Vertex {}: ({}, {})", vertex_id, tex_coord.0, tex_coord.1);
     }
 
     boundary_vertices
 }
 
+struct MeshTexCoords {
+    coords: HashMap<tri_mesh::VertexID, TexCoord>,
+}
+
+impl MeshTexCoords {
+    fn new(mesh: &Mesh) -> Self {
+        let coords = mesh.vertex_iter()
+                         .map(|v| (v, TexCoord(0.0, 0.0)))
+                         .collect();
+        MeshTexCoords { coords }
+    }
+
+    fn set_tex_coord(&mut self, vertex: tri_mesh::VertexID, coord: TexCoord) {
+        self.coords.insert(vertex, coord);
+    }
+
+    fn get_tex_coord(&self, vertex: tri_mesh::VertexID) -> Option<&TexCoord> {
+        self.coords.get(&vertex)
+    }
+}
 
 fn save_mesh_as_obj(mesh: &tri_mesh::Mesh, file_path: PathBuf) -> Result<()> {
     let mut file = File::create(file_path)?;
@@ -173,31 +201,31 @@ fn distribute_vertices_around_square(boundary_vertices: &[tri_mesh::VertexID], s
 
 
 
-struct Corner {
-    position: (f64, f64),
-    side_length: f64,
-}
+// struct Corner {
+//     position: (f64, f64),
+//     side_length: f64,
+// }
 
-impl Corner {
-    // Define a constructor that initializes both the position and side_length
-    fn new(position: (f64, f64), side_length: f64) -> Corner {
-        Corner {
-            position,
-            side_length,
-        }
-    }
-}
+// impl Corner {
+//     // Define a constructor that initializes both the position and side_length
+//     fn new(position: (f64, f64), side_length: f64) -> Corner {
+//         Corner {
+//             position,
+//             side_length,
+//         }
+//     }
+// }
 
-fn initialize_corners(side_length: f64) -> Vec<Corner> {
-    let mut corners: Vec<Corner> = Vec::new();
+// fn initialize_corners(side_length: f64) -> Vec<Corner> {
+//     let mut corners: Vec<Corner> = Vec::new();
 
-    corners.push(Corner::new((0.0, 0.0), side_length));
-    corners.push(Corner::new((1.0, 0.0), side_length));
-    corners.push(Corner::new((1.0, 1.0), side_length));
-    corners.push(Corner::new((0.0, 1.0), side_length));
+//     corners.push(Corner::new((0.0, 0.0), side_length));
+//     corners.push(Corner::new((1.0, 0.0), side_length));
+//     corners.push(Corner::new((1.0, 1.0), side_length));
+//     corners.push(Corner::new((0.0, 1.0), side_length));
 
-    corners
-}
+//     corners
+// }
 
 #[wasm_bindgen]
 extern {
