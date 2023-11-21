@@ -98,18 +98,6 @@ pub fn find_boundary_vertices(surface_mesh: &Mesh) {
                         break;
                     }
                 }
-
-                // let mut vertex_walker = surface_mesh.walker_from_vertex(start_vertex.unwrap());
-                // let mut next_vertex = vertex_walker.as_next().vertex_id();
-                // println!("Next vertex: {:?}", next_vertex);
-
-                // let mut test_walker = surface_mesh.walker_from_vertex(next_vertex.unwrap());
-                // let mut test_next_vertex = test_walker.as_next().vertex_id();
-                // println!("Test next vertex: {:?}", test_next_vertex);
-
-                // let mut test_walker2 = surface_mesh.walker_from_vertex(test_next_vertex.unwrap());
-                // let mut test_next_vertex2 = test_walker2.as_next().vertex_id();
-                // println!("Test next vertex2: {:?}", test_next_vertex2);
             }
 
             println!("Boundary vertices: {:?}", boundary_vertices);
