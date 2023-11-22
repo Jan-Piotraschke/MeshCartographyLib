@@ -16,7 +16,8 @@ use crate::mesh_definition::TexCoord;
 
 mod io;
 
-pub mod SurfaceParametrization {
+mod SurfaceParametrization {
+    pub mod laplacian_matrix;
     pub mod harmonic_parameterization_helper;
 }
 
