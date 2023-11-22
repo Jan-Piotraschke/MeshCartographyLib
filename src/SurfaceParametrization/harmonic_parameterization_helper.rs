@@ -107,7 +107,16 @@ fn build_laplace_matrix(mesh: &Mesh, clamp: bool) -> CsrMatrix<f64> {
     }
 
     // Convert COO to CSR format
-    let csr = CsrMatrix::from(&coo);
+    let mut csr = CsrMatrix::from(&coo);
+
+    // Clamping negative off-diagonal entries to zero
+    if clamp {
+        for (i, j, value) in csr.triplet_iter_mut() {
+            if i != j && *value < 0.0 {
+                *value = 0.0;
+            }
+        }
+    }
 
     csr
 }
