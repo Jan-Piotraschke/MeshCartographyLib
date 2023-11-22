@@ -89,7 +89,7 @@ fn build_laplace_matrix(mesh: &Mesh, clamp: bool) -> CsrMatrix<f64> {
         ];
 
         // Compute local Laplace matrix for the triangle
-        let Lpoly = polygon_laplace_matrix(&triangle);
+        let Lpoly = calculate_laplacian_matrix(&triangle);
 
         // Assemble local matrices into global matrix
         for (j, &vertex_j) in vertices.iter().enumerate() {
@@ -113,32 +113,122 @@ fn build_laplace_matrix(mesh: &Mesh, clamp: bool) -> CsrMatrix<f64> {
 }
 
 
-fn polygon_laplace_matrix(polygon: &[Point3<f64>]) -> DMatrix<f64> {
-    let n = polygon.len();
-    let mut laplace_matrix = DMatrix::zeros(n, n);
+fn calculate_laplacian_matrix(polygon: &[Point3<f64>]) -> DMatrix<f64> {
+    let a = polygon[0];
+    let b = polygon[1];
+    let c = polygon[2];
 
-    for i in 0..n {
-        let p0 = polygon[i];
-        let p1 = polygon[(i + 1) % n];
-        let p2 = polygon[(i + n - 1) % n];
+    let ab = b - a;
+    let bc = c - b;
+    let ca = a - c;
 
-        let v0 = p1 - p0;
-        let v1 = p2 - p0;
+    let cot_cab = cotangent_angle(&ca, &-bc);
+    let cot_abc = cotangent_angle(&ab, &-ca);
+    let cot_bca = cotangent_angle(&bc, &-ab);
 
-        // Compute cotangent weights
-        let cotangent = cotangent_angle(&v0, &v1);
-
-        laplace_matrix[(i, (i + 1) % n)] = cotangent;
-        laplace_matrix[((i + 1) % n, i)] = cotangent;
-    }
-
-    laplace_matrix
+    DMatrix::from_row_slice(3, 3, &[
+        -cot_cab, cot_cab, 0.0,
+        cot_cab, -(cot_cab + cot_bca), cot_bca,
+        0.0, cot_bca, -cot_bca
+    ])
 }
 
 fn cotangent_angle(v0: &Vector3<f64>, v1: &Vector3<f64>) -> f64 {
-    // Compute cotangent of the angle between v0 and v1
     let dot = v0.dot(v1);
     let cross = v0.cross(v1).norm();
 
     dot / cross
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use nalgebra::{Point3, Vector3};
+
+    #[test]
+    fn test_cotangent_angle() {
+        let v0 = Vector3::new(1.0, 0.0, 0.0);
+        let v1 = Vector3::new(0.0, 1.0, 0.0);
+
+        let cotangent = cotangent_angle(&v0, &v1);
+        assert_eq!(cotangent, 0.0); // Cotangent of 90 degrees is 0
+    }
+
+    #[test]
+    fn test_calculate_laplacian_matrix() {
+        // Define a simple equilateral triangle
+        let triangle = [
+            Point3::new(0.0, 0.0, 0.0),
+            Point3::new(1.0, 0.0, 0.0),
+            Point3::new(0.5, 0.86602540378, 0.0), // sin(60 degrees) = ~0.866
+        ];
+
+        let laplace_matrix = calculate_laplacian_matrix(&triangle);
+        // Check if the matrix has the expected properties, e.g., symmetry, non-zero values at certain positions, etc.
+        // As an example, checking symmetry:
+        assert_eq!(laplace_matrix[(0, 1)], laplace_matrix[(1, 0)]);
+        assert_eq!(laplace_matrix[(1, 2)], laplace_matrix[(2, 1)]);
+        assert_eq!(laplace_matrix[(2, 0)], laplace_matrix[(0, 2)]);
+    }
+
+    #[test]
+    fn test_cotangent_angle_acute() {
+        let v0 = Vector3::new(1.0, 0.0, 0.0);
+        let v1 = Vector3::new(1.0, 1.0, 0.0);
+
+        let cotangent = cotangent_angle(&v0, &v1);
+        assert!(cotangent > 0.0); // Cotangent of an acute angle is positive
+    }
+
+    #[test]
+    fn test_cotangent_angle_obtuse() {
+        let v0 = Vector3::new(1.0, 0.0, 0.0);
+        let v1 = Vector3::new(-1.0, 1.0, 0.0);
+
+        let cotangent = cotangent_angle(&v0, &v1);
+        assert!(cotangent < 0.0); // Cotangent of an obtuse angle is negative
+    }
+
+    #[test]
+    fn test_calculate_laplacian_matrix_values() {
+        // Define a simple right-angle triangle
+        let triangle = [
+            Point3::new(0.0, 0.0, 0.0),
+            Point3::new(1.0, 0.0, 0.0),
+            Point3::new(0.0, 1.0, 0.0),
+        ];
+
+        let laplace_matrix = calculate_laplacian_matrix(&triangle);
+
+        assert_eq!(laplace_matrix[(0, 1)], 1.0);
+        assert_eq!(laplace_matrix[(1, 0)], 1.0);
+        assert_eq!(laplace_matrix[(1, 2)], 1.0);
+        assert_eq!(laplace_matrix[(2, 1)], 1.0);
+        assert_eq!(laplace_matrix[(0, 0)], -1.0);
+        assert_eq!(laplace_matrix[(1, 1)], -2.0);
+        assert_eq!(laplace_matrix[(2, 2)], -1.0);
+    }
+
+    #[test]
+    fn test_calculate_laplacian_matrix_isosceles_triangle() {
+        // Define an isosceles triangle
+        let triangle = [
+            Point3::new(0.0, 0.0, 0.0),
+            Point3::new(2.0, 0.0, 0.0),
+            Point3::new(1.0, 1.0, 0.0),
+        ];
+
+        let laplace_matrix = calculate_laplacian_matrix(&triangle);
+
+        assert_eq!(laplace_matrix[(0, 0)], 0.0);
+        assert_eq!(laplace_matrix[(0, 1)], 0.0);
+        assert_eq!(laplace_matrix[(0, 2)], 0.0);
+        assert_eq!(laplace_matrix[(1, 0)], 0.0);
+        assert_eq!(laplace_matrix[(1, 1)], -1.0);
+        assert_eq!(laplace_matrix[(1, 2)], 1.0);
+        assert_eq!(laplace_matrix[(2, 0)], 0.0);
+        assert_eq!(laplace_matrix[(2, 1)], 1.0);
+        assert_eq!(laplace_matrix[(2, 2)], -1.0);
+    }
 }

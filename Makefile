@@ -126,6 +126,10 @@ run:
 doc:
 	cargo doc --no-deps --open
 
+.PHONY: test
+test:
+	cargo test --release
+
 .PHONY: wasm
 wasm:
 	wasm-pack build
