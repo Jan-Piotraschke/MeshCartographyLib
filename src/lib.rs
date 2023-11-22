@@ -5,14 +5,16 @@ use std::fs::File;
 use std::io::{Write, Result};
 use std::path::PathBuf;
 use std::collections::HashMap;
-use nalgebra::{DMatrix, Cholesky};
-use ndarray::Array2;
+use nalgebra::DMatrix;
 use nalgebra_sparse::{CooMatrix, CsrMatrix};
 
 extern crate tobj;
 extern crate tri_mesh;
 
 use tri_mesh::Mesh;
+
+mod mesh_definition;
+use crate::mesh_definition::TexCoord;
 
 // fn print_type_of<T>(_: &T) {
 //     println!("{}", std::any::type_name::<T>())
@@ -43,7 +45,7 @@ pub fn read_mesh_from_file() {
 }
 
 
-pub fn find_boundary_vertices(surface_mesh: &Mesh) -> Vec<tri_mesh::VertexID> {
+pub fn find_boundary_vertices(surface_mesh: &Mesh) -> (Vec<tri_mesh::VertexID>, mesh_definition::MeshTexCoords) {
     let mut boundary_edges = Vec::new(); // A vector to store boundary edges
     let mut length = 0.0;
     let mut _l = 0.0;
@@ -96,7 +98,7 @@ pub fn find_boundary_vertices(surface_mesh: &Mesh) -> Vec<tri_mesh::VertexID> {
 
     // let corners = initialize_corners(side_length);
 
-    let mut mesh_tex_coords = MeshTexCoords::new(&surface_mesh);
+    let mut mesh_tex_coords = mesh_definition::MeshTexCoords::new(&surface_mesh);
 
     for vertex_id in surface_mesh.vertex_iter() {
         mesh_tex_coords.set_tex_coord(vertex_id, TexCoord(0.0, 0.0)); // Initialize to the origin
@@ -109,29 +111,10 @@ pub fn find_boundary_vertices(surface_mesh: &Mesh) -> Vec<tri_mesh::VertexID> {
 
     harmonic_parameterization(&surface_mesh, &mut mesh_tex_coords, true);
 
-    boundary_vertices
+    (boundary_vertices, mesh_tex_coords)
 }
 
-struct MeshTexCoords {
-    coords: HashMap<tri_mesh::VertexID, TexCoord>,
-}
 
-impl MeshTexCoords {
-    fn new(mesh: &Mesh) -> Self {
-        let coords = mesh.vertex_iter()
-                         .map(|v| (v, TexCoord(0.0, 0.0)))
-                         .collect();
-        MeshTexCoords { coords }
-    }
-
-    fn set_tex_coord(&mut self, vertex: tri_mesh::VertexID, coord: TexCoord) {
-        self.coords.insert(vertex, coord);
-    }
-
-    fn get_tex_coord(&self, vertex: tri_mesh::VertexID) -> Option<&TexCoord> {
-        self.coords.get(&vertex)
-    }
-}
 
 fn save_mesh_as_obj(mesh: &tri_mesh::Mesh, file_path: PathBuf) -> Result<()> {
     let mut file = File::create(file_path)?;
@@ -160,7 +143,6 @@ fn save_mesh_as_obj(mesh: &tri_mesh::Mesh, file_path: PathBuf) -> Result<()> {
     Ok(())
 }
 
-struct TexCoord(f64, f64);
 
 fn distribute_vertices_around_square(boundary_vertices: &[tri_mesh::VertexID], side_length: f64, tolerance: f64, total_length: f64) -> Vec<TexCoord> {
     let n = boundary_vertices.len();
@@ -271,7 +253,7 @@ fn polygon_laplace_matrix(polygon: &DMatrix<f64>) -> DMatrix<f64> {
 }
 
 // Main implementation
-fn harmonic_parameterization(mesh: &Mesh, mesh_tex_coords: &mut MeshTexCoords, use_uniform_weights: bool) {
+fn harmonic_parameterization(mesh: &Mesh, mesh_tex_coords: &mut mesh_definition::MeshTexCoords, use_uniform_weights: bool) {
     let L = build_laplace_matrix(mesh, use_uniform_weights);
     let mut B = DMatrix::zeros(mesh.no_vertices(), 2);
 
@@ -292,36 +274,11 @@ fn harmonic_parameterization(mesh: &Mesh, mesh_tex_coords: &mut MeshTexCoords, u
     // Update mesh texture coordinates
     for (vertex_id, row) in mesh.vertex_iter().zip(X.row_iter()) {
         let tex_coord = TexCoord(row[0], row[1]);
-        println!("tex_coord: {:?} {:?}", row[0], row[1]);
+        // println!("tex_coord: {:?} {:?}", row[0], row[1]);
         mesh_tex_coords.set_tex_coord(vertex_id, tex_coord);
     }
 }
 
-// struct Corner {
-//     position: (f64, f64),
-//     side_length: f64,
-// }
-
-// impl Corner {
-//     // Define a constructor that initializes both the position and side_length
-//     fn new(position: (f64, f64), side_length: f64) -> Corner {
-//         Corner {
-//             position,
-//             side_length,
-//         }
-//     }
-// }
-
-// fn initialize_corners(side_length: f64) -> Vec<Corner> {
-//     let mut corners: Vec<Corner> = Vec::new();
-
-//     corners.push(Corner::new((0.0, 0.0), side_length));
-//     corners.push(Corner::new((1.0, 0.0), side_length));
-//     corners.push(Corner::new((1.0, 1.0), side_length));
-//     corners.push(Corner::new((0.0, 1.0), side_length));
-
-//     corners
-// }
 
 #[wasm_bindgen]
 extern {
