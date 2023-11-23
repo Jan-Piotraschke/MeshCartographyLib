@@ -49,6 +49,13 @@ pub fn harmonic_parameterization(mesh: &Mesh, mesh_tex_coords: &mut mesh_definit
     // }
 }
 
+struct Triplet<T> {
+    row: usize,
+    col: usize,
+    value: T,
+}
+
+
 
 fn cholesky_solve(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constrained: impl Fn(usize) -> bool) -> Result<DMatrix<f64>, String> {
     let nrows = L.nrows();
@@ -76,8 +83,30 @@ fn cholesky_solve(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constrained: impl Fn(
     }
 
     // println!("BB: {:?}", BB);
+    let mut triplets: Vec<Triplet<f64>> = Vec::new();
 
+    // Using triplet_iter to iterate over non-zero elements
+    for triplet in L.triplet_iter() {
+        let i = triplet.0;
+        let j = triplet.1;
+        let v = triplet.2;
 
+        if idx[i] != usize::MAX { // row is dof
+            if idx[j] != usize::MAX { // col is dof
+                triplets.push(Triplet { row: idx[i], col: idx[j], value: *v });
+            } else { // col is constraint
+                // Update B
+                for col in 0..B.ncols() {
+                    BB[(idx[i], col)] -= v * B[(j, col)];
+                }
+            }
+        }
+    }
+
+    // println!("BB: {:?}", BB);
+    // for triplet in triplets.iter() {
+    //     println!("{} {} {}", triplet.row, triplet.col, triplet.value);
+    // }
 
 
     // Perform Cholesky decomposition
@@ -98,48 +127,15 @@ fn cholesky_solve(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constrained: impl Fn(
 
 
 
-
 // DenseMatrix cholesky_solve(const SparseMatrix& A, const DenseMatrix& B,
 //                            std::function<bool(unsigned int)> is_constrained,
 //                            const DenseMatrix& C)
 // {
-//     // build index map; n is #dofs
-//     int n = 0;
-//     std::vector<int> idx(A.cols(), -1);
-//     for (int i = 0; i < A.cols(); ++i)
-//         if (!is_constrained(i))
-//             idx[i] = n++;
 
-//     // copy columns for rhs
-//     DenseMatrix BB(n, B.cols());
-//     for (int i = 0; i < A.cols(); ++i)
-//         if (idx[i] != -1)
-//             BB.row(idx[i]) = B.row(i);
 
 //     // collect entries for reduced matrix
 //     // update rhs with constraints
-//     std::vector<Triplet> triplets;
-//     triplets.reserve(A.nonZeros());
-//     for (unsigned int k = 0; k < A.outerSize(); k++)
-//     {
-//         for (SparseMatrix::InnerIterator iter(A, k); iter; ++iter)
-//         {
-//             const int i = iter.row();
-//             const int j = iter.col();
 
-//             if (idx[i] != -1) // row is dof
-//             {
-//                 if (idx[j] != -1) // col is dof
-//                 {
-//                     triplets.emplace_back(idx[i], idx[j], iter.value());
-//                 }
-//                 else // col is constraint
-//                 {
-//                     BB.row(idx[i]) -= iter.value() * C.row(j);
-//                 }
-//             }
-//         }
-//     }
 //     SparseMatrix AA(n, n);
 //     AA.setFromTriplets(triplets.begin(), triplets.end());
 
