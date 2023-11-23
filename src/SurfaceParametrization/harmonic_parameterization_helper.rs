@@ -60,7 +60,6 @@ struct Triplet<T> {
 fn cholesky_solve(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constrained: impl Fn(usize) -> bool) -> Result<DMatrix<f64>, String> {
     let nrows = L.nrows();
     let ncols = L.ncols();
-    let mut dense_L = DMatrix::zeros(nrows, ncols);
 
     // Build index map
     let mut idx = vec![usize::MAX; nrows];
@@ -82,7 +81,8 @@ fn cholesky_solve(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constrained: impl Fn(
         }
     }
 
-    // println!("BB: {:?}", BB);
+    // collect entries for reduced matrix
+    // update rhs with constraints
     let mut triplets: Vec<Triplet<f64>> = Vec::new();
 
     // Using triplet_iter to iterate over non-zero elements
@@ -103,25 +103,33 @@ fn cholesky_solve(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constrained: impl Fn(
         }
     }
 
-    // println!("BB: {:?}", BB);
-    // for triplet in triplets.iter() {
-    //     println!("{} {} {}", triplet.row, triplet.col, triplet.value);
-    // }
 
 
-    // Perform Cholesky decomposition
+    // Convert L to a dense matrix
+    let mut dense_L = DMatrix::zeros(nrows, ncols);
+    for triplet in L.triplet_iter() {
+        let i = triplet.0;
+        let j = triplet.1;
+        let v = *triplet.2; // Dereference the value
+
+        dense_L[(i, j)] = v;
+    }
+
+    // Solve the system using Cholesky decomposition
     let cholesky = Cholesky::new(dense_L).ok_or("Failed to factorize linear system.")?;
 
     // Solve the system
-    let X = cholesky.solve(B);
+    let XX = cholesky.solve(&BB);
 
-    // Check if the solution is valid
-    if X.nrows() != B.nrows() || X.ncols() != B.ncols() {
-        return Err("Failed to solve linear system.".to_string());
+    let mut X = DMatrix::zeros(B.nrows(), B.ncols());
+    for i in 0..ncols {
+        for j in 0..B.ncols() {
+            X[(i, j)] = if idx[i] == usize::MAX { B[(i, j)] } else { XX[(idx[i], j)] };
+        }
     }
 
-
     Ok(X)
+
 }
 
 
@@ -133,8 +141,7 @@ fn cholesky_solve(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constrained: impl Fn(
 // {
 
 
-//     // collect entries for reduced matrix
-//     // update rhs with constraints
+
 
 //     SparseMatrix AA(n, n);
 //     AA.setFromTriplets(triplets.begin(), triplets.end());
