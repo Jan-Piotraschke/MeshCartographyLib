@@ -31,20 +31,21 @@ struct Triplet<T> {
     value: T,
 }
 
-// Harmonic parameterization
+
 #[allow(non_snake_case)]
 pub fn harmonic_parameterization(mesh: &Mesh, mesh_tex_coords: &mut mesh_definition::MeshTexCoords, use_uniform_weights: bool) {
+    // Set which vertices are constrained (i.e. on the boundary)
+    let mut is_constrained = Vec::new();
+    for vertex_id in mesh.vertex_iter() {
+        is_constrained.push(mesh.is_vertex_on_boundary(vertex_id));
+    }
+
     // build system matrix (clamp negative cotan weights to zero)
     // 1. Get the local geometry and relationships between the mesh vertices
     let L = laplacian_matrix::build_laplace_matrix(mesh, use_uniform_weights);
 
     // 2. Inject Boundary Constraints -> sets fixed boundary vertices
     let B = set_boundary_constraints(mesh, mesh_tex_coords);
-
-    let mut is_constrained = Vec::new();
-    for vertex_id in mesh.vertex_iter() {
-        is_constrained.push(mesh.is_vertex_on_boundary(vertex_id));
-    }
 
     // 3. Solve the linear equation system
     let result = solve_using_qr_decomposition(&L, &B, |i: usize| is_constrained[i]);
