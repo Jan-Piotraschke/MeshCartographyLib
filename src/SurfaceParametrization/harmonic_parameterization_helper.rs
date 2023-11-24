@@ -12,7 +12,14 @@ use crate::SurfaceParametrization::laplacian_matrix;
 
 use crate::mesh_definition::TexCoord;
 
+struct Triplet<T> {
+    row: usize,
+    col: usize,
+    value: T,
+}
+
 // Harmonic parameterization
+#[allow(non_snake_case)]
 pub fn harmonic_parameterization(mesh: &Mesh, mesh_tex_coords: &mut mesh_definition::MeshTexCoords, use_uniform_weights: bool) {
     // build system matrix (clamp negative cotan weights to zero)
     let L = laplacian_matrix::build_laplace_matrix(mesh, use_uniform_weights);
@@ -53,13 +60,8 @@ pub fn harmonic_parameterization(mesh: &Mesh, mesh_tex_coords: &mut mesh_definit
 
 }
 
-struct Triplet<T> {
-    row: usize,
-    col: usize,
-    value: T,
-}
 
-
+#[allow(non_snake_case)]
 fn cholesky_solve(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constrained: impl Fn(usize) -> bool) -> Result<DMatrix<f64>, String> {
     let nrows = L.nrows();
     let ncols = L.ncols();

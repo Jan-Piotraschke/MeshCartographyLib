@@ -1,12 +1,8 @@
 // wasm-pack uses wasm-bindgen to provide a bridge between the types of JavaScript and Rust
 use wasm_bindgen::prelude::*;
 use std::env;
-use std::fs::File;
-use std::io::{Write, Result};
 use std::path::PathBuf;
 use std::collections::HashMap;
-use nalgebra::DMatrix;
-use nalgebra_sparse::{CooMatrix, CsrMatrix};
 
 extern crate tri_mesh;
 use tri_mesh::Mesh;
@@ -16,6 +12,7 @@ use crate::mesh_definition::TexCoord;
 
 mod io;
 
+#[allow(non_snake_case)]
 mod SurfaceParametrization {
     pub mod laplacian_matrix;
     pub mod harmonic_parameterization_helper;
@@ -61,7 +58,6 @@ pub fn find_boundary_vertices(surface_mesh: &Mesh) -> (Vec<tri_mesh::VertexID>, 
         }
     }
 
-    let n = boundary_edges.len();
     println!("Length of boundary loop: {}", length);
     // NOTE: in c++ this is the result: "Length of boundary loop: 42.3117"
 
@@ -93,7 +89,6 @@ pub fn find_boundary_vertices(surface_mesh: &Mesh) -> (Vec<tri_mesh::VertexID>, 
 
     let corner_count = 4;
     let side_length = length / corner_count as f64;
-    let step_size = length / n as f64;
     let tolerance = 1e-4;
 
     let mut mesh_tex_coords = mesh_definition::MeshTexCoords::new(&surface_mesh);
@@ -108,6 +103,11 @@ pub fn find_boundary_vertices(surface_mesh: &Mesh) -> (Vec<tri_mesh::VertexID>, 
     }
 
     SurfaceParametrization::harmonic_parameterization_helper::harmonic_parameterization(&surface_mesh, &mut mesh_tex_coords, true);
+
+    let mesh_cartography_lib_dir_str = env::var("Meshes_Dir").expect("MeshCartographyLib_DIR not set");
+    let mesh_cartography_lib_dir = PathBuf::from(mesh_cartography_lib_dir_str);
+    let save_path2 = mesh_cartography_lib_dir.join("ellipsoid_x4_uv.obj");
+    io::save_uv_mesh_as_obj(&surface_mesh, &mut mesh_tex_coords, save_path2.clone()).expect("Failed to save mesh to file");
 
     (boundary_vertices, mesh_tex_coords)
 }
