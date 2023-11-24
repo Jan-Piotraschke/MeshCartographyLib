@@ -87,31 +87,21 @@ fn solve_using_qr_decomposition(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constra
     let nrows = L.nrows();
     let ncols = L.ncols();
 
-    // Build index map
     let mut idx = vec![usize::MAX; nrows];
     let mut n_dofs = 0;
+    let mut BB = DMatrix::zeros(nrows, B.ncols());
     for i in 0..nrows {
         if !is_constrained(i) {
             idx[i] = n_dofs;
+            BB.set_row(n_dofs, &B.row(i));
             n_dofs += 1;
         }
     }
-
-    // Copy columns for RHS
-    let mut BB = DMatrix::zeros(n_dofs, B.ncols());
-    for i in 0..nrows {
-        if let Some(j) = idx.get(i).cloned().filter(|&x| x != usize::MAX) {
-            for k in 0..B.ncols() {
-                BB[(j, k)] = B[(i, k)];
-            }
-        }
-    }
+    BB.resize_mut(n_dofs, B.ncols(), 0.0); // Resize BB after filling it
 
     // collect entries for reduced matrix
     // update rhs with constraints
     let mut triplets: Vec<Triplet<f64>> = Vec::new();
-
-    // Using triplet_iter to iterate over non-zero elements
     for triplet in L.triplet_iter() {
         let i = triplet.0;
         let j = triplet.1;
@@ -148,12 +138,19 @@ fn solve_using_qr_decomposition(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constra
     let xx = qr.solve(&BB)
         .ok_or("Failed to solve the system using QR decomposition")?;
 
+    // Fill in the solution X
     let mut X = DMatrix::zeros(B.nrows(), B.ncols());
     for i in 0..ncols {
         for j in 0..B.ncols() {
             X[(i, j)] = if idx[i] == usize::MAX { B[(i, j)] } else { xx[(idx[i], j)] };
         }
     }
+    // let mut X = B.clone(); // Clone B and then modify only the necessary parts, as the boundary vertices are already set
+    // for (i, &index) in idx.iter().enumerate().filter(|&(_, &index)| index != usize::MAX) {
+    //     for j in 0..B.ncols() {
+    //         X[(i, j)] = xx[(index, j)];
+    //     }
+    // }
 
     Ok(X)
 }
