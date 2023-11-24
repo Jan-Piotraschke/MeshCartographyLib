@@ -54,7 +54,8 @@ struct Triplet<T> {
     col: usize,
     value: T,
 }
-
+use nalgebra::Vector3;
+use nalgebra::{Dynamic, SVD, QR, VectorN};
 
 
 fn cholesky_solve(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constrained: impl Fn(usize) -> bool) -> Result<DMatrix<f64>, String> {
@@ -103,10 +104,8 @@ fn cholesky_solve(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constrained: impl Fn(
         }
     }
 
-
-
     // Convert L to a dense matrix
-    let mut dense_L = DMatrix::zeros(nrows, ncols);
+    let mut dense_L = DMatrix::zeros(ncols, ncols);
     for triplet in L.triplet_iter() {
         let i = triplet.0;
         let j = triplet.1;
@@ -114,17 +113,28 @@ fn cholesky_solve(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constrained: impl Fn(
 
         dense_L[(i, j)] = v;
     }
+    // n_dofs: 4613
+    println!("n_dofs: {:?}", n_dofs);
+    println!("size of triplets: {:?}", triplets.len());
 
-    // Solve the system using Cholesky decomposition
-    let cholesky = Cholesky::new(dense_L).ok_or("Failed to factorize linear system.")?;
+    // print size of BB and dense_L
+    println!("BB: {:?} {:?}", BB.nrows(), BB.ncols());
+    println!("dense_L: {:?} {:?}", dense_L.nrows(), dense_L.ncols());
+//     std::cout << BB.rows() << " " << BB.cols() << std::endl;
+//     std::cout << AA.rows() << " " << AA.cols() << std::endl;
+//     4613 2
+// 4613 4613
+    // Perform QR decomposition
+    let qr = QR::new(dense_L.clone());
 
-    // Solve the system
-    let XX = cholesky.solve(&BB);
+    // Solve the system Lxx = BB using QR decomposition
+    let xx = qr.solve(&BB)
+        .ok_or("Failed to solve the system using QR decomposition")?;
 
     let mut X = DMatrix::zeros(B.nrows(), B.ncols());
     for i in 0..ncols {
         for j in 0..B.ncols() {
-            X[(i, j)] = if idx[i] == usize::MAX { B[(i, j)] } else { XX[(idx[i], j)] };
+            X[(i, j)] = if idx[i] == usize::MAX { B[(i, j)] } else { xx[(idx[i], j)] };
         }
     }
 
@@ -132,7 +142,19 @@ fn cholesky_solve(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constrained: impl Fn(
 
 }
 
+// // Define your matrix 'A'
+// let a: DMatrix<f64> = DMatrix::identity(4, 4); // Replace with your matrix
 
+// // Define a known vector 'b' using `from_vec`
+// let b = VectorN::<f64, Dynamic>::from_vec(vec![1.0, 2.0, 3.0, 4.0]); // Replace with your vector
+
+// // Perform SVD
+// let svd = SVD::new(a, true, true);
+
+// // Solve Ax = b using SVD
+// let x = svd.solve(&b, 1e-12).expect("Cannot solve system");
+
+// println!("Solution x:\n{}", x);
 
 
 // DenseMatrix cholesky_solve(const SparseMatrix& A, const DenseMatrix& B,
