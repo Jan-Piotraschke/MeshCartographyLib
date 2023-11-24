@@ -31,7 +31,6 @@ pub fn harmonic_parameterization(mesh: &Mesh, mesh_tex_coords: &mut mesh_definit
             if let Some(tex_coord) = mesh_tex_coords.get_tex_coord(vertex_id) {
                 let index_as_u32: u32 = *vertex_id; // Dereference to get u32
                 let index_as_usize: usize = index_as_u32 as usize; // Cast u32 to usize
-                // println!("{:?}, {:?}", tex_coord.0, tex_coord.1);
                 B.set_row(index_as_usize, &nalgebra::RowVector2::new(tex_coord.0, tex_coord.1));
             }
         }
@@ -43,7 +42,7 @@ pub fn harmonic_parameterization(mesh: &Mesh, mesh_tex_coords: &mut mesh_definit
     }
 
     // Solve the system
-    let result = cholesky_solve(&L, &B, |i: usize| is_constrained[i]);
+    let result = qr_decomposition_solve(&L, &B, |i: usize| is_constrained[i]);
 
     match result {
         Ok(X) => {
@@ -62,7 +61,7 @@ pub fn harmonic_parameterization(mesh: &Mesh, mesh_tex_coords: &mut mesh_definit
 
 
 #[allow(non_snake_case)]
-fn cholesky_solve(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constrained: impl Fn(usize) -> bool) -> Result<DMatrix<f64>, String> {
+fn qr_decomposition_solve(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constrained: impl Fn(usize) -> bool) -> Result<DMatrix<f64>, String> {
     let nrows = L.nrows();
     let ncols = L.ncols();
 
@@ -137,7 +136,6 @@ fn cholesky_solve(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constrained: impl Fn(
     Ok(X)
 }
 
-
 // Function to convert custom triplets to a CSR matrix
 fn build_csr_matrix<T: Copy + nalgebra::Scalar + Zero + AddAssign>(nrows: usize, ncols: usize, triplets: &[Triplet<T>]) -> CsrMatrix<T> {
     let mut entries: HashMap<(usize, usize), T> = HashMap::new();
@@ -167,6 +165,62 @@ fn build_csr_matrix<T: Copy + nalgebra::Scalar + Zero + AddAssign>(nrows: usize,
     }
 
     // Create the CSR matrix
-    CsrMatrix::try_from_csr_data(nrows, ncols, col_ptrs, row_indices, values)
-        .expect("Failed to create CSR matrix")
+    let csr_matrix = CsrMatrix::try_from_csr_data(nrows, ncols, col_ptrs, row_indices, values)
+        .expect("Failed to create CSR matrix");
+
+    csr_matrix
+}
+
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_build_csr_matrix() {
+        let nrows = 3;
+        let ncols = 3;
+        let triplets = vec![
+            Triplet { row: 0, col: 0, value: 1.0 },
+            Triplet { row: 1, col: 1, value: 2.0 },
+            Triplet { row: 2, col: 2, value: 3.0 },
+        ];
+
+        // Expected result
+        let expected_values = vec![1.0, 2.0, 3.0];
+        let expected_col_indices = vec![0, 1, 2];
+
+        // Invoke the function
+        let csr_matrix = build_csr_matrix(nrows, ncols, &triplets);
+
+        // Assert results
+        assert_eq!(csr_matrix.values(), &expected_values);
+        assert_eq!(csr_matrix.col_indices(), &expected_col_indices);
+    }
+
+    #[test]
+    fn test_build_csr_matrix_complex() {
+        let nrows = 4;
+        let ncols = 4;
+        let triplets = vec![
+            Triplet { row: 0, col: 0, value: 1.0 },
+            Triplet { row: 0, col: 3, value: 2.0 },
+            Triplet { row: 1, col: 1, value: 3.0 },
+            Triplet { row: 2, col: 0, value: 4.0 },
+            Triplet { row: 2, col: 2, value: 5.0 },
+            Triplet { row: 3, col: 3, value: 6.0 },
+        ];
+
+        // Expected result
+        let expected_values = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
+        let expected_col_indices = vec![0, 3, 1, 0, 2, 3];
+
+        // Invoke the function
+        let csr_matrix = build_csr_matrix(nrows, ncols, &triplets);
+
+        // Assert results
+        assert_eq!(csr_matrix.values(), &expected_values);
+        assert_eq!(csr_matrix.col_indices(), &expected_col_indices);
+    }
 }
