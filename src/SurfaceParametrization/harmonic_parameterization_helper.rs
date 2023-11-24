@@ -1,5 +1,8 @@
-use nalgebra::{Cholesky, DMatrix, Dyn, MatrixViewMut, U1};
+use nalgebra::{DMatrix, QR};
 use nalgebra_sparse::CsrMatrix;
+use num_traits::Zero;
+use std::collections::HashMap;
+use std::ops::AddAssign;
 
 extern crate tri_mesh;
 use tri_mesh::Mesh;
@@ -25,12 +28,6 @@ pub fn harmonic_parameterization(mesh: &Mesh, mesh_tex_coords: &mut mesh_definit
             }
         }
     }
-    // for i in 0..B.nrows() {
-    //     if B[(i, 0)] != 0.0 || B[(i, 1)] != 0.0 {
-    //         // If at least one of the values in the row is non-zero, print the row
-    //         println!("{:.2}, {:.2}", B[(i, 0)], B[(i, 1)]);
-    //     }
-    // }
 
     let mut is_constrained = Vec::new();
     for vertex_id in mesh.vertex_iter() {
@@ -39,7 +36,6 @@ pub fn harmonic_parameterization(mesh: &Mesh, mesh_tex_coords: &mut mesh_definit
 
     // Solve the system
     let X = cholesky_solve(&L, &B, |i: usize| is_constrained[i]);
-    println!("X: {:?}", X);
 
     // // Update mesh texture coordinates
     // for (vertex_id, row) in mesh.vertex_iter().zip(X.row_iter()) {
@@ -53,46 +49,6 @@ struct Triplet<T> {
     row: usize,
     col: usize,
     value: T,
-}
-use nalgebra::Vector3;
-use nalgebra::Scalar;
-use nalgebra::{Dynamic, SVD, QR, VectorN};
-use num_traits::Zero;
-use std::collections::HashMap;
-use std::ops::AddAssign;
-
-
-// Function to convert custom triplets to a CSR matrix
-fn build_csr_matrix<T: Copy + nalgebra::Scalar + Zero + AddAssign>(nrows: usize, ncols: usize, triplets: &[Triplet<T>]) -> CsrMatrix<T> {
-    let mut entries: HashMap<(usize, usize), T> = HashMap::new();
-    for triplet in triplets {
-        let key = (triplet.row, triplet.col);
-        *entries.entry(key).or_insert_with(Zero::zero) += triplet.value;
-    }
-
-    // Sort entries: first by row, then by column
-    let mut sorted_entries: Vec<_> = entries.into_iter().collect();
-    sorted_entries.sort_by_key(|&((row, col), _)| (row, col));
-
-    // Convert the sorted entries to vectors for CSR matrix construction
-    let mut values = Vec::new();
-    let mut row_indices = Vec::new();
-    let mut col_ptrs = vec![0; nrows + 1];
-
-    for ((row, col), value) in sorted_entries {
-        values.push(value);
-        row_indices.push(col);  // Note: col indices for each row
-        col_ptrs[row + 1] += 1;
-    }
-
-    // Compute the starting index of each row
-    for i in 1..=nrows {
-        col_ptrs[i] += col_ptrs[i - 1];
-    }
-
-    // Create the CSR matrix
-    CsrMatrix::try_from_csr_data(nrows, ncols, col_ptrs, row_indices, values)
-        .expect("Failed to create CSR matrix")
 }
 
 
@@ -169,4 +125,38 @@ fn cholesky_solve(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constrained: impl Fn(
     }
 
     Ok(X)
+}
+
+
+// Function to convert custom triplets to a CSR matrix
+fn build_csr_matrix<T: Copy + nalgebra::Scalar + Zero + AddAssign>(nrows: usize, ncols: usize, triplets: &[Triplet<T>]) -> CsrMatrix<T> {
+    let mut entries: HashMap<(usize, usize), T> = HashMap::new();
+    for triplet in triplets {
+        let key = (triplet.row, triplet.col);
+        *entries.entry(key).or_insert_with(Zero::zero) += triplet.value;
+    }
+
+    // Sort entries: first by row, then by column
+    let mut sorted_entries: Vec<_> = entries.into_iter().collect();
+    sorted_entries.sort_by_key(|&((row, col), _)| (row, col));
+
+    // Convert the sorted entries to vectors for CSR matrix construction
+    let mut values = Vec::new();
+    let mut row_indices = Vec::new();
+    let mut col_ptrs = vec![0; nrows + 1];
+
+    for ((row, col), value) in sorted_entries {
+        values.push(value);
+        row_indices.push(col);  // Note: col indices for each row
+        col_ptrs[row + 1] += 1;
+    }
+
+    // Compute the starting index of each row
+    for i in 1..=nrows {
+        col_ptrs[i] += col_ptrs[i - 1];
+    }
+
+    // Create the CSR matrix
+    CsrMatrix::try_from_csr_data(nrows, ncols, col_ptrs, row_indices, values)
+        .expect("Failed to create CSR matrix")
 }
