@@ -40,6 +40,7 @@ CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
 *.mlp
+/glog
 
 # uv meshes
 *_uv*.off
@@ -48,3 +49,4 @@ cmake_install.cmake
 *.csv
 
 vscode.yaml
+/target
