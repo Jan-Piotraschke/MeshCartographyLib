@@ -1,3 +1,16 @@
+//! # Harmonic Parameterization Helper
+//!
+//! ## Metadata
+//!
+//! - **Author:** Jan-Piotraschke
+//! - **Date:** 2023-Nov-24
+//! - **License:** [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+//!
+//! ## Current Status
+//!
+//! - **Bugs:** -
+//! - **Todo:** Improve the speed of the QR decomposition.
+
 use nalgebra::{DMatrix, QR};
 use nalgebra_sparse::CsrMatrix;
 use num_traits::Zero;
@@ -22,27 +35,19 @@ struct Triplet<T> {
 #[allow(non_snake_case)]
 pub fn harmonic_parameterization(mesh: &Mesh, mesh_tex_coords: &mut mesh_definition::MeshTexCoords, use_uniform_weights: bool) {
     // build system matrix (clamp negative cotan weights to zero)
+    // 1. Get the local geometry and relationships between the mesh vertices
     let L = laplacian_matrix::build_laplace_matrix(mesh, use_uniform_weights);
 
-    // build right-hand side B and inject boundary constraints
-    let mut B = DMatrix::zeros(mesh.no_vertices(), 2);
-    for vertex_id in mesh.vertex_iter() {
-        if mesh.is_vertex_on_boundary(vertex_id) {
-            if let Some(tex_coord) = mesh_tex_coords.get_tex_coord(vertex_id) {
-                let index_as_u32: u32 = *vertex_id; // Dereference to get u32
-                let index_as_usize: usize = index_as_u32 as usize; // Cast u32 to usize
-                B.set_row(index_as_usize, &nalgebra::RowVector2::new(tex_coord.0, tex_coord.1));
-            }
-        }
-    }
+    // 2. Inject Boundary Constraints -> sets fixed boundary vertices
+    let B = set_boundary_constraints(mesh, mesh_tex_coords);
 
     let mut is_constrained = Vec::new();
     for vertex_id in mesh.vertex_iter() {
         is_constrained.push(mesh.is_vertex_on_boundary(vertex_id));
     }
 
-    // Solve the system
-    let result = qr_decomposition_solve(&L, &B, |i: usize| is_constrained[i]);
+    // 3. Solve the linear equation system
+    let result = solve_using_qr_decomposition(&L, &B, |i: usize| is_constrained[i]);
 
     match result {
         Ok(X) => {
@@ -56,12 +61,28 @@ pub fn harmonic_parameterization(mesh: &Mesh, mesh_tex_coords: &mut mesh_definit
             println!("An error occurred: {}", e);
         }
     }
-
 }
 
 
+fn set_boundary_constraints(mesh: &Mesh, mesh_tex_coords: &mut mesh_definition::MeshTexCoords) -> DMatrix<f64> {
+    // Build the RHS vector B
+    const DIM: usize = 2;
+    let mut B = DMatrix::zeros(mesh.no_vertices(), DIM);
+    for vertex_id in mesh.vertex_iter() {
+        if mesh.is_vertex_on_boundary(vertex_id) {
+            if let Some(tex_coord) = mesh_tex_coords.get_tex_coord(vertex_id) {
+                let index_as_u32: u32 = *vertex_id; // Dereference to get u32
+                let index_as_usize: usize = index_as_u32 as usize; // Cast u32 to usize
+                B.set_row(index_as_usize, &nalgebra::RowVector2::new(tex_coord.0, tex_coord.1));
+            }
+        }
+    }
+
+    B
+}
+
 #[allow(non_snake_case)]
-fn qr_decomposition_solve(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constrained: impl Fn(usize) -> bool) -> Result<DMatrix<f64>, String> {
+fn solve_using_qr_decomposition(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constrained: impl Fn(usize) -> bool) -> Result<DMatrix<f64>, String> {
     let nrows = L.nrows();
     let ncols = L.ncols();
 
