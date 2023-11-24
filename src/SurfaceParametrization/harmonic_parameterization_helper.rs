@@ -10,6 +10,7 @@ use tri_mesh::Mesh;
 use crate::mesh_definition;
 use crate::SurfaceParametrization::laplacian_matrix;
 
+use crate::mesh_definition::TexCoord;
 
 // Harmonic parameterization
 pub fn harmonic_parameterization(mesh: &Mesh, mesh_tex_coords: &mut mesh_definition::MeshTexCoords, use_uniform_weights: bool) {
@@ -35,14 +36,21 @@ pub fn harmonic_parameterization(mesh: &Mesh, mesh_tex_coords: &mut mesh_definit
     }
 
     // Solve the system
-    let X = cholesky_solve(&L, &B, |i: usize| is_constrained[i]);
+    let result = cholesky_solve(&L, &B, |i: usize| is_constrained[i]);
 
-    // // Update mesh texture coordinates
-    // for (vertex_id, row) in mesh.vertex_iter().zip(X.row_iter()) {
-    //     let tex_coord = TexCoord(row[0], row[1]);
-    //     // println!("tex_coord: {:?} {:?}", row[0], row[1]);
-    //     mesh_tex_coords.set_tex_coord(vertex_id, tex_coord);
-    // }
+    match result {
+        Ok(X) => {
+            for (vertex_id, row) in mesh.vertex_iter().zip(X.row_iter()) {
+                let tex_coord = TexCoord(row[0], row[1]);
+                // println!("tex_coord: {:?} {:?}", row[0], row[1]);
+                mesh_tex_coords.set_tex_coord(vertex_id, tex_coord);
+            }
+        }
+        Err(e) => {
+            println!("An error occurred: {}", e);
+        }
+    }
+
 }
 
 struct Triplet<T> {
