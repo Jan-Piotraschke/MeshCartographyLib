@@ -50,6 +50,8 @@ pub fn find_boundary_vertices(surface_mesh: &Mesh) -> (Vec<tri_mesh::VertexID>, 
     // NOTE: in c++ this is the result: "Length of boundary loop: 42.3117"
 
     // Create a map for easy look-up
+    // ? Ist dies vlt der Bug, da das UV mesh immer anders aussieht?
+    // ! JA, mache es nicht mit einer Hashmap oder passe dafür den Code an, denn sonst ist die Startposition für die Vertices des UV Randes immer anders
     let mut edge_map = HashMap::new();
     for &(v0, v1) in &boundary_edges {
         edge_map.insert(v0, v1);
@@ -173,3 +175,69 @@ extern {
 pub fn greet() {
     alert("Hello, py-torch!");
 }
+
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_find_boundary_edges() {
+        let mesh_cartography_lib_dir_str = env::var("Meshes_Dir").expect("MeshCartographyLib_DIR not set");
+        let mesh_cartography_lib_dir = PathBuf::from(mesh_cartography_lib_dir_str);
+        let new_path = mesh_cartography_lib_dir.join("ellipsoid_x4_open.obj");
+
+        // Load the mesh
+        let surface_mesh = io::load_obj_mesh(new_path);
+
+        let mut length = 0.0;
+        let boundary_edges = get_boundary_edges(&surface_mesh, &mut length);
+
+        assert!(length > 0.0);
+        assert_eq!(boundary_edges.len(), 112);
+
+        for &(v0, v1) in &boundary_edges {
+            // println!("v0: {:?}, v1: {:?}", v0, v1);
+            assert!(surface_mesh.is_vertex_on_boundary(v0));
+            assert!(surface_mesh.is_vertex_on_boundary(v1));
+        }
+    }
+
+    #[test]
+    fn test_find_bourdary_vertices() {
+        let mesh_cartography_lib_dir_str = env::var("Meshes_Dir").expect("MeshCartographyLib_DIR not set");
+        let mesh_cartography_lib_dir = PathBuf::from(mesh_cartography_lib_dir_str);
+        let new_path = mesh_cartography_lib_dir.join("ellipsoid_x4_open.obj");
+
+        // Load the mesh
+        let surface_mesh = io::load_obj_mesh(new_path);
+
+        let mut length = 0.0;
+        let boundary_edges = get_boundary_edges(&surface_mesh, &mut length);
+
+        let mut edge_map = HashMap::new();
+        for &(v0, v1) in &boundary_edges {
+            edge_map.insert(v0, v1);
+        }
+
+        // Collect the boundary vertices
+        let boundary_vertices = get_boundary_vertices(&edge_map);
+
+        assert_eq!(boundary_vertices.len(), 112);
+
+        for vertex_id in boundary_vertices {
+            // println!("vertex_id: {:?}", vertex_id);
+            assert!(surface_mesh.is_vertex_on_boundary(vertex_id));
+        }
+    }
+}
+
+// vertex_id: VertexID(47)
+// vertex_id: VertexID(45)
+// vertex_id: VertexID(43)
+// vertex_id: VertexID(41)
+// vertex_id: VertexID(39)
+// vertex_id: VertexID(37)
+// vertex_id: VertexID(92)
+// vertex_id: VertexID(90)
