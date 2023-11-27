@@ -128,7 +128,7 @@ doc:
 
 .PHONY: test
 test:
-	cargo test --release
+	cargo test --release  -- --nocapture
 
 .PHONY: wasm
 wasm:
