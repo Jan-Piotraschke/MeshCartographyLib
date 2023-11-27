@@ -103,6 +103,9 @@ fn cotangent_angle(v0: &Vector3<f64>, v1: &Vector3<f64>) -> f64 {
 mod tests {
     use super::*;
     use nalgebra::{Point3, Vector3};
+    use std::env;
+    use std::path::PathBuf;
+    use crate::io;
 
     #[test]
     fn test_cotangent_angle() {
@@ -193,17 +196,11 @@ mod tests {
     // test that only the diagonal elements are negative
     #[test]
     fn test_laplace_matrix_diagonal_elements() {
-        use std::env;
-        use std::path::PathBuf;
-        use crate::io;
-
         let mesh_cartography_lib_dir_str = env::var("Meshes_Dir").expect("MeshCartographyLib_DIR not set");
         let mesh_cartography_lib_dir = PathBuf::from(mesh_cartography_lib_dir_str);
         let new_path = mesh_cartography_lib_dir.join("ellipsoid_x4_open.obj");
 
-        // Load the mesh
         let surface_mesh = io::load_obj_mesh(new_path);
-
         let laplace_matrix = build_laplace_matrix(&surface_mesh, true);
 
         for (i, j, value) in laplace_matrix.triplet_iter() {
@@ -214,4 +211,17 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn test_laplace_matrix_number_nonzero_elements() {
+        let mesh_cartography_lib_dir_str = env::var("Meshes_Dir").expect("MeshCartographyLib_DIR not set");
+        let mesh_cartography_lib_dir = PathBuf::from(mesh_cartography_lib_dir_str);
+        let new_path = mesh_cartography_lib_dir.join("ellipsoid_x4_open.obj");
+
+        let surface_mesh = io::load_obj_mesh(new_path);
+        let laplace_matrix = build_laplace_matrix(&surface_mesh, true);
+
+        assert_eq!(laplace_matrix.nnz(), 32845)
+    }
+
 }
