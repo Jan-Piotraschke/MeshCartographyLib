@@ -193,7 +193,6 @@ mod tests {
         assert_eq!(laplace_matrix[(2, 2)], -1.0);
     }
 
-    // test that only the diagonal elements are negative
     #[test]
     fn test_laplace_matrix_diagonal_elements() {
         let mesh_cartography_lib_dir_str = env::var("Meshes_Dir").expect("MeshCartographyLib_DIR not set");
@@ -224,4 +223,49 @@ mod tests {
         assert_eq!(laplace_matrix.nnz(), 32845)
     }
 
+    #[test]
+    fn test_laplace_matrix_format() {
+        let mesh_cartography_lib_dir_str = env::var("Meshes_Dir").expect("MeshCartographyLib_DIR not set");
+        let mesh_cartography_lib_dir = PathBuf::from(mesh_cartography_lib_dir_str);
+        let new_path = mesh_cartography_lib_dir.join("ellipsoid_x4_open.obj");
+
+        let surface_mesh = io::load_obj_mesh(new_path);
+        let laplace_matrix = build_laplace_matrix(&surface_mesh, true);
+
+        // Verify dimensions
+        let nv = surface_mesh.no_vertices();
+        assert_eq!(laplace_matrix.nrows(), nv);
+        assert_eq!(laplace_matrix.ncols(), nv);
+    }
+
+    #[test]
+    fn test_laplace_matrix_symmetry() {
+        let mesh_cartography_lib_dir_str = env::var("Meshes_Dir").expect("MeshCartographyLib_DIR not set");
+        let mesh_cartography_lib_dir = PathBuf::from(mesh_cartography_lib_dir_str);
+        let new_path = mesh_cartography_lib_dir.join("ellipsoid_x4_open.obj");
+
+        let surface_mesh = io::load_obj_mesh(new_path);
+        let laplace_matrix = build_laplace_matrix(&surface_mesh, true);
+
+        assert_eq!(laplace_matrix, laplace_matrix.transpose());
+    }
+
+    #[test]
+    fn test_laplace_matrix_row_sum() {
+        let mesh_cartography_lib_dir_str = env::var("Meshes_Dir").expect("MeshCartographyLib_DIR not set");
+        let mesh_cartography_lib_dir = PathBuf::from(mesh_cartography_lib_dir_str);
+        let new_path = mesh_cartography_lib_dir.join("ellipsoid_x4_open.obj");
+
+        let surface_mesh = io::load_obj_mesh(new_path);
+        let laplace_matrix = build_laplace_matrix(&surface_mesh, false);
+
+        let mut row_sums = vec![0.0; laplace_matrix.nrows()];
+
+        for (i, _, value) in laplace_matrix.triplet_iter() {
+            row_sums[i] += *value;
+        }
+        for row_sum in row_sums {
+            assert!(row_sum.abs() < 1e-6);
+        }
+    }
 }
