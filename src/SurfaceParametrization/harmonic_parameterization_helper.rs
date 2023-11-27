@@ -85,7 +85,6 @@ fn set_boundary_constraints(mesh: &Mesh, mesh_tex_coords: &mut mesh_definition::
 #[allow(non_snake_case)]
 fn solve_using_qr_decomposition(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constrained: impl Fn(usize) -> bool) -> Result<DMatrix<f64>, String> {
     let nrows = L.nrows();
-    let ncols = L.ncols();
 
     let mut idx = vec![usize::MAX; nrows];
     let mut n_dofs = 0;
@@ -101,6 +100,40 @@ fn solve_using_qr_decomposition(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constra
 
     // collect entries for reduced matrix
     // update rhs with constraints
+    let triplets = get_tripplets(&L, &B, &mut BB, &idx);
+
+    // ? Build the dense matrix of the inner part of the mesh
+    let dense_matrix = build_dense_matrix(&triplets, BB.nrows());
+
+    // Solve the system Lxx = BB using QR decomposition
+    // let qr = QR::new(dense_matrix.clone());
+    // let xx = qr.solve(&BB)
+    //     .ok_or("Failed to solve the system using QR decomposition")?;
+
+    // Solve the system Lxx = BB using LU decomposition
+    let lu = LU::new(dense_matrix.clone());
+    let xx = lu.solve(&BB)
+        .ok_or("Failed to solve the system using LU decomposition")?;
+
+    // Fill in the solution X
+    let mut X = DMatrix::zeros(B.nrows(), B.ncols());
+    for i in 0..L.nrows() {
+        for j in 0..B.ncols() {
+            X[(i, j)] = if idx[i] == usize::MAX { B[(i, j)] } else { xx[(idx[i], j)] };
+        }
+    }
+    // let mut X = B.clone(); // Clone B and then modify only the necessary parts, as the boundary vertices are already set
+    // for (i, &index) in idx.iter().enumerate().filter(|&(_, &index)| index != usize::MAX) {
+    //     for j in 0..B.ncols() {
+    //         X[(i, j)] = xx[(index, j)];
+    //     }
+    // }
+
+    Ok(X)
+}
+
+
+fn get_tripplets(L: &CsrMatrix<f64>, B: &DMatrix<f64>, BB: &mut DMatrix<f64>, idx: &[usize]) -> Vec<Triplet<f64>> {
     let mut triplets: Vec<Triplet<f64>> = Vec::new();
     for triplet in L.triplet_iter() {
         let i = triplet.0;
@@ -119,35 +152,9 @@ fn solve_using_qr_decomposition(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constra
         }
     }
 
-    // Build the dense matrix of the inner part of the mesh
-    let dense_matrix = build_dense_matrix(&triplets, n_dofs);
-
-    // Solve the system Lxx = BB using QR decomposition
-    // let qr = QR::new(dense_matrix.clone());
-    // let xx = qr.solve(&BB)
-    //     .ok_or("Failed to solve the system using QR decomposition")?;
-
-    // Solve the system Lxx = BB using LU decomposition
-    let lu = LU::new(dense_matrix.clone());
-    let xx = lu.solve(&BB)
-        .ok_or("Failed to solve the system using LU decomposition")?;
-
-    // Fill in the solution X
-    let mut X = DMatrix::zeros(B.nrows(), B.ncols());
-    for i in 0..ncols {
-        for j in 0..B.ncols() {
-            X[(i, j)] = if idx[i] == usize::MAX { B[(i, j)] } else { xx[(idx[i], j)] };
-        }
-    }
-    // let mut X = B.clone(); // Clone B and then modify only the necessary parts, as the boundary vertices are already set
-    // for (i, &index) in idx.iter().enumerate().filter(|&(_, &index)| index != usize::MAX) {
-    //     for j in 0..B.ncols() {
-    //         X[(i, j)] = xx[(index, j)];
-    //     }
-    // }
-
-    Ok(X)
+    triplets
 }
+
 
 // Function to convert custom triplets to a CSR matrix
 fn build_csr_matrix<T: Copy + nalgebra::Scalar + Zero + AddAssign>(nrows: usize, ncols: usize, triplets: &[Triplet<T>]) -> CsrMatrix<T> {
