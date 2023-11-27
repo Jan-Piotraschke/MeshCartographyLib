@@ -11,7 +11,7 @@
 //! - **Bugs:** -
 //! - **Todo:** Improve the speed of the QR decomposition.
 
-use nalgebra::{DMatrix, QR};
+use nalgebra::{DMatrix, QR, LU};
 use nalgebra_sparse::CsrMatrix;
 use num_traits::Zero;
 use std::collections::HashMap;
@@ -119,24 +119,18 @@ fn solve_using_qr_decomposition(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constra
         }
     }
 
-    let csr_matrix = build_csr_matrix(n_dofs, n_dofs, &triplets);
-
-    // Convert CSR matrix to dense matrix
-    let mut dense_matrix = DMatrix::zeros(csr_matrix.nrows(), csr_matrix.ncols());
-    for triplet in csr_matrix.triplet_iter() {
-        let i = triplet.0;
-        let j = triplet.1;
-        let v = *triplet.2;
-
-        dense_matrix[(i, j)] = v;
-    }
-
-    // Perform QR decomposition
-    let qr = QR::new(dense_matrix.clone());
+    // Build the dense matrix of the inner part of the mesh
+    let dense_matrix = build_dense_matrix(&triplets, n_dofs);
 
     // Solve the system Lxx = BB using QR decomposition
-    let xx = qr.solve(&BB)
-        .ok_or("Failed to solve the system using QR decomposition")?;
+    // let qr = QR::new(dense_matrix.clone());
+    // let xx = qr.solve(&BB)
+    //     .ok_or("Failed to solve the system using QR decomposition")?;
+
+    // Solve the system Lxx = BB using LU decomposition
+    let lu = LU::new(dense_matrix.clone());
+    let xx = lu.solve(&BB)
+        .ok_or("Failed to solve the system using LU decomposition")?;
 
     // Fill in the solution X
     let mut X = DMatrix::zeros(B.nrows(), B.ncols());
@@ -188,6 +182,23 @@ fn build_csr_matrix<T: Copy + nalgebra::Scalar + Zero + AddAssign>(nrows: usize,
         .expect("Failed to create CSR matrix");
 
     csr_matrix
+}
+
+
+fn build_dense_matrix(triplets: &[Triplet<f64>], n_dofs: usize) -> DMatrix<f64> {
+    let csr_matrix = build_csr_matrix(n_dofs, n_dofs, &triplets);
+
+    // Convert CSR matrix to dense matrix
+    let mut dense_matrix = DMatrix::zeros(csr_matrix.nrows(), csr_matrix.ncols());
+    for triplet in csr_matrix.triplet_iter() {
+        let i = triplet.0;
+        let j = triplet.1;
+        let v = *triplet.2;
+
+        dense_matrix[(i, j)] = v;
+    }
+
+    dense_matrix
 }
 
 
