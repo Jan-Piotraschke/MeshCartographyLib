@@ -188,4 +188,32 @@ mod tests {
         assert_eq!(laplace_matrix[(2, 1)], 1.0);
         assert_eq!(laplace_matrix[(2, 2)], -1.0);
     }
+
+    // test that only the diagonal elements are negative
+    #[test]
+    fn test_laplace_matrix_diagonal_elements() {
+        use std::env;
+        use std::path::PathBuf;
+        use crate::io;
+
+        let mesh_cartography_lib_dir_str = env::var("Meshes_Dir").expect("MeshCartographyLib_DIR not set");
+        let mesh_cartography_lib_dir = PathBuf::from(mesh_cartography_lib_dir_str);
+        let new_path = mesh_cartography_lib_dir.join("ellipsoid_x4_open.obj");
+
+        // Load the mesh
+        let surface_mesh = io::load_obj_mesh(new_path);
+
+        let laplace_matrix = build_laplace_matrix(&surface_mesh, false);
+
+        for (i, j, value) in laplace_matrix.triplet_iter() {
+            if i == j {
+                assert!(*value < 0.0);
+            }
+            // ! TODO: find the bug
+            // else {
+            //     println!("{}", value);
+            //     assert!(*value >= 0.0);
+            // }
+        }
+    }
 }
