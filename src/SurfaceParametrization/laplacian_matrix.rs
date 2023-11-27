@@ -20,6 +20,7 @@ use tri_mesh::Mesh;
 
 
 /// Get the Laplace matrix of a Surface Mesh.
+#[allow(non_snake_case)]
 pub fn build_laplace_matrix(mesh: &Mesh, clamp: bool) -> CsrMatrix<f64> {
     let num_vertices = mesh.no_vertices();
     let mut coo = CooMatrix::new(num_vertices, num_vertices);
@@ -56,18 +57,18 @@ pub fn build_laplace_matrix(mesh: &Mesh, clamp: bool) -> CsrMatrix<f64> {
     }
 
     // Convert COO to CSR format
-    let mut csr = CsrMatrix::from(&coo);
+    let mut L = CsrMatrix::from(&coo);
 
     // Clamping negative off-diagonal entries to zero
     if clamp {
-        for (i, j, value) in csr.triplet_iter_mut() {
+        for (i, j, value) in L.triplet_iter_mut() {
             if i != j && *value < 0.0 {
                 *value = 0.0;
             }
         }
     }
 
-    csr
+    L
 }
 
 fn calculate_laplacian_matrix(polygon: &[Point3<f64>]) -> DMatrix<f64> {
@@ -203,17 +204,14 @@ mod tests {
         // Load the mesh
         let surface_mesh = io::load_obj_mesh(new_path);
 
-        let laplace_matrix = build_laplace_matrix(&surface_mesh, false);
+        let laplace_matrix = build_laplace_matrix(&surface_mesh, true);
 
         for (i, j, value) in laplace_matrix.triplet_iter() {
             if i == j {
                 assert!(*value < 0.0);
+            } else {
+                assert!(*value >= 0.0);
             }
-            // ! TODO: find the bug
-            // else {
-            //     println!("{}", value);
-            //     assert!(*value >= 0.0);
-            // }
         }
     }
 }
