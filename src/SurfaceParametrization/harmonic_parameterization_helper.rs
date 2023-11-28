@@ -48,7 +48,7 @@ pub fn harmonic_parameterization(mesh: &Mesh, mesh_tex_coords: &mut mesh_definit
     let B = set_boundary_constraints(mesh, mesh_tex_coords);
 
     // 3. Solve the linear equation system
-    let result = solve_using_qr_decomposition(&L, &B, |i: usize| is_constrained[i]);
+    let result = solve_using_qr_decomposition(&L, &B, is_constrained);
 
     match result {
         Ok(X) => {
@@ -83,19 +83,23 @@ fn set_boundary_constraints(mesh: &Mesh, mesh_tex_coords: &mut mesh_definition::
 }
 
 #[allow(non_snake_case)]
-fn solve_using_qr_decomposition(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constrained: impl Fn(usize) -> bool) -> Result<DMatrix<f64>, String> {
+fn solve_using_qr_decomposition(L: &CsrMatrix<f64>, B: &DMatrix<f64>, is_constrained: Vec<bool>) -> Result<DMatrix<f64>, String> {
     let nrows = L.nrows();
+    assert_eq!(4725, nrows);
 
     let mut idx = vec![usize::MAX; nrows];
     let mut n_dofs = 0;
     let mut BB = DMatrix::zeros(nrows, B.ncols());
     for i in 0..nrows {
-        if !is_constrained(i) {
+        if !is_constrained[i]{
             idx[i] = n_dofs;
             BB.set_row(n_dofs, &B.row(i));
             n_dofs += 1;
         }
     }
+
+    assert_eq!(n_dofs, 4613);  // ! Test for Ellipsoid
+    // assert_eq!(n_dofs, 4614);
     BB.resize_mut(n_dofs, B.ncols(), 0.0); // Resize BB after filling it
 
     // collect entries for reduced matrix
@@ -158,6 +162,7 @@ fn get_tripplets(L: &CsrMatrix<f64>, B: &DMatrix<f64>, BB: &mut DMatrix<f64>, id
 
 // Function to convert custom triplets to a CSR matrix
 fn build_csr_matrix<T: Copy + nalgebra::Scalar + Zero + AddAssign>(nrows: usize, ncols: usize, triplets: &[Triplet<T>]) -> CsrMatrix<T> {
+    // ? Oder ist das hier der Bug, wegen der Verwendung von HashMap?
     let mut entries: HashMap<(usize, usize), T> = HashMap::new();
     for triplet in triplets {
         let key = (triplet.row, triplet.col);
@@ -261,3 +266,36 @@ mod tests {
         assert_eq!(csr_matrix.col_indices(), &expected_col_indices);
     }
 }
+
+
+
+
+
+
+// idx[4716]: 4604
+// idx[4717]: 4605
+// idx[4718]: 4606
+// idx[4719]: 4607
+// idx[4720]: 4608
+// idx[4721]: 4609
+// idx[4722]: 4610
+// idx[4723]: 4611
+// idx[4724]: 4612
+// println!("idx[{}]: {}", i, idx[i]);
+
+// should be:
+// idx[4655] = 4598
+// idx[4656] = 4599
+// idx[4657] = 4600
+// idx[4658] = 4601
+// idx[4659] = 4602
+// idx[4660] = 4603
+// idx[4661] = 4604
+// idx[4662] = 4605
+// idx[4663] = 4606
+// idx[4664] = 4607
+// idx[4665] = 4608
+// idx[4666] = 4609
+// idx[4667] = 4610
+// idx[4668] = 4611
+// idx[4669] = 4612
