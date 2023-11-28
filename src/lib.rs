@@ -2,7 +2,6 @@
 use wasm_bindgen::prelude::*;
 use std::env;
 use std::path::PathBuf;
-use std::collections::HashMap;
 
 extern crate tri_mesh;
 use tri_mesh::Mesh;
@@ -49,16 +48,11 @@ pub fn find_boundary_vertices(surface_mesh: &Mesh) -> (Vec<tri_mesh::VertexID>, 
     println!("Length of boundary loop: {}", length);
     // NOTE: in c++ this is the result: "Length of boundary loop: 42.3117"
 
-    // Create a map for easy look-up
-    // ? Ist dies vlt der Bug, da das UV mesh immer anders aussieht?
-    // ! JA, mache es nicht mit einer Hashmap oder passe dafür den Code an, denn sonst ist die Startposition für die Vertices des UV Randes immer anders
-    let mut edge_map = HashMap::new();
-    for &(v0, v1) in &boundary_edges {
-        edge_map.insert(v0, v1);
-    }
+    // Collect edges in a Vec to maintain order
+    let edge_list = boundary_edges.iter().cloned().collect::<Vec<_>>();
 
     // Collect the boundary vertices
-    let boundary_vertices = get_boundary_vertices(&edge_map);
+    let boundary_vertices = get_boundary_vertices(&edge_list);
 
     let corner_count = 4;
     let side_length = length / corner_count as f64;
@@ -104,30 +98,39 @@ fn get_boundary_edges(surface_mesh: &Mesh, length: &mut f64) -> Vec<(tri_mesh::V
 }
 
 
-fn get_boundary_vertices(edge_map: &HashMap<tri_mesh::VertexID, tri_mesh::VertexID>) -> Vec<tri_mesh::VertexID> {
-    // Get the first key from the HashMap
-    let start_key = *edge_map.keys().next().expect("HashMap is empty");
+fn get_boundary_vertices(edge_list: &[(tri_mesh::VertexID, tri_mesh::VertexID)]) -> Vec<tri_mesh::VertexID> {
+    if edge_list.is_empty() {
+        return Vec::new();
+    }
 
-    let mut current_key = start_key;
     let mut boundary_vertices = Vec::new();
+    let mut current_vertex = edge_list[0].0; // Start with the first vertex
+    boundary_vertices.push(current_vertex);
 
-    // Iterate through the HashMap
-    while let Some(&next_value) = edge_map.get(&current_key) {
-        boundary_vertices.push(next_value);
-        current_key = next_value;
-
-        // Break condition if the sequence becomes too long or cyclic
-        if boundary_vertices.len() > edge_map.len() {
-            break;
+    while boundary_vertices.len() <= edge_list.len() {
+        let mut found = false;
+        for &(v0, v1) in edge_list {
+            if v0 == current_vertex && !boundary_vertices.contains(&v1) {
+                current_vertex = v1;
+                boundary_vertices.push(current_vertex);
+                found = true;
+                break;
+            } else if v1 == current_vertex && !boundary_vertices.contains(&v0) {
+                current_vertex = v0;
+                boundary_vertices.push(current_vertex);
+                found = true;
+                break;
+            }
+        }
+        if !found {
+            break; // Break if no next vertex is found
         }
     }
 
-    boundary_vertices.pop();
-    assert_eq!(boundary_vertices.len(), 112);  // Compared with result from C++
+    assert_eq!(boundary_vertices.len(), 112); // Compared with result from C++
 
     boundary_vertices
 }
-
 
 fn distribute_vertices_around_square(boundary_vertices: &[tri_mesh::VertexID], side_length: f64, tolerance: f64, total_length: f64) -> Vec<TexCoord> {
     let n = boundary_vertices.len();
@@ -216,13 +219,11 @@ mod tests {
         let mut length = 0.0;
         let boundary_edges = get_boundary_edges(&surface_mesh, &mut length);
 
-        let mut edge_map = HashMap::new();
-        for &(v0, v1) in &boundary_edges {
-            edge_map.insert(v0, v1);
-        }
+        // Collect edges in a Vec to maintain order
+        let edge_list = boundary_edges.iter().cloned().collect::<Vec<_>>();
 
         // Collect the boundary vertices
-        let boundary_vertices = get_boundary_vertices(&edge_map);
+        let boundary_vertices = get_boundary_vertices(&edge_list);
 
         assert_eq!(boundary_vertices.len(), 112);
 
@@ -232,12 +233,3 @@ mod tests {
         }
     }
 }
-
-// vertex_id: VertexID(47)
-// vertex_id: VertexID(45)
-// vertex_id: VertexID(43)
-// vertex_id: VertexID(41)
-// vertex_id: VertexID(39)
-// vertex_id: VertexID(37)
-// vertex_id: VertexID(92)
-// vertex_id: VertexID(90)
