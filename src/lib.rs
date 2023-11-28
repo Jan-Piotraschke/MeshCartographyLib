@@ -274,4 +274,127 @@ mod tests {
         assert_eq!(tex_coord.0, 0.0);
         assert_eq!(tex_coord.1, 1.0);
     }
+
+
+
+    fn create_mocked_mesh_tex_coords() -> mesh_definition::MeshTexCoords {
+        let surface_mesh = load_test_mesh();
+        let mut mesh_tex_coords = mesh_definition::MeshTexCoords::new(&surface_mesh);
+
+        // Insert mocked data
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(39).unwrap(), TexCoord(0.0, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(37).unwrap(), TexCoord(0.03571428571428571, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(92).unwrap(), TexCoord(0.07142857142857142, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(90).unwrap(), TexCoord(0.10714285714285715, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(91).unwrap(), TexCoord(0.14285714285714285, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(4389).unwrap(), TexCoord(0.17857142857142855, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(4520).unwrap(), TexCoord(0.2142857142857143, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(4519).unwrap(), TexCoord(0.25, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(4568).unwrap(), TexCoord(0.2857142857142857, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(4567).unwrap(), TexCoord(0.3214285714285714, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(4132).unwrap(), TexCoord(0.3571428571428571, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(4189).unwrap(), TexCoord(0.39285714285714285, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(93).unwrap(), TexCoord(0.4285714285714286, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(95).unwrap(), TexCoord(0.46428571428571425, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(97).unwrap(), TexCoord(0.5, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(99).unwrap(), TexCoord(0.5357142857142857, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(101).unwrap(), TexCoord(0.5714285714285714, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(103).unwrap(), TexCoord(0.6071428571428571, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(105).unwrap(), TexCoord(0.6428571428571428, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(145).unwrap(), TexCoord(0.6785714285714286, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(146).unwrap(), TexCoord(0.7142857142857142, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(111).unwrap(), TexCoord(0.75, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(110).unwrap(), TexCoord(0.7857142857142857, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(55).unwrap(), TexCoord(0.8214285714285714, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(57).unwrap(), TexCoord(0.8571428571428572, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(59).unwrap(), TexCoord(0.8928571428571429, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(61).unwrap(), TexCoord(0.9285714285714285, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3618).unwrap(), TexCoord(0.9642857142857142, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3619).unwrap(), TexCoord(1.0, 0.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3964).unwrap(), TexCoord(1.0, 0.035714285714285664));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3649).unwrap(), TexCoord(1.0, 0.07142857142857133));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3585).unwrap(), TexCoord(1.0, 0.10714285714285715));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3586).unwrap(), TexCoord(1.0, 0.14285714285714282));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3953).unwrap(), TexCoord(1.0, 0.17857142857142846));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3952).unwrap(), TexCoord(1.0, 0.2142857142857143));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3194).unwrap(), TexCoord(1.0, 0.24999999999999994));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3004).unwrap(), TexCoord(1.0, 0.28571428571428564));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(2568).unwrap(), TexCoord(1.0, 0.32142857142857145));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(2318).unwrap(), TexCoord(1.0, 0.3571428571428571));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(2265).unwrap(), TexCoord(1.0, 0.3928571428571428));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(2148).unwrap(), TexCoord(1.0, 0.42857142857142844));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3860).unwrap(), TexCoord(1.0, 0.46428571428571425));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3848).unwrap(), TexCoord(1.0, 0.4999999999999999));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3851).unwrap(), TexCoord(1.0, 0.5357142857142857));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1940).unwrap(), TexCoord(1.0, 0.5714285714285714));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1941).unwrap(), TexCoord(1.0, 0.6071428571428571));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3832).unwrap(), TexCoord(1.0, 0.6428571428571427));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1814).unwrap(), TexCoord(1.0, 0.6785714285714284));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1813).unwrap(), TexCoord(1.0, 0.7142857142857144));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1812).unwrap(), TexCoord(1.0, 0.75));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1846).unwrap(), TexCoord(1.0, 0.7857142857142857));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1878).unwrap(), TexCoord(1.0, 0.8214285714285714));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1931).unwrap(), TexCoord(1.0, 0.857142857142857));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1930).unwrap(), TexCoord(1.0, 0.8928571428571427));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1929).unwrap(), TexCoord(1.0, 0.9285714285714284));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1874).unwrap(), TexCoord(1.0, 0.9642857142857143));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1873).unwrap(), TexCoord(1.0, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1872).unwrap(), TexCoord(0.9642857142857143, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1871).unwrap(), TexCoord(0.9285714285714287, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1870).unwrap(), TexCoord(0.892857142857143, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1868).unwrap(), TexCoord(0.8571428571428573, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1869).unwrap(), TexCoord(0.8214285714285714, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(4079).unwrap(), TexCoord(0.7857142857142857, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1913).unwrap(), TexCoord(0.75, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3840).unwrap(), TexCoord(0.7142857142857144, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3839).unwrap(), TexCoord(0.6785714285714287, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3842).unwrap(), TexCoord(0.642857142857143, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1919).unwrap(), TexCoord(0.6071428571428574, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1922).unwrap(), TexCoord(0.5714285714285714, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1924).unwrap(), TexCoord(0.5357142857142857, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1926).unwrap(), TexCoord(0.5000000000000001, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1928).unwrap(), TexCoord(0.4642857142857144, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1962).unwrap(), TexCoord(0.42857142857142877, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1963).unwrap(), TexCoord(0.3928571428571431, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1933).unwrap(), TexCoord(0.3571428571428571, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1881).unwrap(), TexCoord(0.32142857142857145, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1880).unwrap(), TexCoord(0.2857142857142858, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1882).unwrap(), TexCoord(0.2500000000000001, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1884).unwrap(), TexCoord(0.21428571428571447, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1886).unwrap(), TexCoord(0.1785714285714288, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1938).unwrap(), TexCoord(0.14285714285714315, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(1939).unwrap(), TexCoord(0.10714285714285715, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3847).unwrap(), TexCoord(0.0714285714285715, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(2094).unwrap(), TexCoord(0.03571428571428583, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(2095).unwrap(), TexCoord(0.0, 1.0));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(2205).unwrap(), TexCoord(0.0, 0.9642857142857146));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(2204).unwrap(), TexCoord(0.0, 0.9285714285714287));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(2317).unwrap(), TexCoord(0.0, 0.8928571428571433));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(2516).unwrap(), TexCoord(0.0, 0.8571428571428573));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(2662).unwrap(), TexCoord(0.0, 0.8214285714285721));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(2742).unwrap(), TexCoord(0.0, 0.785714285714286));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3129).unwrap(), TexCoord(0.0, 0.75));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3220).unwrap(), TexCoord(0.0, 0.7142857142857147));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3276).unwrap(), TexCoord(0.0, 0.6785714285714287));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3489).unwrap(), TexCoord(0.0, 0.6428571428571433));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3555).unwrap(), TexCoord(0.0, 0.6071428571428574));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3554).unwrap(), TexCoord(0.0, 0.5714285714285714));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3553).unwrap(), TexCoord(0.0, 0.535714285714286));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3584).unwrap(), TexCoord(0.0, 0.5000000000000001));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3965).unwrap(), TexCoord(0.0, 0.46428571428571475));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3970).unwrap(), TexCoord(0.0, 0.42857142857142877));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3648).unwrap(), TexCoord(0.0, 0.39285714285714346));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3647).unwrap(), TexCoord(0.0, 0.35714285714285743));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(3650).unwrap(), TexCoord(0.0, 0.32142857142857145));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(53).unwrap(), TexCoord(0.0, 0.28571428571428614));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(108).unwrap(), TexCoord(0.0, 0.2500000000000001));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(107).unwrap(), TexCoord(0.0, 0.2142857142857148));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(106).unwrap(), TexCoord(0.0, 0.1785714285714288));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(47).unwrap(), TexCoord(0.0, 0.1428571428571435));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(45).unwrap(), TexCoord(0.0, 0.10714285714285748));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(43).unwrap(), TexCoord(0.0, 0.0714285714285715));
+        mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(41).unwrap(), TexCoord(0.0, 0.03571428571428616));
+
+        mesh_tex_coords
+    }
 }
