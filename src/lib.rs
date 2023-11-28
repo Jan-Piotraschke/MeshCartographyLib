@@ -257,5 +257,21 @@ mod tests {
         let vertex_id = surface_mesh.vertex_iter().next().unwrap();
         let tex_coord = mesh_tex_coords.get_tex_coord(vertex_id).unwrap();
         assert_eq!(tex_coord.0, 0.0);
+        assert_eq!(tex_coord.1, 0.0);
+
+        let vertex_id = surface_mesh.vertex_iter().nth(3619).unwrap();
+        let tex_coord = mesh_tex_coords.get_tex_coord(vertex_id).unwrap();
+        assert_eq!(tex_coord.0, 1.0);
+        assert_eq!(tex_coord.1, 0.0);
+
+        let vertex_id = surface_mesh.vertex_iter().nth(3129).unwrap();
+        let tex_coord = mesh_tex_coords.get_tex_coord(vertex_id).unwrap();
+        assert_eq!(tex_coord.0, 0.0);
+        assert_eq!(tex_coord.1, 0.75);
+
+        let vertex_id = surface_mesh.vertex_iter().nth(2095).unwrap();
+        let tex_coord = mesh_tex_coords.get_tex_coord(vertex_id).unwrap();
+        assert_eq!(tex_coord.0, 0.0);
+        assert_eq!(tex_coord.1, 1.0);
     }
 }
