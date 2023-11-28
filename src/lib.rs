@@ -185,14 +185,16 @@ pub fn greet() {
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_find_boundary_edges() {
+    fn load_test_mesh() -> Mesh {
         let mesh_cartography_lib_dir_str = env::var("Meshes_Dir").expect("MeshCartographyLib_DIR not set");
         let mesh_cartography_lib_dir = PathBuf::from(mesh_cartography_lib_dir_str);
         let new_path = mesh_cartography_lib_dir.join("ellipsoid_x4_open.obj");
+        io::load_obj_mesh(new_path)
+    }
 
-        // Load the mesh
-        let surface_mesh = io::load_obj_mesh(new_path);
+    #[test]
+    fn test_find_boundary_edges() {
+        let surface_mesh = load_test_mesh();
 
         let mut length = 0.0;
         let boundary_edges = get_boundary_edges(&surface_mesh, &mut length);
@@ -209,12 +211,7 @@ mod tests {
 
     #[test]
     fn test_find_bourdary_vertices() {
-        let mesh_cartography_lib_dir_str = env::var("Meshes_Dir").expect("MeshCartographyLib_DIR not set");
-        let mesh_cartography_lib_dir = PathBuf::from(mesh_cartography_lib_dir_str);
-        let new_path = mesh_cartography_lib_dir.join("ellipsoid_x4_open.obj");
-
-        // Load the mesh
-        let surface_mesh = io::load_obj_mesh(new_path);
+        let surface_mesh = load_test_mesh();
 
         let mut length = 0.0;
         let boundary_edges = get_boundary_edges(&surface_mesh, &mut length);
@@ -231,5 +228,34 @@ mod tests {
             // println!("vertex_id: {:?}", vertex_id);
             assert!(surface_mesh.is_vertex_on_boundary(vertex_id));
         }
+    }
+
+    #[test]
+    fn test_assign_vertices_to_boundary() {
+        let surface_mesh = load_test_mesh();
+
+        let mut length = 0.0;
+        let boundary_edges = get_boundary_edges(&surface_mesh, &mut length);
+        let edge_list = boundary_edges.iter().cloned().collect::<Vec<_>>();
+        let boundary_vertices = get_boundary_vertices(&edge_list);
+
+        let corner_count = 4;
+        let side_length = length / corner_count as f64;
+        let tolerance = 1e-4;
+
+        let mut mesh_tex_coords = mesh_definition::MeshTexCoords::new(&surface_mesh);
+
+        for vertex_id in surface_mesh.vertex_iter() {
+            mesh_tex_coords.set_tex_coord(vertex_id, TexCoord(0.0, 0.0)); // Initialize to the origin
+        }
+
+        let tex_coords = distribute_vertices_around_square(&boundary_vertices, side_length, tolerance, length);
+        for (&vertex_id, tex_coord) in boundary_vertices.iter().zip(tex_coords.iter()) {
+            mesh_tex_coords.set_tex_coord(vertex_id, TexCoord(tex_coord.0, tex_coord.1));
+        }
+
+        let vertex_id = surface_mesh.vertex_iter().next().unwrap();
+        let tex_coord = mesh_tex_coords.get_tex_coord(vertex_id).unwrap();
+        assert_eq!(tex_coord.0, 0.0);
     }
 }
