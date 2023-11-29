@@ -275,11 +275,40 @@ mod tests {
         assert_eq!(tex_coord.1, 1.0);
     }
 
+    #[test]
+    #[allow(non_snake_case)]
+    fn test_boundary_matrix_B_creation() {
+        let surface_mesh = load_test_mesh();
+        let mut mesh_tex_coords = create_mocked_mesh_tex_coords();
+        let B = SurfaceParametrization::harmonic_parameterization_helper::set_boundary_constraints(&surface_mesh, &mut mesh_tex_coords);
 
+        let mut num_boundary_vertices = 0;
+        for i in 0..B.nrows() {
+            let row_data: Vec<f64> = B.row(i).iter().cloned().collect();
+            if surface_mesh.is_vertex_on_boundary(surface_mesh.vertex_iter().nth(i).unwrap()) {
+                num_boundary_vertices += 1;
+            } else {
+                assert_eq!(row_data, vec![0.0, 0.0]);
+            }
+        }
+        assert_eq!(num_boundary_vertices, 112);
+    }
+
+    #[test]
+    #[allow(non_snake_case)]
+    fn test_geometry_matrix_L_creation() {
+        let surface_mesh = load_test_mesh();
+        let mut mesh_tex_coords = create_mocked_mesh_tex_coords();
+        let L = SurfaceParametrization::laplacian_matrix::build_laplace_matrix(&surface_mesh, true);
+    }
 
     fn create_mocked_mesh_tex_coords() -> mesh_definition::MeshTexCoords {
         let surface_mesh = load_test_mesh();
         let mut mesh_tex_coords = mesh_definition::MeshTexCoords::new(&surface_mesh);
+
+        for vertex_id in surface_mesh.vertex_iter() {
+            mesh_tex_coords.set_tex_coord(vertex_id, TexCoord(0.0, 0.0)); // Initialize to the origin
+        }
 
         // Insert mocked data
         mesh_tex_coords.set_tex_coord(surface_mesh.vertex_iter().nth(39).unwrap(), TexCoord(0.0, 0.0));
