@@ -194,7 +194,7 @@ mod tests {
         io::load_obj_mesh(new_path)
     }
 
-    fn count_vertex_degree(surface_mesh: &Mesh) -> HashMap<tri_mesh::VertexID, usize> {
+    fn count_mesh_degree(surface_mesh: &Mesh) -> HashMap<tri_mesh::VertexID, usize> {
         // Iterate over the connected faces
         let connected_faces = Mesh::connected_components(&surface_mesh); // Vec<HashSet<FaceID>>
         let mut vertex_degree = HashMap::new();
@@ -212,28 +212,30 @@ mod tests {
         vertex_degree
     }
 
+    fn count_open_mesh_degree(surface_mesh: &Mesh, boundary_vertices: &Vec<tri_mesh::VertexID>) -> HashMap<tri_mesh::VertexID, usize> {
+        let mut vertex_degree = count_mesh_degree(&surface_mesh);
+
+        // Add +1 for each boundary vertex
+        for vertex_id in boundary_vertices.iter() {
+            *vertex_degree.entry(*vertex_id).or_insert(0) += 1;
+        }
+
+        vertex_degree
+    }
+
     #[test]
     fn test_mesh_connectivity() {
         let surface_mesh = load_test_mesh();
         let mut length = 0.0;
         let boundary_edges = get_boundary_edges(&surface_mesh, &mut length);
-
-        // Collect edges in a Vec to maintain order
         let edge_list = boundary_edges.iter().cloned().collect::<Vec<_>>();
-
-        // Collect the boundary vertices
         let mut boundary_vertices = get_boundary_vertices(&edge_list);
-
-        // Count the degree of each vertex
-        let mut vertex_count = count_vertex_degree(&surface_mesh);
 
         // Test if the mesh is valid
         assert!(!surface_mesh.is_closed(), "Mesh is not open");
 
-        // Print the counts for the boundary vertices
-        for vertex_id in boundary_vertices.iter() {
-            *vertex_count.entry(*vertex_id).or_insert(0) += 1;   // Add +1 for each boundary vertex
-        }
+        // Count the degree of each vertex
+        let vertex_count = count_open_mesh_degree(&surface_mesh, &boundary_vertices);
 
         let mut start_vertex = surface_mesh.vertex_iter().next().unwrap();
         for vertex_id in boundary_vertices.iter() {
