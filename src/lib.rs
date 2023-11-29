@@ -185,12 +185,31 @@ pub fn greet() {
 mod tests {
     use super::*;
     use std::collections::HashMap;
+    use std::iter::zip;
 
     fn load_test_mesh() -> Mesh {
         let mesh_cartography_lib_dir_str = env::var("Meshes_Dir").expect("MeshCartographyLib_DIR not set");
         let mesh_cartography_lib_dir = PathBuf::from(mesh_cartography_lib_dir_str);
         let new_path = mesh_cartography_lib_dir.join("ellipsoid_x4_open.obj");
         io::load_obj_mesh(new_path)
+    }
+
+    fn count_vertex_degree(surface_mesh: &Mesh) -> HashMap<tri_mesh::VertexID, usize> {
+        // Iterate over the connected faces
+        let connected_faces = Mesh::connected_components(&surface_mesh); // Vec<HashSet<FaceID>>
+        let mut vertex_degree = HashMap::new();
+
+        for face_id in connected_faces[0].iter() {
+            let face = surface_mesh.face_vertices(*face_id);
+
+            // Destructure the tuple and increment count for each VertexID
+            let (v1, v2, v3) = face;
+            *vertex_degree.entry(v1).or_insert(0) += 1;
+            *vertex_degree.entry(v2).or_insert(0) += 1;
+            *vertex_degree.entry(v3).or_insert(0) += 1;
+        }
+
+        vertex_degree
     }
 
     #[test]
@@ -205,19 +224,11 @@ mod tests {
         // Collect the boundary vertices
         let mut boundary_vertices = get_boundary_vertices(&edge_list);
 
-        // Iterate over the connected faces
-        let connected_faces = Mesh::connected_components(&surface_mesh); // Vec<HashSet<FaceID>>
-        let mut vertex_count = HashMap::new();
+        // Count the degree of each vertex
+        let mut vertex_count = count_vertex_degree(&surface_mesh);
 
-        for face_id in connected_faces[0].iter() {
-            let face = surface_mesh.face_vertices(*face_id);
-
-            // Destructure the tuple and increment count for each VertexID
-            let (v1, v2, v3) = face;
-            *vertex_count.entry(v1).or_insert(0) += 1;
-            *vertex_count.entry(v2).or_insert(0) += 1;
-            *vertex_count.entry(v3).or_insert(0) += 1;
-        }
+        // Test if the mesh is valid
+        assert!(!surface_mesh.is_closed(), "Mesh is not open");
 
         // Print the counts for the boundary vertices
         for vertex_id in boundary_vertices.iter() {
@@ -235,16 +246,18 @@ mod tests {
         if let Some(position) = boundary_vertices.iter().position(|&v| v == start_vertex) {
             boundary_vertices.rotate_left(position);
         }
-        println!("start_vertex: {:?}", start_vertex);
-        println!("boundary_vertices: {:?}", boundary_vertices);
 
-        // // Print the counts for the boundary vertices
-        // for vertex_id in boundary_vertices {
-        //     println!("vertex_id {:?}:  {:?}, count: {:?}", vertex_id, surface_mesh.position(vertex_id), vertex_count.get(&vertex_id));
-        // }
+        // Neighbors from C++17 code
+        let exspected_neighbours = [7, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 4, 4, 4, 4, 4, 4, 4, 5, 3, 5, 4, 4, 4, 4, 4, 4, 4,
+                        4, 4, 4, 4, 4, 4, 4, 5, 4, 4, 4, 5, 4, 4, 4, 3, 4, 4, 4, 4, 4, 4, 5, 4, 4, 4, 4, 4, 5, 5, 4, 4,
+                        4, 5, 3, 4, 4, 4, 4, 4, 5, 4, 5, 4, 4, 3, 5, 4, 5, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+                        4, 4, 4, 4, 4, 5, 4, 4, 4, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4];
 
-        // Test if the mesh is valid
-        assert!(!surface_mesh.is_closed(), "Mesh is not open");
+        // Print the counts for the boundary vertices
+        for (vertex_id, expected) in zip(boundary_vertices, exspected_neighbours.iter()) {
+            assert_eq!(vertex_count.get(&vertex_id), Some(expected));
+            // println!("{:?}, {:?}", vertex_count.get(&vertex_id), expected);
+        }
     }
 
     #[test]
