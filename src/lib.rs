@@ -281,8 +281,8 @@ mod tests {
         // Get the Laplace matrix L
         let L = SurfaceParametrization::laplacian_matrix::build_laplace_matrix(&surface_mesh, true);
 
-        for vertex_id in boundary_vertices.iter() {
-            let index_as_u32: u32 = **vertex_id;
+        for vertex_id in surface_mesh.vertex_iter() {
+            let index_as_u32: u32 = *vertex_id;
             let index_as_usize: usize = index_as_u32 as usize;
             let expected = vertex_degree.get(&vertex_id).unwrap();
 
