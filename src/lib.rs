@@ -184,12 +184,67 @@ pub fn greet() {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::HashMap;
 
     fn load_test_mesh() -> Mesh {
         let mesh_cartography_lib_dir_str = env::var("Meshes_Dir").expect("MeshCartographyLib_DIR not set");
         let mesh_cartography_lib_dir = PathBuf::from(mesh_cartography_lib_dir_str);
         let new_path = mesh_cartography_lib_dir.join("ellipsoid_x4_open.obj");
         io::load_obj_mesh(new_path)
+    }
+
+    #[test]
+    fn test_mesh_connectivity() {
+        let surface_mesh = load_test_mesh();
+        let mut length = 0.0;
+        let boundary_edges = get_boundary_edges(&surface_mesh, &mut length);
+
+        // Collect edges in a Vec to maintain order
+        let edge_list = boundary_edges.iter().cloned().collect::<Vec<_>>();
+
+        // Collect the boundary vertices
+        let mut boundary_vertices = get_boundary_vertices(&edge_list);
+
+        // Iterate over the connected faces
+        let connected_faces = Mesh::connected_components(&surface_mesh); // Vec<HashSet<FaceID>>
+        let mut vertex_count = HashMap::new();
+
+        for face_id in connected_faces[0].iter() {
+            let face = surface_mesh.face_vertices(*face_id);
+
+            // Destructure the tuple and increment count for each VertexID
+            let (v1, v2, v3) = face;
+            *vertex_count.entry(v1).or_insert(0) += 1;
+            *vertex_count.entry(v2).or_insert(0) += 1;
+            *vertex_count.entry(v3).or_insert(0) += 1;
+        }
+
+        // Print the counts for the boundary vertices
+        for vertex_id in boundary_vertices.iter() {
+            *vertex_count.entry(*vertex_id).or_insert(0) += 1;   // Add +1 for each boundary vertex
+        }
+
+        let mut start_vertex = surface_mesh.vertex_iter().next().unwrap();
+        for vertex_id in boundary_vertices.iter() {
+            if vertex_count.get(&vertex_id) == Some(&7) {
+                start_vertex = *vertex_id;
+            }
+        }
+
+        // Rotate the boundary vertices so that the start vertex is at the beginning as in the C++17 code
+        if let Some(position) = boundary_vertices.iter().position(|&v| v == start_vertex) {
+            boundary_vertices.rotate_left(position);
+        }
+        println!("start_vertex: {:?}", start_vertex);
+        println!("boundary_vertices: {:?}", boundary_vertices);
+
+        // // Print the counts for the boundary vertices
+        // for vertex_id in boundary_vertices {
+        //     println!("vertex_id {:?}:  {:?}, count: {:?}", vertex_id, surface_mesh.position(vertex_id), vertex_count.get(&vertex_id));
+        // }
+
+        // Test if the mesh is valid
+        assert!(!surface_mesh.is_closed(), "Mesh is not open");
     }
 
     #[test]
@@ -296,10 +351,27 @@ mod tests {
 
     #[test]
     #[allow(non_snake_case)]
-    fn test_geometry_matrix_L_creation() {
+    fn test_harmonic_parameterization() {
         let surface_mesh = load_test_mesh();
         let mut mesh_tex_coords = create_mocked_mesh_tex_coords();
+        let B = SurfaceParametrization::harmonic_parameterization_helper::set_boundary_constraints(&surface_mesh, &mut mesh_tex_coords);
         let L = SurfaceParametrization::laplacian_matrix::build_laplace_matrix(&surface_mesh, true);
+
+        // for vertex_id in surface_mesh.vertex_iter() {
+        //     // convert vertex_id to usize
+        //     let index_as_u32: u32 = *vertex_id;
+        //     let index_as_usize: usize = index_as_u32 as usize;
+        //     let row_data: Vec<f64> = B.row(index_as_usize).iter().cloned().collect();
+
+        //     if surface_mesh.is_vertex_on_boundary(vertex_id) {
+        //         println!("");
+        //         println!("L.row({:?}): {:?}", vertex_id, L.row(index_as_usize));
+        //         println!("B.row({:?}): {:?}", vertex_id, row_data);
+        //         println!("");
+        //     } else {
+        //         // println!("L.row({:?}): {:?}", vertex_id, L.row(index_as_usize).values());
+        //     }
+        // }
     }
 
     fn create_mocked_mesh_tex_coords() -> mesh_definition::MeshTexCoords {
