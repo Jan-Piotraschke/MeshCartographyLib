@@ -223,6 +223,20 @@ mod tests {
         vertex_degree
     }
 
+    fn rotate_boundary_vertices(boundary_vertices: &mut Vec<tri_mesh::VertexID>, surface_mesh: &Mesh, vertex_degree: &HashMap<tri_mesh::VertexID, usize>) {
+        // Rotate the boundary vertices so that the start vertex is at the beginning as in the C++17 code
+        let mut start_vertex = surface_mesh.vertex_iter().next().unwrap();
+        for vertex_id in boundary_vertices.iter() {
+            if vertex_degree.get(&vertex_id) == Some(&7) {
+                start_vertex = *vertex_id;
+            }
+        }
+
+        if let Some(position) = boundary_vertices.iter().position(|&v| v == start_vertex) {
+            boundary_vertices.rotate_left(position);
+        }
+    }
+
     #[test]
     fn test_mesh_connectivity() {
         let surface_mesh = load_test_mesh();
@@ -235,19 +249,10 @@ mod tests {
         assert!(!surface_mesh.is_closed(), "Mesh is not open");
 
         // Count the degree of each vertex
-        let vertex_count = count_open_mesh_degree(&surface_mesh, &boundary_vertices);
+        let vertex_degree = count_open_mesh_degree(&surface_mesh, &boundary_vertices);
 
-        let mut start_vertex = surface_mesh.vertex_iter().next().unwrap();
-        for vertex_id in boundary_vertices.iter() {
-            if vertex_count.get(&vertex_id) == Some(&7) {
-                start_vertex = *vertex_id;
-            }
-        }
-
-        // Rotate the boundary vertices so that the start vertex is at the beginning as in the C++17 code
-        if let Some(position) = boundary_vertices.iter().position(|&v| v == start_vertex) {
-            boundary_vertices.rotate_left(position);
-        }
+        // Rotate to match the C++17 code
+        rotate_boundary_vertices(&mut boundary_vertices, &surface_mesh, &vertex_degree);
 
         // Neighbors from C++17 code
         let exspected_neighbours = [7, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 4, 4, 4, 4, 4, 4, 4, 5, 3, 5, 4, 4, 4, 4, 4, 4, 4,
@@ -257,8 +262,32 @@ mod tests {
 
         // Print the counts for the boundary vertices
         for (vertex_id, expected) in zip(boundary_vertices, exspected_neighbours.iter()) {
-            assert_eq!(vertex_count.get(&vertex_id), Some(expected));
-            // println!("{:?}, {:?}", vertex_count.get(&vertex_id), expected);
+            assert_eq!(vertex_degree.get(&vertex_id), Some(expected));
+            // println!("{:?}, {:?}", vertex_degree.get(&vertex_id), expected);
+        }
+    }
+
+    #[test]
+    fn test_neighbors_based_on_L_matrix() {
+        let surface_mesh = load_test_mesh();
+        let mut length = 0.0;
+        let boundary_edges = get_boundary_edges(&surface_mesh, &mut length);
+        let edge_list = boundary_edges.iter().cloned().collect::<Vec<_>>();
+        let mut boundary_vertices = get_boundary_vertices(&edge_list);
+
+        // Count the degree of each vertex
+        let vertex_degree = count_open_mesh_degree(&surface_mesh, &boundary_vertices);
+
+        // Get the Laplace matrix L
+        let L = SurfaceParametrization::laplacian_matrix::build_laplace_matrix(&surface_mesh, true);
+
+        for vertex_id in boundary_vertices.iter() {
+            let index_as_u32: u32 = **vertex_id;
+            let index_as_usize: usize = index_as_u32 as usize;
+            let expected = vertex_degree.get(&vertex_id).unwrap();
+
+            // -1 because the diagonal entry is not counted as it is the vertex itself
+            assert_eq!(L.row(index_as_usize).values().len() - 1, *expected);
         }
     }
 
