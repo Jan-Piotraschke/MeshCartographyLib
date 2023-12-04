@@ -32,7 +32,7 @@ else ifeq ($(OS), Linux)
 endif
 
 .PHONY: all
-all: check_submodule install_glog build build_rust
+all: check_submodule install_glog build
 
 .PHONY: check_submodule
 check_submodule:
@@ -111,24 +111,6 @@ ifeq ($(OS), Darwin)
 else ifeq ($(OS), Linux)
 	$(BUILD_CMD) -C $(PROJECT_DIR)/$(BUILD_DIR) -j $(shell nproc)
 endif
-
-.PHONY: build_rust
-build_rust:
-	@echo "Building Rust dependencies..."
-	cargo build --release
-
-# Run the Rust executable
-.PHONY: run
-run:
-	RUST_LOG=info cargo run --release
-
-.PHONY: doc
-doc:
-	cargo doc --no-deps --open
-
-.PHONY: test
-test:
-	cargo test --release
 
 .PHONY: wasm
 wasm:
