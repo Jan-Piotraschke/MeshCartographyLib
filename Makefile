@@ -24,8 +24,10 @@ OS := $(shell uname -s)
 
 # Compiler paths
 ifeq ($(OS), Darwin)
-	C_COMPILER=$(shell brew --prefix llvm)/bin/clang
-	CXX_COMPILER=$(shell brew --prefix llvm)/bin/clang++
+	C_COMPILER=$(shell xcrun --find clang)
+	CXX_COMPILER=$(shell xcrun --find clang++)
+	# Set the correct macOS SDK path
+	# export CMAKE_OSX_SYSROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk
 else ifeq ($(OS), Linux)
 	C_COMPILER=/usr/bin/gcc
 	CXX_COMPILER=/usr/bin/g++
@@ -51,11 +53,11 @@ check_submodule:
 		$(MAKE) install_ceres; \
 	fi
 	@if [ ! "$(shell git submodule status | grep glog | cut -c 1)" = "-" ]; then \
-		echo "Ceres solver submodule already initialized and updated."; \
+		echo "Glog submodule already initialized and updated."; \
 	else \
-		echo "Ceres solver submodule is empty. Initializing and updating..."; \
+		echo "Glog submodule is empty. Initializing and updating..."; \
 		git submodule update --init -- glog; \
-		$(MAKE) install_ceres; \
+		$(MAKE) install_glog; \
 	fi
 
 .PHONY: update_pmp
@@ -79,12 +81,12 @@ install_pmp:
 
 .PHONY: install_glog
 install_glog:
-	@echo "Installing Google glog library..."
-	@mkdir -p $(PROJECT_DIR)/glog/$(BUILD_DIR)
-	@cd $(PROJECT_DIR)/glog && \
+	@echo "Installing Google glog library..."; \
+	mkdir -p $(PROJECT_DIR)/glog/$(BUILD_DIR); \
+	cd $(PROJECT_DIR)/glog && \
 	$(CMAKE_CMD) -S . -B $(BUILD_DIR) -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX=$(PROJECT_DIR)/glog/install && \
 	cmake --build $(BUILD_DIR) && \
-	cmake --build $(BUILD_DIR) --target install
+	cmake --build $(BUILD_DIR) --target install;
 
 .PHONY: install_ceres
 install_ceres:
