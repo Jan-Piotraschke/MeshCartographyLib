@@ -8,16 +8,9 @@ ARCHITECTURE := $(shell uname -m)
 export Meshes_Dir := $(PROJECT_DIR)/meshes
 
 # Platform selection
-PLATFORM ?= executive
 BUILD_DIR = build
-ifeq ($(PLATFORM), wasm)
-	CMAKE_CMD = emcmake cmake
-	BUILD_CMD = emmake ninja
-	BUILD_DIR = embuild
-else
-	CMAKE_CMD = cmake
-	BUILD_CMD = ninja
-endif
+CMAKE_CMD = cmake
+BUILD_CMD = ninja
 
 # Determine OS
 OS := $(shell uname -s)
@@ -114,15 +107,9 @@ else ifeq ($(OS), Linux)
 	$(BUILD_CMD) -C $(PROJECT_DIR)/$(BUILD_DIR) -j $(shell nproc)
 endif
 
-.PHONY: wasm
-wasm:
-	wasm-pack build
-
 # Cleaning
 .PHONY: clean
 clean:
 	rm -rf $(PROJECT_DIR)/build
-	rm -rf $(PROJECT_DIR)/embuild
 	rm -rf $(PROJECT_DIR)/glog/build
 	rm -rf $(PROJECT_DIR)/glog/install
-	rm -rf $(PROJECT_DIR)/glog/embuild

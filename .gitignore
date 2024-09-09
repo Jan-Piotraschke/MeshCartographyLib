@@ -35,7 +35,6 @@ octave-workspace
 images/
 .vscode/
 build/
-embuild/
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake

@@ -16,8 +16,6 @@ add_subdirectory("${MeshCartographyLib_SOURCE_DIR}/ceres-solver")
 include_directories(${MeshCartographyLib_SOURCE_DIR}/pmp-library/src/)
 add_subdirectory("${MeshCartographyLib_SOURCE_DIR}/pmp-library/src/pmp")
 
-# Find GoogleTest for testing (only if not using WebAssembly)
-if(NOT EMSCRIPTEN)
-  find_package(GTest REQUIRED)
-  include_directories(${GTEST_INCLUDE_DIRS})
-endif()
+# Find GoogleTest for testing
+find_package(GTest REQUIRED)
+include_directories(${GTEST_INCLUDE_DIRS})
