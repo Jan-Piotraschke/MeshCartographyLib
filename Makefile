@@ -52,6 +52,13 @@ check_submodule:
 		git submodule update --init -- glog; \
 		$(MAKE) install_glog; \
 	fi
+	@if [ ! "$(shell git submodule status | grep cgal | cut -c 1)" = "-" ]; then \
+		echo "CGAL submodule already initialized and updated."; \
+	else \
+		echo "CGAL submodule is empty. Initializing and updating..."; \
+		git submodule update --init -- cgal; \
+		$(MAKE) install_cgal; \
+	fi
 
 .PHONY: update_pmp
 update_pmp:
@@ -89,6 +96,12 @@ install_ceres:
 	$(CMAKE_CMD) -G Ninja $(PROJECT_DIR)/ceres-solver -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCERES_BUILD_EXAMPLES=OFF -DCERES_BUILD_TESTS=OFF && \
 	ninja && \
 	sudo ninja install;
+
+.PHONY: install_cgal
+install_cgal:
+	@echo "Installing CGAL..."; \
+	mkdir -p build/cgal; \
+	cd build/cgal && $(CMAKE_CMD) $(PROJECT_DIR)/cgal -DCMAKE_BUILD_TYPE=Release -DCGAL_HEADER_ONLY=OFF && make && sudo make install;
 
 .PHONY: build
 build:

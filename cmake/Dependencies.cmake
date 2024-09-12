@@ -17,5 +17,10 @@ include_directories(${MeshCartographyLib_SOURCE_DIR}/pmp-library/src/)
 add_subdirectory("${MeshCartographyLib_SOURCE_DIR}/pmp-library/src/pmp")
 
 # Find GoogleTest for testing
+find_package(CGAL REQUIRED)
+find_package(Boost COMPONENTS filesystem REQUIRED)
+find_package(Eigen3 REQUIRED)
 find_package(GTest REQUIRED)
+
+include(CGAL_Eigen3_support)
 include_directories(${GTEST_INCLUDE_DIRS})

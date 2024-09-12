@@ -10,6 +10,9 @@ add_library(MeshCartographyLib STATIC ${SIMULATION_SOURCES})
 # Include the Eigen directory for MeshCartographyLib
 target_include_directories(MeshCartographyLib PUBLIC
     ${EIGEN3_INCLUDE_DIR}
+    CGAL::CGAL
+    Boost::filesystem
+    CGAL::Eigen3_support
 )
 
 # Add include directories for MeshCartographyLib
