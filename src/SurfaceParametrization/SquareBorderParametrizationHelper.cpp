@@ -13,14 +13,8 @@
 #include "SquareBorderParametrizationHelper.h"
 
 SquareBorderParametrizationHelper::SquareBorderParametrizationHelper(
-        UV::Mesh mesh,
-        UV::halfedge_descriptor bhd,
-        _3D::UV_pmap uvmap
-) :
-        mesh(mesh),
-        bhd(bhd),
-        uvmap(uvmap)
-{};
+    UV::Mesh mesh, UV::halfedge_descriptor bhd, _3D::UV_pmap uvmap)
+    : mesh(mesh), bhd(bhd), uvmap(uvmap) {};
 
 // ========================================
 // Public Functions
@@ -28,11 +22,13 @@ SquareBorderParametrizationHelper::SquareBorderParametrizationHelper(
 
 /**
  * @brief Perform UV parameterization
-*
-* Computes a one-to-one mapping from a 3D triangle surface mesh to a simple 2D domain.
-* The mapping is piecewise linear on the triangle mesh. The result is a pair (U,V) of parameter coordinates for each vertex of the input mesh.
-*/
-SMP::Error_code SquareBorderParametrizationHelper::parameterize_UV_mesh(){
+ *
+ * Computes a one-to-one mapping from a 3D triangle surface mesh to a simple 2D domain.
+ * The mapping is piecewise linear on the triangle mesh. The result is a pair (U,V) of parameter coordinates for each
+ * vertex of the input mesh.
+ */
+SMP::Error_code SquareBorderParametrizationHelper::parameterize_UV_mesh()
+{
     // Choose the border type of the uv parametrisation
     using Border_parameterizer = SMP::Square_border_uniform_parameterizer_3<UV::Mesh>;
     Border_parameterizer border_parameterizer;
