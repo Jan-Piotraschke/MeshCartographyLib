@@ -15,6 +15,7 @@ find_package(Eigen3 REQUIRED)
 find_package(GTest REQUIRED)
 find_package(glog CONFIG REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(Ceres REQUIRED)
 
 include(CGAL_Eigen3_support)
 include_directories(${GTEST_INCLUDE_DIRS})
@@ -29,6 +30,7 @@ target_link_libraries(MeshCartographyLib PUBLIC
     Boost::filesystem
     CGAL::Eigen3_support
     glog::glog
+    ceres
     ${OpenCV_LIBS}
 )
 
@@ -39,6 +41,7 @@ target_include_directories(MeshCartographyLib PUBLIC src ${OpenCV_INCLUDE_DIRS})
 add_executable(MeshCartography MeshCartography.cpp)
 target_link_libraries(MeshCartography PUBLIC
         MeshCartographyLib
+        ceres
 )
 
 # Collect all test source files
