@@ -14,13 +14,17 @@ OS := $(shell uname -s)
 ifeq ($(OS), Darwin)
 	C_COMPILER=$(shell brew --prefix llvm)/bin/clang
 	CXX_COMPILER=$(shell brew --prefix llvm)/bin/clang++
+	VCPKG_ROOT := $(PROJECT_DIR)/vcpkg
+	VCPKG_TOOLCHAIN := $(VCPKG_ROOT)/scripts/buildsystems/vcpkg.cmake
 else ifeq ($(OS), Linux)
 	C_COMPILER=/usr/bin/gcc
 	CXX_COMPILER=/usr/bin/g++
+	VCPKG_ROOT := $(PROJECT_DIR)/vcpkg
+	VCPKG_TOOLCHAIN := $(VCPKG_ROOT)/scripts/buildsystems/vcpkg.cmake
 endif
 
 .PHONY: all
-all: check_submodule build
+all: check_submodule init_vcpkg build
 
 .PHONY: check_submodule
 check_submodule:
@@ -43,6 +47,17 @@ install_cgal:
 	mkdir -p build/cgal; \
 	cd build/cgal && $(CMAKE_CMD) $(PROJECT_DIR)/cgal -DCMAKE_BUILD_TYPE=Release -DCGAL_HEADER_ONLY=OFF && make && sudo make install;
 
+# Initialize and set up vcpkg
+.PHONY: init_vcpkg
+init_vcpkg:
+	@echo "Initializing vcpkg..."
+	cd $(VCPKG_ROOT) && ./bootstrap-vcpkg.sh
+	@echo "Integrating vcpkg with system..."
+	$(VCPKG_ROOT)/vcpkg integrate install
+	@echo "Installing librdkafka via vcpkg..."
+	$(VCPKG_ROOT)/vcpkg install cgal ceres
+	@echo "vcpkg initialization and library installation complete."
+
 .PHONY: build
 build:
 	echo "Building for platform: $(PLATFORM)"; \
@@ -53,6 +68,7 @@ build:
 			-DCMAKE_CXX_COMPILER=$(CXX_COMPILER) \
 			-DCMAKE_CXX_STANDARD=20 \
 			-DCMAKE_OSX_ARCHITECTURES=$(ARCHITECTURE) \
+			-DCMAKE_TOOLCHAIN_FILE=$(VCPKG_TOOLCHAIN) \
 			-GNinja
 ifeq ($(OS), Darwin)
 	ninja -C $(PROJECT_DIR)/build -j $(shell sysctl -n hw.logicalcpu)
