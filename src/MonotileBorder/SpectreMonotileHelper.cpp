@@ -102,8 +102,6 @@ void drawSpectreBorder(const std::string& filename, const std::vector<double>& x
     double offset_x = -min_x * scale + (image_size / 2 - ((max_x - min_x) * scale) / 2);
     double offset_y = -min_y * scale + (image_size / 2 - ((max_y - min_y) * scale) / 2);
 
-    std::cout << "Drawing Spectre Border with the following points:\n";
-
     // Loop through the border points and draw lines connecting them
     for (size_t i = 0; i < x_vals.size() - 1; ++i)
     {
@@ -111,9 +109,6 @@ void drawSpectreBorder(const std::string& filename, const std::vector<double>& x
         cv::Point pt1(offset_x + scale * x_vals[i], offset_y - scale * y_vals[i]); // Convert to pixel coordinates
         cv::Point pt2(offset_x + scale * x_vals[i + 1], offset_y - scale * y_vals[i + 1]); // Convert next point to
                                                                                            // pixel coordinates
-
-        // Print for debugging
-        std::cout << "pt1: (" << pt1.x << ", " << pt1.y << ") -> pt2: (" << pt2.x << ", " << pt2.y << ")" << std::endl;
 
         // Draw the line
         cv::line(image, pt1, pt2, cv::Scalar(0, 0, 0), 2); // Draw a black line
