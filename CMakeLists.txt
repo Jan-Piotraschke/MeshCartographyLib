@@ -13,6 +13,7 @@ find_package(CGAL REQUIRED)
 find_package(Boost COMPONENTS filesystem REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(GTest REQUIRED)
+find_package(glog CONFIG REQUIRED)
 
 include(CGAL_Eigen3_support)
 include_directories(${GTEST_INCLUDE_DIRS})
@@ -26,6 +27,7 @@ target_link_libraries(MeshCartographyLib PUBLIC
     CGAL::CGAL
     Boost::filesystem
     CGAL::Eigen3_support
+    glog::glog
 )
 
 # Add include directories

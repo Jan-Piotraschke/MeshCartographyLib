@@ -55,7 +55,7 @@ init_vcpkg:
 	@echo "Integrating vcpkg with system..."
 	$(VCPKG_ROOT)/vcpkg integrate install
 	@echo "Installing librdkafka via vcpkg..."
-	$(VCPKG_ROOT)/vcpkg install cgal ceres
+	$(VCPKG_ROOT)/vcpkg install glog cgal ceres
 	@echo "vcpkg initialization and library installation complete."
 
 .PHONY: build
