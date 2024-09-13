@@ -33,10 +33,10 @@ using Heat_method = CGAL::Heat_method_3::Surface_mesh_geodesic_distances_3<Trian
 
 #include "GeodesicDistanceHelperInterface.h"
 
-class GeodesicDistanceHelper : public GeodesicDistanceHelperInterface
+class HeatDistanceHelper : public GeodesicDistanceHelperInterface
 {
   public:
-    GeodesicDistanceHelper(fs::path mesh_path);
+    HeatDistanceHelper(fs::path mesh_path);
 
     Eigen::MatrixXd get_mesh_distance_matrix() override;
 

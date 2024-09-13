@@ -1,5 +1,5 @@
 /**
- * @file        GeodesicDistanceHelper.cpp
+ * @file        HeatDistanceHelper.cpp
  * @brief       Zuständing für die Berechnung
  *
  * @author      Jan-Piotraschke
@@ -11,9 +11,9 @@
  *              - check, ob man nicht hier Eigen:: durch std::vector ersetzen kann
  */
 
-#include "GeodesicDistanceHelper.h"
+#include "HeatDistanceHelper.h"
 
-GeodesicDistanceHelper::GeodesicDistanceHelper(fs::path mesh_path) : mesh_path(mesh_path)
+HeatDistanceHelper::HeatDistanceHelper(fs::path mesh_path) : mesh_path(mesh_path)
 {
 }
 
@@ -24,7 +24,7 @@ GeodesicDistanceHelper::GeodesicDistanceHelper(fs::path mesh_path) : mesh_path(m
 /**
  * @brief Calculate the distance using the Heat Method
  */
-Eigen::MatrixXd GeodesicDistanceHelper::get_mesh_distance_matrix()
+Eigen::MatrixXd HeatDistanceHelper::get_mesh_distance_matrix()
 {
     Triangle_mesh mesh;
     std::ifstream filename(CGAL::data_file_path(mesh_path.string()));
@@ -49,7 +49,7 @@ Eigen::MatrixXd GeodesicDistanceHelper::get_mesh_distance_matrix()
  * @brief Variable to keep track of the current index of the vector of distances, and each thread processes a
  * different index until all the distances have been added to the distance matrix.
  */
-void GeodesicDistanceHelper::fill_distance_matrix(
+void HeatDistanceHelper::fill_distance_matrix(
     Triangle_mesh mesh, Eigen::MatrixXd& distance_matrix, int closest_vertice)
 {
     if (distance_matrix.row(closest_vertice).head(2).isZero())
@@ -61,7 +61,7 @@ void GeodesicDistanceHelper::fill_distance_matrix(
     }
 }
 
-std::vector<double> GeodesicDistanceHelper::geo_distance(Triangle_mesh mesh, int32_t start_node)
+std::vector<double> HeatDistanceHelper::geo_distance(Triangle_mesh mesh, int32_t start_node)
 {
     // property map for the distance values to the source set
     Vertex_distance_map vertex_distance = mesh.add_property_map<vertex_descriptor, double>("v:distance", 0).first;
