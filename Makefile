@@ -24,28 +24,12 @@ else ifeq ($(OS), Linux)
 endif
 
 .PHONY: all
-all: check_submodule init_vcpkg build
-
-.PHONY: check_submodule
-check_submodule:
-	@if [ ! "$(shell git submodule status | grep cgal | cut -c 1)" = "-" ]; then \
-		echo "CGAL submodule already initialized and updated."; \
-	else \
-		echo "CGAL submodule is empty. Initializing and updating..."; \
-		git submodule update --init -- cgal; \
-		$(MAKE) install_cgal; \
-	fi
+all: init_vcpkg build
 
 .PHONY: update_submodule
 update_submodule:
-	@echo "Updating CGAL submodule..."; \
-	git submodule update --remote cgal;
-
-.PHONY: install_cgal
-install_cgal:
-	@echo "Installing CGAL..."; \
-	mkdir -p build/cgal; \
-	cd build/cgal && $(CMAKE_CMD) $(PROJECT_DIR)/cgal -DCMAKE_BUILD_TYPE=Release -DCGAL_HEADER_ONLY=OFF && make && sudo make install;
+	@echo "Updating vcpkg submodule..."; \
+	git submodule update --remote vcpkg;
 
 # Initialize and set up vcpkg
 .PHONY: init_vcpkg
