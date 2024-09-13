@@ -1,6 +1,9 @@
 /**
- * @file        CutLineHelper.cpp
- * @brief       Calculate the cut line of the mesh
+ * @file        GaussianCutLineHelper.cpp
+ * @brief       Create a cut line based on the Gaussian curvature
+ * @details     The idea is to concenctrate all the 3D curvature to a small number of mesh vertices (so called Cones)
+ *              and then cut the mesh through those vertices to obtain disk topology.
+ *              Cone singularities can be used to control and minimize distortions (-> see MeshMetric/ for the disortions).
  *
  * @author      Jan-Piotraschke
  * @date        2023-Sep-22
@@ -10,7 +13,7 @@
  * @todo        replace calculate_distances() with a function within the GeodesicDistance class
  */
 
-#include "CutLineHelper.h"
+#include "GaussianCutLineHelper.h"
 
 CutLineHelper::CutLineHelper(const std::string mesh_3D_file_path, _3D::vertex_descriptor start_node)
     : mesh_3D_file_path(mesh_3D_file_path), start_node(start_node) {};

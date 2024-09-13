@@ -12,7 +12,7 @@
 
 #include "SurfaceParametrization.h"
 
-#include "CutLineHelper.h"
+#include "MeshCutting/GaussianCutLineHelper.h"
 #include "SquareBorderParametrizationHelper.h"
 
 SurfaceParametrization::SurfaceParametrization()
