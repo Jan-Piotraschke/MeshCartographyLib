@@ -1,5 +1,5 @@
 /**
- * @file        SquareBorderParametrizationHelper.cpp
+ * @file        HarmonicParametrizationHelper.cpp
  * @brief       Create a parametrization of the mesh with a square border
  *
  * @author      Jan-Piotraschke
@@ -10,9 +10,9 @@
  * @todo        -
  */
 
-#include "SquareBorderParametrizationHelper.h"
+#include "HarmonicParametrizationHelper.h"
 
-SquareBorderParametrizationHelper::SquareBorderParametrizationHelper(
+HarmonicParametrizationHelper::HarmonicParametrizationHelper(
     UV::Mesh mesh, UV::halfedge_descriptor bhd, _3D::UV_pmap uvmap)
     : mesh(mesh), bhd(bhd), uvmap(uvmap) {};
 
@@ -27,7 +27,7 @@ SquareBorderParametrizationHelper::SquareBorderParametrizationHelper(
  * The mapping is piecewise linear on the triangle mesh. The result is a pair (U,V) of parameter coordinates for each
  * vertex of the input mesh.
  */
-SMP::Error_code SquareBorderParametrizationHelper::parameterize_UV_mesh()
+SMP::Error_code HarmonicParametrizationHelper::parameterize_UV_mesh()
 {
     // Choose the border type of the uv parametrisation
     using Border_parameterizer = SMP::Square_border_uniform_parameterizer_3<UV::Mesh>;

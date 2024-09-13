@@ -13,7 +13,7 @@
 #include "SurfaceParametrization.h"
 
 #include "MeshCutting/GaussianCutLineHelper.h"
-#include "SquareBorderParametrizationHelper.h"
+#include "HarmonicParametrizationHelper.h"
 
 SurfaceParametrization::SurfaceParametrization()
 {
@@ -92,7 +92,7 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(_3D::vertex_de
     UV::halfedge_descriptor bhd = CGAL::Polygon_mesh_processing::longest_border(mesh).first;
 
     // Perform parameterization
-    SquareBorderParametrizationHelper square_helper = SquareBorderParametrizationHelper(mesh, bhd, uvmap);
+    HarmonicParametrizationHelper square_helper = HarmonicParametrizationHelper(mesh, bhd, uvmap);
     ParametrizationHelperInterface& square_border_parametrization_helper = square_helper;
     square_border_parametrization_helper.parameterize_UV_mesh();
 
