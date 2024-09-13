@@ -46,7 +46,7 @@ init_vcpkg:
 run_leli:
 	@echo "Running leli from $(PROJECT_DIR)..."
 	@ls -l $(PROJECT_DIR)/leli
-	$(PROJECT_DIR)/leli extract --folder dev --output src
+	$(PROJECT_DIR)/leli extract --folder dev --protocol AImM --output .src
 
 
 .PHONY: build

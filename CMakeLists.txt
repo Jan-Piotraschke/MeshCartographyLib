@@ -21,7 +21,7 @@ include(CGAL_Eigen3_support)
 include_directories(${GTEST_INCLUDE_DIRS})
 
 # Add the source files of your library
-file(GLOB_RECURSE SIMULATION_SOURCES src/*.cpp)
+file(GLOB_RECURSE SIMULATION_SOURCES .src/*.cpp)
 add_library(MeshCartographyLib STATIC ${SIMULATION_SOURCES})
 
 # Link the library with the required packages
@@ -35,7 +35,7 @@ target_link_libraries(MeshCartographyLib PUBLIC
 )
 
 # Add include directories
-target_include_directories(MeshCartographyLib PUBLIC src ${OpenCV_INCLUDE_DIRS})
+target_include_directories(MeshCartographyLib PUBLIC .src ${OpenCV_INCLUDE_DIRS})
 
 # Add C++ source files
 add_executable(MeshCartography MeshCartography.cpp)
