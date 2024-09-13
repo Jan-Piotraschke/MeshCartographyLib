@@ -14,6 +14,7 @@ find_package(Boost COMPONENTS filesystem REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(GTest REQUIRED)
 find_package(glog CONFIG REQUIRED)
+find_package(OpenCV REQUIRED)
 
 include(CGAL_Eigen3_support)
 include_directories(${GTEST_INCLUDE_DIRS})
@@ -28,10 +29,11 @@ target_link_libraries(MeshCartographyLib PUBLIC
     Boost::filesystem
     CGAL::Eigen3_support
     glog::glog
+    ${OpenCV_LIBS}
 )
 
 # Add include directories
-target_include_directories(MeshCartographyLib PUBLIC src)
+target_include_directories(MeshCartographyLib PUBLIC src ${OpenCV_INCLUDE_DIRS})
 
 # Add C++ source files
 add_executable(MeshCartography MeshCartography.cpp)

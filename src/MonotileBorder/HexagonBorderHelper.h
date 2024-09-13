@@ -1,11 +1,12 @@
 #pragma once
 
 #include "MeshDefinition.h"
+#include <Eigen/Core> // For vector math, if necessary for corners
 #include <vector>
-#include <Eigen/Core>  // For vector math, if necessary for corners
 
-class HexagonBorderHelper {
-public:
+class HexagonBorderHelper
+{
+  public:
     // Constructor to initialize the mesh, starting vertex, and UV map
     HexagonBorderHelper(UV::Mesh& mesh, UV::halfedge_descriptor bhd, _3D::UV_pmap& uvmap);
 
@@ -15,7 +16,7 @@ public:
     // Function to draw the hexagon and save it as an image
     void drawHexagon(const std::string& filename);
 
-private:
+  private:
     // Helper functions for hexagon boundary setup
     void initializeCorners(double sideLength);
     Point_2 mapToHexagon(double l);
@@ -26,7 +27,8 @@ private:
     _3D::UV_pmap& uvmap;
 
     // Stores the corners of the hexagon
-    struct Corner {
+    struct Corner
+    {
         Eigen::Vector2d position;
         double sideLength;
         Corner(Eigen::Vector2d pos, double sideLen) : position(pos), sideLength(sideLen) {}

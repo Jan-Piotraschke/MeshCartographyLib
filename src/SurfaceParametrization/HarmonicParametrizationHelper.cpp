@@ -11,8 +11,8 @@
  */
 
 #include "HarmonicParametrizationHelper.h"
+#include "MonotileBorder/HexagonBorderHelper.h"
 #include "MonotileBorder/SquareBorderHelper.h"
-// #include "MonotileBorder/HexagonBorderHelper.h"
 
 HarmonicParametrizationHelper::HarmonicParametrizationHelper(
     UV::Mesh mesh, UV::halfedge_descriptor bhd, _3D::UV_pmap uvmap)
@@ -31,10 +31,11 @@ HarmonicParametrizationHelper::HarmonicParametrizationHelper(
  */
 SMP::Error_code HarmonicParametrizationHelper::parameterize_UV_mesh()
 {
-    // Use the SquareBorderHelper to set up the square boundary constraints
-    SquareBorderHelper square_border(mesh, bhd, uvmap);
+    HexagonBorderHelper hexagon_border(mesh, bhd, uvmap);
+    hexagon_border.setup_hexagon_boundary_constraints();
+    hexagon_border.drawHexagon("hexagon_border.png");
 
-    // Get the border parameterizer from the helper class
+    SquareBorderHelper square_border(mesh, bhd, uvmap);
     auto border_parameterizer = square_border.get_square_border_parameterizer();
 
     // Minimize Angle Distortion: Discrete Conformal Map Parameterization
