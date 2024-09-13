@@ -73,6 +73,57 @@ void spectre_border(T a, T b, T curve_strength, std::vector<T>& x_vals, std::vec
     }
 }
 
+void drawSpectreBorder(const std::string& filename, const std::vector<double>& x_vals, const std::vector<double>& y_vals)
+{
+    // Create a white image
+    int image_size = 500; // You can adjust this to the resolution you want
+    cv::Mat image = cv::Mat::zeros(image_size, image_size, CV_8UC3);
+    image.setTo(cv::Scalar(255, 255, 255)); // Set background to white
+
+    // Set up scaling and centering
+    double scale = 200.0;                             // Scaling factor for the UV coordinates
+    cv::Point center(image_size / 2, image_size / 2); // Center of the image
+
+    // Ensure the x_vals and y_vals are of the same size
+    if (x_vals.size() != y_vals.size())
+    {
+        std::cerr << "Error: x_vals and y_vals must have the same number of points." << std::endl;
+        return;
+    }
+
+    std::cout << "Drawing Spectre Border with the following points:\n";
+
+    // Loop through the border points and draw lines connecting them
+    for (size_t i = 0; i < x_vals.size() - 1; ++i)
+    {
+        // Get the current and next points
+        cv::Point pt1(center.x + scale * x_vals[i], center.y - scale * y_vals[i]);       // Convert to pixel coordinates
+        cv::Point pt2(center.x + scale * x_vals[i + 1], center.y - scale * y_vals[i + 1]); // Convert next point to pixel coordinates
+
+        // Draw the line
+        cv::line(image, pt1, pt2, cv::Scalar(0, 0, 0), 2); // Draw a black line
+    }
+
+    // Optionally, connect the last point to the first to close the shape
+    if (!x_vals.empty())
+    {
+        cv::Point pt1(center.x + scale * x_vals.back(), center.y - scale * y_vals.back());
+        cv::Point pt2(center.x + scale * x_vals.front(), center.y - scale * y_vals.front());
+        cv::line(image, pt1, pt2, cv::Scalar(0, 0, 0), 2); // Close the shape with a black line
+    }
+
+    // Save the image
+    bool success = cv::imwrite(filename, image);
+    if (!success)
+    {
+        std::cerr << "Error saving image to " << filename << std::endl;
+    }
+    else
+    {
+        std::cout << "Spectre border saved to " << filename << std::endl;
+    }
+}
+
 // Explicit template instantiation
 template void spectre_border<double>(
     double a, double b, double curve_strength, std::vector<double>& x_vals, std::vector<double>& y_vals);

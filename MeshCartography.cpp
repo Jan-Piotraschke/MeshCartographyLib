@@ -51,6 +51,7 @@ int main()
 
     std::vector<double> x_vals, y_vals;
     spectre_border(a, b, curve_strength, x_vals, y_vals);
+    drawSpectreBorder("spectre_border.png", x_vals, y_vals);
 
     return 0;
 }
