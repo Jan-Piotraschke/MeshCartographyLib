@@ -100,8 +100,6 @@ void HexagonBorderHelper::drawHexagon(const std::string& filename)
     N = N - (N % 6);
     std::vector<UV::vertex_descriptor> truncated_boundary_loop(boundary_loop.begin(), boundary_loop.begin() + N);
 
-    std::cout << "Drawing Hexagon with the following points based on UV coordinates:\n";
-
     // Loop through the boundary vertices and draw lines connecting them based on UV coordinates
     for (size_t i = 0; i < truncated_boundary_loop.size(); ++i)
     {
