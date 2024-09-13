@@ -24,7 +24,7 @@ else ifeq ($(OS), Linux)
 endif
 
 .PHONY: all
-all: init_vcpkg build
+all: init_vcpkg run_leli build
 
 .PHONY: update_submodule
 update_submodule:
@@ -41,6 +41,13 @@ init_vcpkg:
 	@echo "Installing librdkafka via vcpkg..."
 	$(VCPKG_ROOT)/vcpkg install opencv4 glog cgal ceres
 	@echo "vcpkg initialization and library installation complete."
+
+.PHONY: run_leli
+run_leli:
+	@echo "Running leli from $(PROJECT_DIR)..."
+	@ls -l $(PROJECT_DIR)/leli
+	$(PROJECT_DIR)/leli extract --folder dev --output src
+
 
 .PHONY: build
 build:

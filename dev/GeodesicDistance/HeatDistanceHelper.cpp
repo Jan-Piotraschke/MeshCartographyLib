@@ -49,8 +49,7 @@ Eigen::MatrixXd HeatDistanceHelper::get_mesh_distance_matrix()
  * @brief Variable to keep track of the current index of the vector of distances, and each thread processes a
  * different index until all the distances have been added to the distance matrix.
  */
-void HeatDistanceHelper::fill_distance_matrix(
-    Triangle_mesh mesh, Eigen::MatrixXd& distance_matrix, int closest_vertice)
+void HeatDistanceHelper::fill_distance_matrix(Triangle_mesh mesh, Eigen::MatrixXd& distance_matrix, int closest_vertice)
 {
     if (distance_matrix.row(closest_vertice).head(2).isZero())
     {

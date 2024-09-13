@@ -3,7 +3,8 @@
  * @brief       Create a cut line based on the Gaussian curvature
  * @details     The idea is to concenctrate all the 3D curvature to a small number of mesh vertices (so called Cones)
  *              and then cut the mesh through those vertices to obtain disk topology.
- *              Cone singularities can be used to control and minimize distortions (-> see MeshMetric/ for the disortions).
+ *              Cone singularities can be used to control and minimize distortions (-> see MeshMetric/ for the
+ * disortions).
  *
  * @author      Jan-Piotraschke
  * @date        2023-Sep-22
