@@ -80,10 +80,6 @@ void drawSpectreBorder(const std::string& filename, const std::vector<double>& x
     cv::Mat image = cv::Mat::zeros(image_size, image_size, CV_8UC3);
     image.setTo(cv::Scalar(255, 255, 255)); // Set background to white
 
-    // Set up scaling and centering
-    double scale = 200.0;                             // Scaling factor for the UV coordinates
-    cv::Point center(image_size / 2, image_size / 2); // Center of the image
-
     // Ensure the x_vals and y_vals are of the same size
     if (x_vals.size() != y_vals.size())
     {
@@ -91,14 +87,33 @@ void drawSpectreBorder(const std::string& filename, const std::vector<double>& x
         return;
     }
 
+    // Find the minimum and maximum values
+    double min_x = *std::min_element(x_vals.begin(), x_vals.end());
+    double max_x = *std::max_element(x_vals.begin(), x_vals.end());
+    double min_y = *std::min_element(y_vals.begin(), y_vals.end());
+    double max_y = *std::max_element(y_vals.begin(), y_vals.end());
+
+    // Calculate the scaling factor
+    double scale_x = (image_size * 0.8) / (max_x - min_x); // Leave some margin (80% of the image size)
+    double scale_y = (image_size * 0.8) / (max_y - min_y);
+    double scale = std::min(scale_x, scale_y); // Use the smaller scale to fit both dimensions
+
+    // Calculate the offset to center the shape in the image
+    double offset_x = -min_x * scale + (image_size / 2 - ((max_x - min_x) * scale) / 2);
+    double offset_y = -min_y * scale + (image_size / 2 - ((max_y - min_y) * scale) / 2);
+
     std::cout << "Drawing Spectre Border with the following points:\n";
 
     // Loop through the border points and draw lines connecting them
     for (size_t i = 0; i < x_vals.size() - 1; ++i)
     {
-        // Get the current and next points
-        cv::Point pt1(center.x + scale * x_vals[i], center.y - scale * y_vals[i]);       // Convert to pixel coordinates
-        cv::Point pt2(center.x + scale * x_vals[i + 1], center.y - scale * y_vals[i + 1]); // Convert next point to pixel coordinates
+        // Apply scaling and translation (offset)
+        cv::Point pt1(offset_x + scale * x_vals[i], offset_y - scale * y_vals[i]); // Convert to pixel coordinates
+        cv::Point pt2(offset_x + scale * x_vals[i + 1], offset_y - scale * y_vals[i + 1]); // Convert next point to
+                                                                                           // pixel coordinates
+
+        // Print for debugging
+        std::cout << "pt1: (" << pt1.x << ", " << pt1.y << ") -> pt2: (" << pt2.x << ", " << pt2.y << ")" << std::endl;
 
         // Draw the line
         cv::line(image, pt1, pt2, cv::Scalar(0, 0, 0), 2); // Draw a black line
@@ -107,8 +122,8 @@ void drawSpectreBorder(const std::string& filename, const std::vector<double>& x
     // Optionally, connect the last point to the first to close the shape
     if (!x_vals.empty())
     {
-        cv::Point pt1(center.x + scale * x_vals.back(), center.y - scale * y_vals.back());
-        cv::Point pt2(center.x + scale * x_vals.front(), center.y - scale * y_vals.front());
+        cv::Point pt1(offset_x + scale * x_vals.back(), offset_y - scale * y_vals.back());
+        cv::Point pt2(offset_x + scale * x_vals.front(), offset_y - scale * y_vals.front());
         cv::line(image, pt1, pt2, cv::Scalar(0, 0, 0), 2); // Close the shape with a black line
     }
 
