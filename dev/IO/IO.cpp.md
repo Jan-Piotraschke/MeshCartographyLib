@@ -11,7 +11,7 @@ license: "Apache License 2.0"
 
 The purpose of this module is to provide functions for loading the vertices and faces of a surface mesh model from an OFF file into Eigen matrices.
 
-```{.cpp .cb-code}
+```cpp
 #include "IO.h"
 
 static _3D::Mesh loadMesh(const std::string& filepath)
@@ -27,7 +27,7 @@ static _3D::Mesh loadMesh(const std::string& filepath)
 This function reads the vertices coordinates of a surface mesh model from a file and stores them in an Eigen matrix.
 Up to dimension 3 is supported.
 
-```{.cpp .cb-code}
+```cpp
 void loadMeshVertices(const std::string& filepath, Eigen::MatrixXd& vertices)
 {
     _3D::Mesh mesh = loadMesh(filepath);
@@ -55,7 +55,7 @@ void loadMeshVertices(const std::string& filepath, Eigen::MatrixXd& vertices)
 This function reads the faces of a surface mesh model from a file and stores them in an Eigen matrix.
 The faces are stored as indices of the vertices.
 
-```{.cpp .cb-code}
+```cpp
 void loadMeshFaces(const std::string& filepath, Eigen::MatrixXi& faces)
 {
     _3D::Mesh mesh = loadMesh(filepath);
