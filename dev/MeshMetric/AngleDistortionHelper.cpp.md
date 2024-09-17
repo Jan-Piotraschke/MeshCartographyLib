@@ -1,27 +1,22 @@
-/**
- * @file        AngleDistortionHelper.cpp
- * @brief       Calculate the angle distortion of the mesh
- * @details     The angle is preserved if the first fundamental form is a multiple of the identity, i.e., I(u) = η(u)Id
- *
- * @author      Jan-Piotraschke
- * @date        2024-Sep-13
- * @license     Apache License 2.0
- *
- * @bug         -
- * @todo        -
- */
+---
+output_filename: "AngleDistortionHelper"
 
+brief: "Calculate the angle distortion of the mesh"
+details: "The angle is preserved if the first fundamental form is a multiple of the identity, i.e., I(u) = η(u)Id"
+---
+
+```cpp
 #include "AngleDistortionHelper.h"
 
 AngleDistortionHelper::AngleDistortionHelper(_3D::Mesh& mesh_open, UV::Mesh& mesh_UV)
     : mesh_open(mesh_open), mesh_UV(mesh_UV)
 {
 }
+```
 
-// ========================================
-// Public Functions
-// ========================================
+## Compute Angle Distortion
 
+```cpp
 double AngleDistortionHelper::computeAngleDistortion()
 {
     double totalDistortion = 0.0;
@@ -43,11 +38,11 @@ double AngleDistortionHelper::computeAngleDistortion()
 
     return totalDistortion / (3 * mesh_open.number_of_faces()); // Average angle distortion
 }
+```
 
-// ========================================
-// Private Functions
-// ========================================
+### Helper Function: Compute Mesh Triangle Angles
 
+```cpp
 template <typename MeshType>
 std::vector<double> AngleDistortionHelper::triangle_angles(const MeshType& mesh, const typename MeshType::Face_index& f)
 {
@@ -84,3 +79,4 @@ double AngleDistortionHelper::computeAngle(const Point_3& A, const Point_3& B, c
     // Return the angle in radians
     return std::acos(dotProduct / magnitudeProduct);
 }
+```
