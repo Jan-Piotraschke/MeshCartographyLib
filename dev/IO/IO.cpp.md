@@ -2,8 +2,6 @@
 output_filename: "IO"
 
 brief: "Loading the mesh model vertices and faces"
-author: "Jan-Piotraschke"
-date: "2024-Sep-17"
 license: "Apache License 2.0"
 ---
 
