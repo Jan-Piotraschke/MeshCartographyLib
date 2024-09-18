@@ -1,17 +1,20 @@
-#include "SquareBorderHelper.h"
+---
+output_filename: "SquareBorderHelper"
 
-// ========================================
-// Constructor
-// ========================================
+brief: "Create a square border"
+---
+
+# Square Border Helper
+
+The purpose of this module is to provide functions for creating a square border for an UV mesh model.
+
+```cpp
+#include "SquareBorderHelper.h"
 
 SquareBorderHelper::SquareBorderHelper(UV::Mesh& mesh, UV::halfedge_descriptor bhd, _3D::UV_pmap& uvmap)
     : mesh(mesh), bhd(bhd), uvmap(uvmap)
 {
 }
-
-// ========================================
-// Public Functions
-// ========================================
 
 CGAL::Surface_mesh_parameterization::Square_border_uniform_parameterizer_3<UV::Mesh>
 SquareBorderHelper::get_square_border_parameterizer()
@@ -22,3 +25,4 @@ SquareBorderHelper::get_square_border_parameterizer()
     Border_parameterizer border_parameterizer;
     return border_parameterizer;
 }
+```

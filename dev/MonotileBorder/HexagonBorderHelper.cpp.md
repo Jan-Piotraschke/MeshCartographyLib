@@ -1,20 +1,25 @@
+---
+output_filename: "HexagonBorderHelper"
+
+brief: "Create a hexagonal border"
+---
+
+# Hexagon Border Helper
+
+The purpose of this module is to provide functions for creating a hexagonal border for an UV mesh model.
+
+```cpp
 #include "HexagonBorderHelper.h"
 #include <CGAL/squared_distance_2.h> // For distance computation
 #include <cmath>                     // For M_PI
 #include <limits>                    // For std::numeric_limits
 #include <opencv2/opencv.hpp>        // OpenCV for drawing and saving the image
 
-// ========================================
-// Constructor
-// ========================================
 HexagonBorderHelper::HexagonBorderHelper(UV::Mesh& mesh, UV::halfedge_descriptor bhd, _3D::UV_pmap& uvmap)
     : mesh(mesh), bhd(bhd), uvmap(uvmap)
 {
 }
 
-// ========================================
-// Public Functions
-// ========================================
 void HexagonBorderHelper::setup_hexagon_boundary_constraints()
 {
     // Collect boundary loop
@@ -70,10 +75,11 @@ void HexagonBorderHelper::setup_hexagon_boundary_constraints()
         put(uvmap, truncated_boundary_loop[i], Point_2(uv_x, uv_y));
     }
 }
+```
 
-// ========================================
-// Function to draw the hexagon and save it as an image
-// ========================================
+## Draw Hexagon and Save as Image
+
+```cpp
 void HexagonBorderHelper::drawHexagon(const std::string& filename)
 {
     // Create a white image
@@ -126,10 +132,11 @@ void HexagonBorderHelper::drawHexagon(const std::string& filename)
         std::cout << "Hexagon saved to " << filename << std::endl;
     }
 }
+```
 
-// ========================================
-// Private Functions
-// ========================================
+## Initialize Hexagon Corners and Map to Hexagon
+
+```cpp
 void HexagonBorderHelper::initializeCorners(double sideLength)
 {
     corners.clear();
@@ -163,3 +170,4 @@ Point_2 HexagonBorderHelper::mapToHexagon(double l)
     }
     return Point_2(0.0, 0.0);
 }
+```

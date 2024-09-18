@@ -1,15 +1,14 @@
-/**
- * @file        SpectreMonotileHelper.cpp
- * @brief       Create the border of the spectre monotile
- *
- * @author      Jan-Piotraschke
- * @date        2023-Oct-26
- * @license     Apache License 2.0
- *
- * @bug         -
- * @todo        -
- */
+---
+output_filename: "SpectreMonotileHelper"
 
+brief: "Create an optimizable border of the spectre monotile"
+---
+
+# Spectre Monotile Helper
+
+The purpose of this module is to provide functions for creating the border of the spectre monotile.
+
+```cpp
 #include "SpectreMonotileHelper.h"
 
 // ! NOTE: just think of "T" as "double", because that's what it is in the end
@@ -73,6 +72,20 @@ void spectre_border(T a, T b, T curve_strength, std::vector<T>& x_vals, std::vec
     }
 }
 
+// Explicit template instantiation
+template void spectre_border<double>(
+    double a, double b, double curve_strength, std::vector<double>& x_vals, std::vector<double>& y_vals);
+template void spectre_border<ceres::Jet<double, 1>>(
+    ceres::Jet<double, 1> a,
+    ceres::Jet<double, 1> b,
+    ceres::Jet<double, 1> curve_strength,
+    std::vector<ceres::Jet<double, 1>>& x_vals,
+    std::vector<ceres::Jet<double, 1>>& y_vals);
+```
+
+## Draw Spectre Border and Save as Image
+
+```cpp
 void drawSpectreBorder(const std::string& filename, const std::vector<double>& x_vals, const std::vector<double>& y_vals)
 {
     // Create a white image
@@ -133,13 +146,4 @@ void drawSpectreBorder(const std::string& filename, const std::vector<double>& x
         std::cout << "Spectre border saved to " << filename << std::endl;
     }
 }
-
-// Explicit template instantiation
-template void spectre_border<double>(
-    double a, double b, double curve_strength, std::vector<double>& x_vals, std::vector<double>& y_vals);
-template void spectre_border<ceres::Jet<double, 1>>(
-    ceres::Jet<double, 1> a,
-    ceres::Jet<double, 1> b,
-    ceres::Jet<double, 1> curve_strength,
-    std::vector<ceres::Jet<double, 1>>& x_vals,
-    std::vector<ceres::Jet<double, 1>>& y_vals);
+```
