@@ -15,6 +15,7 @@ The purpose of this module is to provide functions for creating 2D maps based on
 
 #include "HarmonicParametrizationHelper.h"
 #include "MeshCutting/GaussianCutLineHelper.h"
+#include "MeshCutting/MeshCutHelper.h"
 
 #include "MeshMetric/AngleDistortionHelper.h"
 
@@ -87,7 +88,9 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(_3D::vertex_de
     _3D::UV_pmap uvmap = sm.add_property_map<_3D::halfedge_descriptor, Point_2>("h:uv").first;
 
     // Create the seam mesh
-    UV::Mesh mesh = create_UV_mesh(sm, border_edges);
+    MeshCutHelper mesh_cut_helper = MeshCutHelper(sm, start_node);
+    MeshCuttingHelperInterface& mesh_cut_helper_interface = mesh_cut_helper;
+    UV::Mesh mesh = mesh_cut_helper_interface.cut_mesh_open(border_edges);
 
     // Choose a halfedge on the border
     UV::halfedge_descriptor bhd = CGAL::Polygon_mesh_processing::longest_border(mesh).first;
@@ -131,33 +134,6 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(_3D::vertex_de
     return h_v_mapping_vector;
 }
 ```
-
-## Preparation for "cutting" the 3D Mesh open
-
-We "cut" the 3D mesh by introducing a seam edge along the calculated edge path. This seam edge is used to create the UV mesh.
-
-```cpp
-UV::Mesh SurfaceParametrization::create_UV_mesh(_3D::Mesh& mesh, const std::vector<_3D::edge_descriptor> calc_edges)
-{
-    // Create property maps to store seam edges and vertices
-    _3D::Seam_edge_pmap seam_edge_pm
-        = mesh.add_property_map<_3D::edge_descriptor, bool>("e:on_seam", false).first; // if not false -> we can't add
-                                                                                       // seam edges
-    _3D::Seam_vertex_pmap seam_vertex_pm
-        = mesh.add_property_map<_3D::vertex_descriptor, bool>("v:on_seam", false).first; // if not false -> we can't run
-                                                                                         // the parameterization part
-
-    UV::Mesh UV_mesh(mesh, seam_edge_pm, seam_vertex_pm);
-
-    for (_3D::edge_descriptor e : calc_edges)
-    {
-        UV_mesh.add_seam(source(e, mesh), target(e, mesh));
-    }
-
-    return UV_mesh;
-}
-```
-
 
 ## Private Helper Functions
 
