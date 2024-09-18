@@ -1,15 +1,14 @@
-/**
- * @file        AutoDiffMonotileOptimizerHelper.cpp
- * @brief       Optimize the border of the spectre monotile using automatic differentiation
- *
- * @author      Jan-Piotraschke
- * @date        2023-Oct-27
- * @license     Apache License 2.0
- *
- * @bug         -
- * @todo        -
- */
+---
+output_filename: "AutoDiffMonotileOptimizerHelper"
 
+brief: "Optimize the border of the spectre monotile using automatic differentiation"
+---
+
+# AutoDiffMonotileOptimizerHelper
+
+The purpose of this module is to provide functions for optimizing the border of the spectre monotile using automatic differentiation.
+
+```cpp
 #include "AutoDiffMonotileOptimizerHelper.h"
 #include "MonotileBorder/SpectreMonotileHelper.h"
 
@@ -19,12 +18,11 @@ T clamp(const T& value, const T& low, const T& high)
 {
     return std::max(low, std::min(value, high));
 }
+```
 
-// ========================================
-// AreaCalculator Implementation
-// ========================================
+## Metric of the cost function: Area of the border
 
-// Optimization objective of the cost function: Area of the border
+```cpp
 template <typename T>
 T AreaCalculator::computeArea(const std::vector<T>& x_vals, const std::vector<T>& y_vals) const
 {
@@ -39,12 +37,13 @@ T AreaCalculator::computeArea(const std::vector<T>& x_vals, const std::vector<T>
     area -= y_vals[n - 1] * x_vals[0];
     return ceres::abs(area) / T(2);
 }
+```
 
-// ========================================
-// MonotileAreaCostFunction Implementation
-// ========================================
+## Cost Function for Optimization
 
-// The cost function represents our optimization objective
+The cost function represents our optimization objective.
+
+```cpp
 MonotileAreaCostFunction::MonotileAreaCostFunction(double a, double b) : a_(a), b_(b)
 {
 }
@@ -74,12 +73,13 @@ double MonotileAreaCostFunction::computeArea(double curve_strength) const
     spectre_border(a_, b_, curve_strength, x_vals, y_vals);
     return area_calculator.computeArea(x_vals, y_vals);
 }
+```
 
-// ========================================
-// OptimizationProblem Implementation
-// ========================================
+## Solve Optimization Problem
 
-// Set up and run the optimization problem
+The optimization problem is set up and run using the Ceres Solver.
+
+```cpp
 void OptimizationProblem::run(double a, double b, double& curve_strength)
 {
     ceres::Problem problem;
@@ -114,3 +114,4 @@ void OptimizationProblem::setBounds(double lower_bound, double upper_bound)
     lower_bound_ = lower_bound;
     upper_bound_ = upper_bound;
 }
+```
