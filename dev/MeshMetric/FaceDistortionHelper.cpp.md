@@ -1,11 +1,23 @@
+---
+output_filename: "FaceDistortionHelper"
+
+brief: "Calculate the face distortion of the mesh"
+details: "Since the area of a mapped patch x(U), U ⊂ parameter space Ω, is computed as ∫ U √det(I)dA, the
+            parameterization is area-preserving if det I = 1, or equivalently σ1σ2 = 1, for all points u ∈ Ω"
+---
+
+```cpp
 #include "FaceDistortionHelper.h"
-#include <cmath>
 
 FaceDistortionHelper::FaceDistortionHelper(_3D::Mesh& mesh_open, UV::Mesh& mesh_UV)
     : mesh_open(mesh_open), mesh_UV(mesh_UV)
 {
 }
+```
 
+## Compute Face Distortion
+
+```cpp
 double FaceDistortionHelper::computeFaceDistortion()
 {
     double totalDistortion = 0.0;
@@ -24,7 +36,11 @@ double FaceDistortionHelper::computeFaceDistortion()
 
     return totalDistortion / mesh_open.number_of_faces(); // Average face distortion
 }
+```
 
+### Helper Function: Compute Mesh Triangle Area
+
+```cpp
 template <typename MeshType>
 double FaceDistortionHelper::triangle_area(const MeshType& mesh, const typename MeshType::Face_index& f)
 {
@@ -46,3 +62,4 @@ double FaceDistortionHelper::triangle_area(const MeshType& mesh, const typename 
     // The magnitude of the cross product is twice the area of the triangle
     return 0.5 * std::sqrt(crossProduct.squared_length());
 }
+```

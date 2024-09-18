@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MeshDefinition.h"
+#include <cmath>
 #include <vector>
 
 class LengthDistortionHelper
