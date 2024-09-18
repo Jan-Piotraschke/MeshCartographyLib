@@ -7,5 +7,5 @@
 class MeshCuttingHelperInterface
 {
   public:
-    virtual UV::Mesh cut_mesh_open(const std::vector<_3D::edge_descriptor> calc_edges) = 0;
+    virtual UV::Mesh cut_mesh_open() = 0;
 };

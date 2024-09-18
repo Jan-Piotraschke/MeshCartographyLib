@@ -74,12 +74,6 @@ Calculate the UV coordinates of the 3D mesh and also their mapping to the 3D coo
 ```cpp
 std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(_3D::vertex_descriptor start_node)
 {
-
-    // Set the border edges of the UV mesh
-    CutLineHelper helper = CutLineHelper(mesh_3D_file_path, start_node);
-    CutLineHelperInterface& cutline_helper = helper;
-    auto border_edges = cutline_helper.set_UV_border_edges();
-
     _3D::Mesh sm;
     std::ifstream in(CGAL::data_file_path(mesh_3D_file_path));
     in >> sm;
@@ -88,9 +82,9 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(_3D::vertex_de
     _3D::UV_pmap uvmap = sm.add_property_map<_3D::halfedge_descriptor, Point_2>("h:uv").first;
 
     // Create the seam mesh
-    MeshCutHelper mesh_cut_helper = MeshCutHelper(sm, start_node);
+    MeshCutHelper mesh_cut_helper = MeshCutHelper(sm, mesh_3D_file_path, start_node);
     MeshCuttingHelperInterface& mesh_cut_helper_interface = mesh_cut_helper;
-    UV::Mesh mesh = mesh_cut_helper_interface.cut_mesh_open(border_edges);
+    UV::Mesh mesh = mesh_cut_helper_interface.cut_mesh_open();
 
     // Choose a halfedge on the border
     UV::halfedge_descriptor bhd = CGAL::Polygon_mesh_processing::longest_border(mesh).first;

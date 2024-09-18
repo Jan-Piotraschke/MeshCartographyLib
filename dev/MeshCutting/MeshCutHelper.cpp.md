@@ -18,26 +18,28 @@ Nicht nur die Form der Grenzen des Monotiles sind wichtig, sondern vorab auch wi
 #include "MeshCutHelper.h"
 #include "GaussianCutLineHelper.h"
 
-MeshCutHelper::MeshCutHelper(_3D::Mesh& mesh, _3D::vertex_descriptor& start_vertex)
-    : mesh(mesh), start_vertex(start_vertex)
+MeshCutHelper::MeshCutHelper(_3D::Mesh& mesh, const std::string mesh_3D_file_path, _3D::vertex_descriptor& start_vertex)
+    : mesh(mesh), mesh_3D_file_path(mesh_3D_file_path), start_vertex(start_vertex)
 {
 };
 
-// void MeshCutHelper::cut_mesh_open()
-// {
-//     // Get the cutline
-//     // CutLineHelper helper = CutLineHelper(mesh_3D_file_path, start_vertex);
-//     // CutLineHelperInterface& cutline_helper = helper;
-//     // auto edge_path = cutline_helper.get_gaussian_cutline();
+UV::Mesh MeshCutHelper::cut_mesh_open()
+{
+    // Get the cutline
+    CutLineHelper helper = CutLineHelper(mesh_3D_file_path, start_vertex);
+    CutLineHelperInterface& cutline_helper = helper;
+    auto border_edges = cutline_helper.set_UV_border_edges();
+    // auto border_edges = cutline_helper.get_gaussian_cutline();
 
-//     // open_mesh_along_seam(edge_path);
-// }
+    UV::Mesh UV_mesh = open_mesh_along_seam(border_edges);
+    return UV_mesh;
+}
 ```
 
 We "cut" the 3D mesh by introducing a seam edge along the calculated edge path. This seam edge is used to create the UV mesh.
 
 ```cpp
-UV::Mesh MeshCutHelper::cut_mesh_open(const std::vector<_3D::edge_descriptor> calc_edges)
+UV::Mesh MeshCutHelper::open_mesh_along_seam(const std::vector<_3D::edge_descriptor>& calc_edges)
 {
     // Create property maps to store seam edges and vertices
     _3D::Seam_edge_pmap seam_edge_pm
