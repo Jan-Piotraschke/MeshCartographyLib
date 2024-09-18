@@ -26,7 +26,6 @@ namespace fs = boost::filesystem;
 
 #include <CGAL/IO/OFF.h>
 
-
 #include "MeshDefinition.h"
 #include "SurfaceParametrizationHelperInterface.h"
 

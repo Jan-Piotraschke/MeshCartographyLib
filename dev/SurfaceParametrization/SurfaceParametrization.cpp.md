@@ -18,6 +18,8 @@ The purpose of this module is to provide functions for creating 2D maps based on
 #include "MeshCutting/MeshCutHelper.h"
 
 #include "MeshMetric/AngleDistortionHelper.h"
+#include "MeshMetric/FaceDistortionHelper.h"
+#include "MeshMetric/LengthDistortionHelper.h"
 
 SurfaceParametrization::SurfaceParametrization()
 {
@@ -109,6 +111,16 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(_3D::vertex_de
     AngleDistortionHelper angle_distortion_helper = AngleDistortionHelper(mesh_open, mesh);
     double angle_distortion = angle_distortion_helper.computeAngleDistortion();
     std::cout << "Angle Distortion: " << angle_distortion << std::endl;
+
+    // Calculate the face distortion
+    FaceDistortionHelper face_distortion_helper = FaceDistortionHelper(mesh_open, mesh);
+    double face_distortion = face_distortion_helper.computeFaceDistortion();
+    std::cout << "Face Distortion: " << face_distortion << std::endl;
+
+    // Calculate the length distortion
+    LengthDistortionHelper length_distortion_helper = LengthDistortionHelper(mesh_open, mesh);
+    double length_distortion = length_distortion_helper.computeLengthDistortion();
+    std::cout << "Length Distortion: " << length_distortion << std::endl;
 
     std::vector<int64_t> h_v_mapping_vector;
     int number_of_vertices = size(vertices(mesh));
