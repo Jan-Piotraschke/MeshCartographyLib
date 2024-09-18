@@ -24,6 +24,9 @@
 #include <boost/property_map/property_map.hpp>
 namespace fs = boost::filesystem;
 
+#include <CGAL/IO/OFF.h>
+
+
 #include "MeshDefinition.h"
 #include "SurfaceParametrizationHelperInterface.h"
 

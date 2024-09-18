@@ -86,6 +86,14 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(_3D::vertex_de
     MeshCuttingHelperInterface& mesh_cut_helper_interface = mesh_cut_helper;
     UV::Mesh mesh = mesh_cut_helper_interface.cut_mesh_open();
 
+    // Save the open mesh for testing
+    fs::path mesh_uv_path_test = MESH_FOLDER / (get_mesh_name(mesh_3D_file_path) + "_open.off");
+    CGAL::IO::write_OFF(mesh_uv_path_test.string(), mesh);
+
+    _3D::Mesh mesh_open;
+    std::ifstream in_open_mesh(CGAL::data_file_path(mesh_uv_path_test.string()));
+    in_open_mesh >> mesh_open;
+
     // Choose a halfedge on the border
     UV::halfedge_descriptor bhd = CGAL::Polygon_mesh_processing::longest_border(mesh).first;
 
