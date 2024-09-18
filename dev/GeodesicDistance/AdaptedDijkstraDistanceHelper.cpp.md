@@ -1,15 +1,25 @@
+---
+output_filename: "AdaptedDijkstraDistanceHelper"
+
+brief: "Zuständing für die Berechnung basierend auf den Dijkstra-Algorithmus"
+details: "Dijkstra's algorithm calculates shortest paths in a graph G = (V, E) with non-negative edge weights, yielding real numbers for path lengths.
+            The optimal run-time here is O(|E| + |V|log|V|)."
+---
+
+# Adapted Dijkstra Distance Helper
+
+The purpose of this module is to provide functions for calculating the distance between mesh vertices using an adapted Dijkstra algorithm.
+
+```cpp
 #include "AdaptedDijkstraDistanceHelper.h"
 
-// Define the necessary CGAL types for the shortest path calculation
 typedef CGAL::Surface_mesh_shortest_path_traits<Kernel, _3D::Mesh> Traits;
 typedef CGAL::Surface_mesh_shortest_path<Traits> Surface_mesh_shortest_path;
 
-// Constructor
 AdaptedDijkstraDistanceHelper::AdaptedDijkstraDistanceHelper(fs::path mesh_path) : mesh_path(mesh_path)
 {
 }
 
-// Function to get the distance matrix
 Eigen::MatrixXd AdaptedDijkstraDistanceHelper::get_mesh_distance_matrix()
 {
     _3D::Mesh mesh;
@@ -30,8 +40,13 @@ Eigen::MatrixXd AdaptedDijkstraDistanceHelper::get_mesh_distance_matrix()
 
     return distance_matrix_v;
 }
+```
 
-// Function to fill the distance matrix for a specific vertex
+## Dijkstra Algorithm
+
+Get the distance of all vertices to all other vertices using an adapted Dijkstra algorithm.
+
+```cpp
 void AdaptedDijkstraDistanceHelper::fill_distance_matrix(
     _3D::Mesh& mesh, Eigen::MatrixXd& distance_matrix, _3D::vertex_descriptor vertex)
 {
@@ -71,3 +86,4 @@ std::vector<double> AdaptedDijkstraDistanceHelper::calculate_geodesic_distance(
 
     return distances;
 }
+```
