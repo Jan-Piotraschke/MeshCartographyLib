@@ -8,6 +8,7 @@
 namespace fs = boost::filesystem;
 
 #include "GeodesicDistanceHelperInterface.h"
+#include "AdaptedDijkstraDistanceHelper.h"
 #include "HeatDistanceHelper.h"
 
 class CachedGeodesicDistanceHelper : public GeodesicDistanceHelperInterface
@@ -20,6 +21,7 @@ class CachedGeodesicDistanceHelper : public GeodesicDistanceHelperInterface
   private:
     fs::path mesh_path;
     HeatDistanceHelper geodesic_distance_helper;
+    // AdaptedDijkstraDistanceHelper geodesic_distance_helper;
 
     template <typename MatrixType>
     void save_csv(MatrixType& distance_matrix_v, fs::path cache_file)
