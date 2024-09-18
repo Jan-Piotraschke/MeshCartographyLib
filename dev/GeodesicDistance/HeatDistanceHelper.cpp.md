@@ -1,29 +1,20 @@
-/**
- * @file        HeatDistanceHelper.cpp
- * @brief       Zuständing für die Berechnung
- *
- * @author      Jan-Piotraschke
- * @date        2023-Sep-15
- * @license     Apache License 2.0
- *
- * @bug         -
- * @todo        - check, ob man das Mesh nicht auch als Referenz übergeben kann
- *              - check, ob man nicht hier Eigen:: durch std::vector ersetzen kann
- */
+---
+output_filename: "HeatDistanceHelper"
 
+brief: "Zuständing für die Berechnung der Distanz zwischen Mesh Vertices mittels Heat Method"
+---
+
+# Heat Distance Helper
+
+The purpose of this module is to provide functions for calculating the distance between mesh vertices using the Heat Method.
+
+```cpp
 #include "HeatDistanceHelper.h"
 
 HeatDistanceHelper::HeatDistanceHelper(fs::path mesh_path) : mesh_path(mesh_path)
 {
 }
 
-// ========================================
-// Public Functions
-// ========================================
-
-/**
- * @brief Calculate the distance using the Heat Method
- */
 Eigen::MatrixXd HeatDistanceHelper::get_mesh_distance_matrix()
 {
     Triangle_mesh mesh;
@@ -40,20 +31,17 @@ Eigen::MatrixXd HeatDistanceHelper::get_mesh_distance_matrix()
 
     return distance_matrix_v;
 }
+```
 
-// ========================================
-// Private Functions
-// ========================================
+## Heat Method
 
-/**
- * @brief Variable to keep track of the current index of the vector of distances, and each thread processes a
- * different index until all the distances have been added to the distance matrix.
- */
+Get the distance of all vertices to all other vertices using the Heat Method.
+
+```cpp
 void HeatDistanceHelper::fill_distance_matrix(Triangle_mesh mesh, Eigen::MatrixXd& distance_matrix, int closest_vertice)
 {
     if (distance_matrix.row(closest_vertice).head(2).isZero())
     {
-        // get the distance of all vertices to all other vertices
         std::vector<double> vertices_3D_distance_map = geo_distance(mesh, closest_vertice);
         distance_matrix.row(closest_vertice)
             = Eigen::Map<Eigen::VectorXd>(vertices_3D_distance_map.data(), vertices_3D_distance_map.size());
@@ -81,3 +69,4 @@ std::vector<double> HeatDistanceHelper::geo_distance(Triangle_mesh mesh, int32_t
 
     return distances_list;
 }
+```
