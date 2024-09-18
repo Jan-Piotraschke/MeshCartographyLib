@@ -10,6 +10,8 @@ details: "Dijkstra's algorithm calculates shortest paths in a graph G = (V, E) w
 
 The purpose of this module is to provide functions for calculating the distance between mesh vertices using an adapted Dijkstra algorithm.
 
+This implementation adapts Dijkstra's algorithm for 3D surface meshes. Instead of simple edge traversal, it considers the geometric distances on the mesh. The shortest_paths object uses an internal priority queue to explore the shortest paths efficiently, respecting the surface's topology. This ensures that distances reflect the true geodesic path over the curved surface rather than merely counting edges.
+
 ```cpp
 #include "AdaptedDijkstraDistanceHelper.h"
 
