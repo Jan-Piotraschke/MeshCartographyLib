@@ -106,8 +106,9 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(_3D::vertex_de
     save_UV_mesh(mesh, bhd, uvmap, mesh_3D_file_path);
 
     // Calculate the angle distortion
-    // AngleDistortionHelper angle_distortion_helper = AngleDistortionHelper(mesh_open, mesh);
-    // double angle_distortion = angle_distortion_helper.computeAngleDistortion();
+    AngleDistortionHelper angle_distortion_helper = AngleDistortionHelper(mesh_open, mesh);
+    double angle_distortion = angle_distortion_helper.computeAngleDistortion();
+    std::cout << "Angle Distortion: " << angle_distortion << std::endl;
 
     std::vector<int64_t> h_v_mapping_vector;
     int number_of_vertices = size(vertices(mesh));
