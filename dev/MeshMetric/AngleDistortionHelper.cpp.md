@@ -80,3 +80,47 @@ double AngleDistortionHelper::computeAngle(const Point_3& A, const Point_3& B, c
     return std::acos(dotProduct / magnitudeProduct);
 }
 ```
+
+&NewLine;
+## *ScienceLens*: Angle Distortion
+
+Given a triangle with vertices $ A $, $ B $, and $ C $, the angle at vertex $ C $ is calculated using:
+
+$$
+\theta_C = \arccos \left( \frac{ (\mathbf{A} - \mathbf{C}) \cdot (\mathbf{B} - \mathbf{C}) }{ \| \mathbf{A} - \mathbf{C} \| \, \| \mathbf{B} - \mathbf{C} \| } \right)
+$$
+
+**Where:**
+
+- $ \mathbf{A}, \mathbf{B}, \mathbf{C} $ are the position vectors of the triangle's vertices.
+- $ \cdot $ denotes the dot product of two vectors.
+- $ \| \cdot \| $ denotes the Euclidean norm (magnitude) of a vector.
+- $ \arccos $ is the inverse cosine function, returning the angle in radians.
+
+
+### Computing Total Angle Distortion
+
+The total angle distortion between the 3D mesh and its UV mapping is calculated by:
+
+$$
+\text{TotalDistortion} = \sum_{f \in F} \sum_{i=1}^{3} \left| \theta_i^{\text{3D}}(f) - \theta_i^{\text{UV}}(f) \right|
+$$
+
+**Where:**
+
+- $ F $ is the set of all faces in the mesh.
+- $ \theta_i^{\text{3D}}(f) $ is the $ i $-th angle of face $ f $ in the original 3D mesh.
+- $ \theta_i^{\text{UV}}(f) $ is the $ i $-th angle of face $ f $ in the UV-mapped mesh.
+- $ | \cdot | $ denotes the absolute value.
+
+### Computing Average Angle Distortion
+
+The average angle distortion is calculated by:
+
+$$
+\text{AverageDistortion} = \frac{\text{TotalDistortion}}{3 \times |F|}
+$$
+
+**Where:**
+
+- $ |F| $ is the total number of faces in the mesh.
