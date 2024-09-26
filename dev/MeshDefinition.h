@@ -60,6 +60,7 @@ using Mesh = CGAL::Surface_mesh<Point_3>;
 using vertex_descriptor = boost::graph_traits<Mesh>::vertex_descriptor;
 using halfedge_descriptor = boost::graph_traits<Mesh>::halfedge_descriptor;
 using edge_descriptor = boost::graph_traits<Mesh>::edge_descriptor;
+using face_descriptor = boost::graph_traits<Mesh>::face_descriptor;
 using Seam_edge_pmap = Mesh::Property_map<edge_descriptor, bool>;
 using Seam_vertex_pmap = Mesh::Property_map<vertex_descriptor, bool>;
 using UV_pmap = Mesh::Property_map<halfedge_descriptor, Point_2>;

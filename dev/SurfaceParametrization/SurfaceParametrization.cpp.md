@@ -13,6 +13,7 @@ The purpose of this module is to provide functions for creating 2D maps based on
 ```cpp
 #include "SurfaceParametrization.h"
 
+#include "MeshRefinement.h"
 #include "HarmonicParametrizationHelper.h"
 #include "MeshCutting/GaussianCutLineHelper.h"
 #include "MeshCutting/MeshCutHelper.h"
@@ -20,6 +21,7 @@ The purpose of this module is to provide functions for creating 2D maps based on
 #include "MeshMetric/AngleDistortionHelper.h"
 #include "MeshMetric/FaceDistortionHelper.h"
 #include "MeshMetric/LengthDistortionHelper.h"
+#include "MeshMetric/CurvatureCalculator.h"
 
 SurfaceParametrization::SurfaceParametrization()
 {
@@ -76,9 +78,41 @@ Calculate the UV coordinates of the 3D mesh and also their mapping to the 3D coo
 ```cpp
 std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(_3D::vertex_descriptor start_node)
 {
+    // _3D::Mesh sm_test;
+    // std::ifstream in(CGAL::data_file_path(mesh_3D_file_path));
+    // in >> sm_test;
+
+    // // **Compute Curvature**
+    // CurvatureCalculator curvature_calculator(sm_test);
+    // curvature_calculator.compute_vertex_curvatures();
+
+    // // **Refine Mesh Based on Curvature**
+    // MeshRefinement mesh_refinement(sm_test, curvature_calculator.get_curvature_map());
+    // mesh_refinement.refine_mesh();
+
+    // // **Save the Refined Mesh**
+    // // Construct the new filename by appending "_refined" before the file extension
+    // fs::path original_path(mesh_3D_file_path);
+    // std::string original_filename = original_path.stem().string();
+    // std::string refined_filename = original_filename + "_refined" + original_path.extension().string();
+    // fs::path refined_mesh_path = original_path.parent_path() / refined_filename;
+
+    // // Save the refined mesh to the new file
+    // std::ofstream refined_mesh_file(refined_mesh_path.string());
+    // if (!refined_mesh_file)
+    // {
+    //     std::cerr << "Error: Cannot open file " << refined_mesh_path.string() << " for writing." << std::endl;
+    // }
+    // else
+    // {
+    //     CGAL::IO::write_OFF(refined_mesh_file, sm_test);
+    //     std::cout << "Refined mesh saved to " << refined_mesh_path.string() << std::endl;
+    // }
+
+    // Load the old mesh
     _3D::Mesh sm;
-    std::ifstream in(CGAL::data_file_path(mesh_3D_file_path));
-    in >> sm;
+    std::ifstream in_old_mesh(CGAL::data_file_path(mesh_3D_file_path));
+    in_old_mesh >> sm;
 
     // Canonical Halfedges Representing a Vertex
     _3D::UV_pmap uvmap = sm.add_property_map<_3D::halfedge_descriptor, Point_2>("h:uv").first;
