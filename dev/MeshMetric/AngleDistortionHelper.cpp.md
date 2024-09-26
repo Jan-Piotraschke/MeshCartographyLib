@@ -5,6 +5,12 @@ brief: "Calculate the angle distortion of the mesh"
 details: "The angle is preserved if the first fundamental form is a multiple of the identity, i.e., I(u) = η(u)Id"
 ---
 
+# Introduction
+
+In mesh processing, **angle distortion** measures how much the angles of mesh faces (typically triangles) change between different representations of the mesh, such as from 3D space to a 2D UV mapping. Preserving angles is crucial for creating maps which should get used in navigation.
+
+This document explains the implementation of the `AngleDistortionHelper` class, which computes the average angle distortion between a 3D mesh and its UV mapping.
+
 ```cpp
 #include "AngleDistortionHelper.h"
 
@@ -13,6 +19,53 @@ AngleDistortionHelper::AngleDistortionHelper(_3D::Mesh& mesh_open, UV::Mesh& mes
 {
 }
 ```
+
+&NewLine;
+## Mathematical Background
+
+Understanding the mathematical basis is essential for grasping how angle distortion is calculated.
+
+Given a triangle with vertices $ A $, $ B $, and $ C $, the angle at vertex $ C $ is calculated using:
+
+$$
+\theta_C = \arccos \left( \frac{ (\mathbf{A} - \mathbf{C}) \cdot (\mathbf{B} - \mathbf{C}) }{ \| \mathbf{A} - \mathbf{C} \| \, \| \mathbf{B} - \mathbf{C} \| } \right)
+$$
+
+**Where:**
+
+- $ \mathbf{A}, \mathbf{B}, \mathbf{C} $ are the position vectors of the triangle's vertices.
+- $ \cdot $ denotes the dot product of two vectors.
+- $ \| \cdot \| $ denotes the Euclidean norm (magnitude) of a vector.
+- $ \arccos $ is the inverse cosine function, returning the angle in radians.
+
+
+### Computing Total Angle Distortion
+
+The total angle distortion between the 3D mesh and its UV mapping is calculated by:
+
+$$
+\text{TotalDistortion} = \sum_{f \in F} \sum_{i=1}^{3} \left| \theta_i^{\text{3D}}(f) - \theta_i^{\text{UV}}(f) \right|
+$$
+
+**Where:**
+
+- $ F $ is the set of all faces in the mesh.
+- $ \theta_i^{\text{3D}}(f) $ is the $ i $-th angle of face $ f $ in the original 3D mesh.
+- $ \theta_i^{\text{UV}}(f) $ is the $ i $-th angle of face $ f $ in the UV-mapped mesh.
+- $ | \cdot | $ denotes the absolute value.
+
+### Computing Average Angle Distortion
+
+The average angle distortion is calculated by:
+
+$$
+\text{AverageDistortion} = \frac{\text{TotalDistortion}}{3 \times |F|}
+$$
+
+**Where:**
+
+- $ |F| $ is the total number of faces in the mesh.
+
 
 ## Compute Angle Distortion
 
@@ -70,57 +123,13 @@ double AngleDistortionHelper::computeAngle(const Point_3& A, const Point_3& B, c
     Kernel::Vector_3 CA = A - C;
     Kernel::Vector_3 CB = B - C;
 
-    // Dot product between CA and CB
-    double dotProduct = CA[0] * CB[0] + CA[1] * CB[1] + CA[2] * CB[2];
-
-    // Magnitudes of CA and CB
+    double dotProduct = CA * CB;
     double magnitudeProduct = std::sqrt(CA.squared_length()) * std::sqrt(CB.squared_length());
 
+    double cosineAngle = dotProduct / magnitudeProduct;
+    cosineAngle = std::clamp(cosineAngle, -1.0, 1.0); // Clamp to [-1, 1]
+
     // Return the angle in radians
-    return std::acos(dotProduct / magnitudeProduct);
+    return std::acos(cosineAngle);
 }
 ```
-
-&NewLine;
-## *ScienceLens*: Angle Distortion
-
-Given a triangle with vertices $ A $, $ B $, and $ C $, the angle at vertex $ C $ is calculated using:
-
-$$
-\theta_C = \arccos \left( \frac{ (\mathbf{A} - \mathbf{C}) \cdot (\mathbf{B} - \mathbf{C}) }{ \| \mathbf{A} - \mathbf{C} \| \, \| \mathbf{B} - \mathbf{C} \| } \right)
-$$
-
-**Where:**
-
-- $ \mathbf{A}, \mathbf{B}, \mathbf{C} $ are the position vectors of the triangle's vertices.
-- $ \cdot $ denotes the dot product of two vectors.
-- $ \| \cdot \| $ denotes the Euclidean norm (magnitude) of a vector.
-- $ \arccos $ is the inverse cosine function, returning the angle in radians.
-
-
-### Computing Total Angle Distortion
-
-The total angle distortion between the 3D mesh and its UV mapping is calculated by:
-
-$$
-\text{TotalDistortion} = \sum_{f \in F} \sum_{i=1}^{3} \left| \theta_i^{\text{3D}}(f) - \theta_i^{\text{UV}}(f) \right|
-$$
-
-**Where:**
-
-- $ F $ is the set of all faces in the mesh.
-- $ \theta_i^{\text{3D}}(f) $ is the $ i $-th angle of face $ f $ in the original 3D mesh.
-- $ \theta_i^{\text{UV}}(f) $ is the $ i $-th angle of face $ f $ in the UV-mapped mesh.
-- $ | \cdot | $ denotes the absolute value.
-
-### Computing Average Angle Distortion
-
-The average angle distortion is calculated by:
-
-$$
-\text{AverageDistortion} = \frac{\text{TotalDistortion}}{3 \times |F|}
-$$
-
-**Where:**
-
-- $ |F| $ is the total number of faces in the mesh.
