@@ -1,5 +1,5 @@
 /**
- * @file        main.cpp
+ * @file        MeshCartography.cpp
  * @brief       Main file of the MeshCartographyLib project
  *
  * @author      Jan-Piotraschke
@@ -11,6 +11,7 @@
  * @todo        -
  */
 
+#include "mesh_cartography.h"
 #include <iostream>
 #include <boost/filesystem.hpp>
 
@@ -21,10 +22,9 @@
 
 const boost::filesystem::path PROJECT_PATH = MeshCartographyLib_SOURCE_DIR;
 
-int main()
+void run_mesh_cartography(bool free_boundary)
 {
     std::string mesh_path = PROJECT_PATH.string() + "/meshes/ellipsoid_x4.off";
-    bool free_boundary = false;
 
     SurfaceParametrization surface_parametrization;
     auto result = surface_parametrization.create_uv_surface(mesh_path, 0);
@@ -52,6 +52,15 @@ int main()
     std::vector<double> x_vals, y_vals;
     spectre_border(a, b, curve_strength, x_vals, y_vals);
     drawSpectreBorder("spectre_border.png", x_vals, y_vals);
+}
 
+int main(int argc, char* argv[])
+{
+    bool free_boundary = false;
+    if (argc > 1) {
+        std::string arg = argv[1];
+        free_boundary = (arg == "true" || arg == "1");
+    }
+    run_mesh_cartography(free_boundary);
     return 0;
 }
