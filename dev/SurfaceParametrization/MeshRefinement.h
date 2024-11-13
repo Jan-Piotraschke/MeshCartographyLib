@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MeshDefinition.h"
-#include "MeshMetric/CurvatureCalculator.h"
+#include "Metric/CurvatureCalculator.h"
 #include <CGAL/Polygon_mesh_processing/remesh.h>
 #include <CGAL/Polygon_mesh_processing/transform.h>
 #include <CGAL/property_map.h>

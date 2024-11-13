@@ -18,10 +18,10 @@ The purpose of this module is to provide functions for creating 2D maps based on
 #include "MeshCutting/GaussianCutLineHelper.h"
 #include "MeshCutting/MeshCutHelper.h"
 
-#include "MeshMetric/AngleDistortionHelper.h"
-#include "MeshMetric/FaceDistortionHelper.h"
-#include "MeshMetric/LengthDistortionHelper.h"
-#include "MeshMetric/CurvatureCalculator.h"
+#include "Metric/AngleDistortionHelper.h"
+#include "Metric/FaceDistortionHelper.h"
+#include "Metric/LengthDistortionHelper.h"
+#include "Metric/CurvatureCalculator.h"
 
 SurfaceParametrization::SurfaceParametrization()
 {
