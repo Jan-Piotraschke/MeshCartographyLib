@@ -47,3 +47,6 @@ cmake_install.cmake
 
 vscode.yaml
 .src/*
+img/*
+pdf/*
+.idea

@@ -81,13 +81,30 @@ template void spectre_border<ceres::Jet<double, 1>>(
     ceres::Jet<double, 1> curve_strength,
     std::vector<ceres::Jet<double, 1>>& x_vals,
     std::vector<ceres::Jet<double, 1>>& y_vals);
+
+void spectre_border_wrapper(double a, double b, double curve_strength, std::vector<double>& x_vals, std::vector<double>& y_vals) {
+    spectre_border<double>(a, b, curve_strength, x_vals, y_vals);
+}
 ```
 
 ## Draw Spectre Border and Save as Image
 
 ```cpp
-void drawSpectreBorder(const std::string& filename, const std::vector<double>& x_vals, const std::vector<double>& y_vals)
+std::string drawSpectreBorder(
+    const std::string& filename,
+    const std::vector<double>& x_vals,
+    const std::vector<double>& y_vals)
 {
+    std::string folder = "img";
+    std::filesystem::path folder_path(folder);
+    if (!std::filesystem::exists(folder_path))
+    {
+        std::filesystem::create_directories(folder_path);
+    }
+
+    // Construct the full path
+    std::filesystem::path file_path = folder_path / filename;
+
     // Create a white image
     int image_size = 500; // You can adjust this to the resolution you want
     cv::Mat image = cv::Mat::zeros(image_size, image_size, CV_8UC3);
@@ -97,7 +114,7 @@ void drawSpectreBorder(const std::string& filename, const std::vector<double>& x
     if (x_vals.size() != y_vals.size())
     {
         std::cerr << "Error: x_vals and y_vals must have the same number of points." << std::endl;
-        return;
+        return ""; // Return empty string on error
     }
 
     // Find the minimum and maximum values
@@ -136,14 +153,16 @@ void drawSpectreBorder(const std::string& filename, const std::vector<double>& x
     }
 
     // Save the image
-    bool success = cv::imwrite(filename, image);
+    bool success = cv::imwrite(file_path.string(), image);
     if (!success)
     {
-        std::cerr << "Error saving image to " << filename << std::endl;
+        std::cerr << "Error saving image to " << file_path << std::endl;
+        return ""; // Return empty string on error
     }
     else
     {
-        std::cout << "Spectre border saved to " << filename << std::endl;
+        std::cout << "Spectre border saved to " << file_path << std::endl;
+        return file_path.string(); // Return the path to the saved image
     }
 }
 ```
