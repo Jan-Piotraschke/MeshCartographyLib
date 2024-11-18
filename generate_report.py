@@ -21,6 +21,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 # Uncomment and adjust the path to the font file if available
 # pdfmetrics.registerFont(TTFont('Times-Roman', 'Times.ttf'))
 
+
 class CartographerDocTemplate(BaseDocTemplate):
     def __init__(self, filename, **kwargs):
         # Set custom margins
@@ -95,7 +96,7 @@ class CartographerDocTemplate(BaseDocTemplate):
                 width=image_width,
                 height=image_height,
                 preserveAspectRatio=True,
-                mask='auto'
+                mask="auto",
             )
 
         canvas.restoreState()
@@ -110,25 +111,29 @@ def create_custom_pdf(image_path, pdf_path, data):
         styles = getSampleStyleSheet()
 
         # Define custom styles
-        styles.add(ParagraphStyle(
-            name='EconomistTitle',
-            parent=styles['Title'],
-            fontName='Times-Roman',
-            fontSize=18,
-            leading=22,
-            alignment=TA_JUSTIFY,
-            spaceAfter=6,
-        ))
+        styles.add(
+            ParagraphStyle(
+                name="EconomistTitle",
+                parent=styles["Title"],
+                fontName="Times-Roman",
+                fontSize=18,
+                leading=22,
+                alignment=TA_JUSTIFY,
+                spaceAfter=6,
+            )
+        )
 
-        styles.add(ParagraphStyle(
-            name='EconomistBody',
-            parent=styles['Normal'],
-            fontName='Times-Roman',
-            fontSize=10,
-            leading=13,
-            alignment=TA_JUSTIFY,
-            spaceAfter=6,
-        ))
+        styles.add(
+            ParagraphStyle(
+                name="EconomistBody",
+                parent=styles["Normal"],
+                fontName="Times-Roman",
+                fontSize=10,
+                leading=13,
+                alignment=TA_JUSTIFY,
+                spaceAfter=6,
+            )
+        )
 
         # Calculate the column width
         page_width, _ = doc.pagesize
