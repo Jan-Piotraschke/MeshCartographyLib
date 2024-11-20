@@ -42,7 +42,7 @@ init_vcpkg:
 	@echo "Integrating vcpkg with system..."
 	$(VCPKG_ROOT)/vcpkg integrate install
 	@echo "Installing libraries via vcpkg..."
-	$(VCPKG_ROOT)/vcpkg install boost opencv4 glog pmp-library ceres
+	$(VCPKG_ROOT)/vcpkg install boost-filesystem opencv4 glog pmp-library ceres
 	@echo "vcpkg initialization and library installation complete."
 
 
@@ -56,6 +56,7 @@ build:
 			-DCMAKE_CXX_COMPILER=$(CXX_COMPILER) \
 			-DCMAKE_CXX_STANDARD=20 \
 			-DCMAKE_OSX_ARCHITECTURES=$(ARCHITECTURE) \
+			-DCMAKE_TOOLCHAIN_FILE=$(VCPKG_TOOLCHAIN) \
 			-GNinja
 	ninja -C $(PROJECT_DIR)/build -j $(shell sysctl -n hw.logicalcpu || nproc)
 

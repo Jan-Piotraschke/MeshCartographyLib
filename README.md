@@ -21,3 +21,24 @@ or for testing:
 ```bash
 ./build/MeshCartography_test
 ```
+
+And for all the python enthusiasts:
+
+```bash
+python3.13 mesh_cartographer.py
+``
+
+## Develop
+
+```bash
+find . -type f \( -name "*.cpp" -o -name "*.h" \) ! -name "argparse.hpp" -exec clang-format -i {} \;
+```
+
+### vcpkg manager
+
+Work with vcpkg using this command structure logic:
+
+```bash
+./vcpkg/vcpkg list
+./vcpkg/vcpkg install <package>
+```

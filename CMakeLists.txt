@@ -22,7 +22,7 @@ endif()
 
 # Find required packages
 find_package(pmp CONFIG REQUIRED)
-find_package(Boost COMPONENTS filesystem REQUIRED)
+find_package(boost_filesystem REQUIRED CONFIG)
 find_package(Eigen3 REQUIRED)
 find_package(GTest REQUIRED)
 find_package(glog CONFIG REQUIRED)
@@ -32,10 +32,10 @@ find_package(Ceres CONFIG REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
 
 # Include directories
-include_directories(.src ${OpenCV_INCLUDE_DIRS})
+include_directories(src ${OpenCV_INCLUDE_DIRS})
 
 # Add the source files of your library
-file(GLOB_RECURSE SIMULATION_SOURCES .src/*.cpp)
+file(GLOB_RECURSE SIMULATION_SOURCES src/*.cpp)
 
 # Add your library
 add_library(MeshCartographyLib STATIC ${SIMULATION_SOURCES})
