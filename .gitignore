@@ -39,13 +39,15 @@ CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
 *.mlp
-/glog
 
 # uv meshes
 *_uv*.off
-*_open*.off
 
 *.csv
 
 vscode.yaml
-/target
+.src/*
+img/*
+pdf/*
+.idea
+vcpkg/*
