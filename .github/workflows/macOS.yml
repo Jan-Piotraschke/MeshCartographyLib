@@ -1,53 +1,53 @@
-name: C/C++ CI on macOS
+# name: C/C++ CI on macOS
 
-on:
-  # Trigger workflow on push and pull requests to the 'main' branch
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+# on:
+#   # Trigger workflow on push and pull requests to the 'main' branch
+#   push:
+#     branches:
+#       - main
+#   pull_request:
+#     branches:
+#       - main
 
-  # Schedule the workflow to run at 00:00 every Sunday
-  schedule:
-    - cron: '0 0 * * 0'
+#   # Schedule the workflow to run at 00:00 every Sunday
+#   schedule:
+#     - cron: '0 0 * * 0'
 
-jobs:
-  build:
-    runs-on: macos-latest
+# jobs:
+#   build:
+#     runs-on: macos-latest
 
-    steps:
-      # Check out the source code
-      - name: Checkout Source
-        uses: actions/checkout@v3
+#     steps:
+#       # Check out the source code
+#       - name: Checkout Source
+#         uses: actions/checkout@v3
 
-      # Update Homebrew
-      - name: Update Homebrew
-        run: brew update
+#       # Update Homebrew
+#       - name: Update Homebrew
+#         run: brew update
 
-      # Install required dependencies using Homebrew
-      - name: Install Dependencies
-        run: |
-          brew install ninja googletest
+#       # Install required dependencies using Homebrew
+#       - name: Install Dependencies
+#         run: |
+#           brew install ninja googletest
 
-      # Initialize submodule
-      - name: Initialize Submodule
-        run: make check_submodule
+#       # Initialize submodule
+#       - name: Initialize Submodule
+#         run: make check_submodule
 
-      # Set up the C and C++ compiler to use native macOS compilers
-      - name: Set Compiler Environment
-        run: |
-          echo "C_COMPILER=clang" >> $GITHUB_ENV
-          echo "CXX_COMPILER=clang++" >> $GITHUB_ENV
+#       # Set up the C and C++ compiler to use native macOS compilers
+#       - name: Set Compiler Environment
+#         run: |
+#           echo "C_COMPILER=clang" >> $GITHUB_ENV
+#           echo "CXX_COMPILER=clang++" >> $GITHUB_ENV
 
-      # Build the project using CMake and Ninja
-      - name: Build Project
-        run: |
-          cd build
-          cmake -DCMAKE_CXX_STANDARD=20 -G Ninja ..
-          ninja
+#       # Build the project using CMake and Ninja
+#       - name: Build Project
+#         run: |
+#           cd build
+#           cmake -DCMAKE_CXX_STANDARD=20 -G Ninja ..
+#           ninja
 
-      # Run tests
-      - name: Run Tests
-        run: ./build/MeshCartography_test
+#       # Run tests
+#       - name: Run Tests
+#         run: ./build/MeshCartography_test

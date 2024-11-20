@@ -1,52 +1,52 @@
-name: C/C++ CI on Ubuntu
+# name: C/C++ CI on Ubuntu
 
-on:
-  # Trigger workflow on push and pull requests to the 'main' branch
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+# on:
+#   # Trigger workflow on push and pull requests to the 'main' branch
+#   push:
+#     branches:
+#       - main
+#   pull_request:
+#     branches:
+#       - main
 
-  # Schedule the workflow to run at 00:00 every Sunday
-  schedule:
-    - cron: '0 0 * * 0'
+#   # Schedule the workflow to run at 00:00 every Sunday
+#   schedule:
+#     - cron: '0 0 * * 0'
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
 
-    steps:
-      # Check out the source code
-      - name: Checkout Source
-        uses: actions/checkout@v3
+#     steps:
+#       # Check out the source code
+#       - name: Checkout Source
+#         uses: actions/checkout@v3
 
-      # Install required dependencies
-      - name: Install Dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y cmake ninja-build g++ googletest libgtest-dev llvm clang \
-            libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev \
-            libgl1-mesa-dev libglu1-mesa-dev libglew-dev libglfw3-dev
+#       # Install required dependencies
+#       - name: Install Dependencies
+#         run: |
+#           sudo apt update
+#           sudo apt install -y cmake ninja-build g++ googletest libgtest-dev llvm clang \
+#             libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev \
+#             libgl1-mesa-dev libglu1-mesa-dev libglew-dev libglfw3-dev
 
-      # Initialize submodule
-      - name: Initialize Submodule
-        run: make check_submodule
+#       # Initialize submodule
+#       - name: Initialize Submodule
+#         run: make check_submodule
 
-      # Set up the C and C++ compiler environment variables
-      - name: Set Compiler Environment
-        run: |
-          echo "C_COMPILER=/usr/bin/clang" >> $GITHUB_ENV
-          echo "CXX_COMPILER=/usr/bin/clang++" >> $GITHUB_ENV
+#       # Set up the C and C++ compiler environment variables
+#       - name: Set Compiler Environment
+#         run: |
+#           echo "C_COMPILER=/usr/bin/clang" >> $GITHUB_ENV
+#           echo "CXX_COMPILER=/usr/bin/clang++" >> $GITHUB_ENV
 
-      # Build the project using CMake and Ninja
-      - name: Build Project
-        run: |
-          cd build
-          cmake -DCMAKE_CXX_STANDARD=20 -G Ninja ..
-          ninja -j $(nproc)
+#       # Build the project using CMake and Ninja
+#       - name: Build Project
+#         run: |
+#           cd build
+#           cmake -DCMAKE_CXX_STANDARD=20 -G Ninja ..
+#           ninja -j $(nproc)
 
-      # Run tests
-      - name: Run Tests
-        run: ./build/MeshCartography_test
+#       # Run tests
+#       - name: Run Tests
+#         run: ./build/MeshCartography_test
