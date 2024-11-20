@@ -2,6 +2,10 @@
 
 #include <ceres/ceres.h>
 #include <cmath>
+#include <filesystem>
+#include <iostream>
+#include <opencv2/opencv.hpp>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -10,3 +14,6 @@ std::pair<std::vector<T>, std::vector<T>> calculate_control_points(const std::pa
 
 template <typename T>
 void spectre_border(T a, T b, T curve_strength, std::vector<T>& x_vals, std::vector<T>& y_vals);
+
+std::string drawSpectreBorder(
+    const std::string& filename, const std::vector<double>& x_vals, const std::vector<double>& y_vals);

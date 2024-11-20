@@ -82,3 +82,77 @@ template void spectre_border<ceres::Jet<double, 1>>(
     ceres::Jet<double, 1> curve_strength,
     std::vector<ceres::Jet<double, 1>>& x_vals,
     std::vector<ceres::Jet<double, 1>>& y_vals);
+
+std::string drawSpectreBorder(
+    const std::string& filename, const std::vector<double>& x_vals, const std::vector<double>& y_vals)
+{
+    std::string folder = "img";
+    std::filesystem::path folder_path(folder);
+    if (!std::filesystem::exists(folder_path))
+    {
+        std::filesystem::create_directories(folder_path);
+    }
+
+    // Construct the full path
+    std::filesystem::path file_path = folder_path / filename;
+
+    // Create a white image
+    int image_size = 500; // You can adjust this to the resolution you want
+    cv::Mat image = cv::Mat::zeros(image_size, image_size, CV_8UC3);
+    image.setTo(cv::Scalar(255, 255, 255)); // Set background to white
+
+    // Ensure the x_vals and y_vals are of the same size
+    if (x_vals.size() != y_vals.size())
+    {
+        std::cerr << "Error: x_vals and y_vals must have the same number of points." << std::endl;
+        return ""; // Return empty string on error
+    }
+
+    // Find the minimum and maximum values
+    double min_x = *std::min_element(x_vals.begin(), x_vals.end());
+    double max_x = *std::max_element(x_vals.begin(), x_vals.end());
+    double min_y = *std::min_element(y_vals.begin(), y_vals.end());
+    double max_y = *std::max_element(y_vals.begin(), y_vals.end());
+
+    // Calculate the scaling factor
+    double scale_x = (image_size * 0.8) / (max_x - min_x); // Leave some margin (80% of the image size)
+    double scale_y = (image_size * 0.8) / (max_y - min_y);
+    double scale = std::min(scale_x, scale_y); // Use the smaller scale to fit both dimensions
+
+    // Calculate the offset to center the shape in the image
+    double offset_x = -min_x * scale + (image_size / 2 - ((max_x - min_x) * scale) / 2);
+    double offset_y = -min_y * scale + (image_size / 2 - ((max_y - min_y) * scale) / 2);
+
+    // Loop through the border points and draw lines connecting them
+    for (size_t i = 0; i < x_vals.size() - 1; ++i)
+    {
+        // Apply scaling and translation (offset)
+        cv::Point pt1(offset_x + scale * x_vals[i], offset_y - scale * y_vals[i]); // Convert to pixel coordinates
+        cv::Point pt2(offset_x + scale * x_vals[i + 1], offset_y - scale * y_vals[i + 1]); // Convert next point to
+                                                                                           // pixel coordinates
+
+        // Draw the line
+        cv::line(image, pt1, pt2, cv::Scalar(0, 0, 0), 2); // Draw a black line
+    }
+
+    // Optionally, connect the last point to the first to close the shape
+    if (!x_vals.empty())
+    {
+        cv::Point pt1(offset_x + scale * x_vals.back(), offset_y - scale * y_vals.back());
+        cv::Point pt2(offset_x + scale * x_vals.front(), offset_y - scale * y_vals.front());
+        cv::line(image, pt1, pt2, cv::Scalar(0, 0, 0), 2); // Close the shape with a black line
+    }
+
+    // Save the image
+    bool success = cv::imwrite(file_path.string(), image);
+    if (!success)
+    {
+        std::cerr << "Error saving image to " << file_path << std::endl;
+        return ""; // Return empty string on error
+    }
+    else
+    {
+        std::cout << "Spectre border saved to " << file_path << std::endl;
+        return file_path.string(); // Return the path to the saved image
+    }
+}
