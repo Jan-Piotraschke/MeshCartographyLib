@@ -26,7 +26,7 @@ And for all the python enthusiasts:
 
 ```bash
 python3.13 mesh_cartographer.py
-``
+```
 
 ## Develop
 
