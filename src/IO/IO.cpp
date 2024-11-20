@@ -3,7 +3,7 @@
  * @brief       Loading the mesh model vertices and faces; saving and loading data to/from csv files
  *
  * @author      Jan-Piotraschke
- * @date        2023-Jul-18
+ * @date        2024-Nov-20
  * @license     Apache License 2.0
  *
  * @bug         -

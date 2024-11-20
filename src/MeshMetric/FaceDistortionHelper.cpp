@@ -5,7 +5,7 @@
  *              parameterization is area-preserving if det I = 1, or equivalently σ1σ2 = 1, for all points u ∈ Ω
  *
  * @author      Jan-Piotraschke
- * @date        2023-Nov-10
+ * @date        2024-Nov-20
  * @license     Apache License 2.0
  *
  * @bug         -
