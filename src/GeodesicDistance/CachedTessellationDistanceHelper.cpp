@@ -3,7 +3,7 @@
  * @brief       Zuständing für das caching der berechneten Daten des TessellationDistanceHelper
  *
  * @author      Jan-Piotraschke
- * @date        2023-Oct-17
+ * @date        2024-Nov-20
  * @license     Apache License 2.0
  *
  * @bug         -

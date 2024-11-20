@@ -3,7 +3,7 @@
  * @brief       Create the border of the spectre monotile
  *
  * @author      Jan-Piotraschke
- * @date        2023-Oct-26
+ * @date        2024-Nov-20
  * @license     Apache License 2.0
  *
  * @bug         -

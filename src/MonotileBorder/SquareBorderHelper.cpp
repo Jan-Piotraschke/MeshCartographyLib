@@ -3,7 +3,7 @@
  * @brief       Create a square border
  *
  * @author      Jan-Piotraschke
- * @date        2023-Sep-27
+ * @date        2024-Nov-20
  * @license     Apache License 2.0
  *
  * @bug         -
