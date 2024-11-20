@@ -2,7 +2,8 @@
 
 #include <Eigen/Dense>
 
-class MeshCuttingHelperInterface {
-public:
+class MeshCuttingHelperInterface
+{
+  public:
     virtual void cut_mesh_open() = 0;
 };

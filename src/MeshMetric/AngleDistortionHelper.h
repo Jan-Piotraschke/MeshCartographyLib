@@ -2,16 +2,14 @@
 
 #include "MeshDefinition.h"
 
-class AngleDistortionHelper{
-public:
-    AngleDistortionHelper(
-        pmp::SurfaceMesh& mesh_open,
-        pmp::SurfaceMesh& mesh_UV
-    );
+class AngleDistortionHelper
+{
+  public:
+    AngleDistortionHelper(pmp::SurfaceMesh& mesh_open, pmp::SurfaceMesh& mesh_UV);
 
     double computeAngleDistortion();
 
-private:
+  private:
     pmp::SurfaceMesh& mesh_open;
     pmp::SurfaceMesh& mesh_UV;
 

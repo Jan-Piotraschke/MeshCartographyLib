@@ -12,15 +12,16 @@
 
 #include "SurfaceParametrization.h"
 
-#include "MeshCutting/MeshCutHelper.h"
 #include "HarmonicParametrizationHelper.h"
+#include "MeshCutting/MeshCutHelper.h"
 
 #include "MeshMetric/AngleDistortionHelper.h"
 #include "MeshMetric/FaceDistortionHelper.h"
 #include "MeshMetric/LengthDistortionHelper.h"
 
-SurfaceParametrization::SurfaceParametrization(){}
-
+SurfaceParametrization::SurfaceParametrization()
+{
+}
 
 // ========================================
 // Public Functions
@@ -30,58 +31,60 @@ SurfaceParametrization::SurfaceParametrization(){}
  * @brief Extract the mesh name (without extension) from its file path
  *
  * @info: Unittested
-*/
-std::string SurfaceParametrization::get_mesh_name(
-   const std::string mesh_3D_path
-){
+ */
+std::string SurfaceParametrization::get_mesh_name(const std::string mesh_3D_path)
+{
     fs::path path(mesh_3D_path);
     return path.stem().string();
 }
 
-
 /**
  * @brief Check if a given point is inside our polygon border
-*/
-bool SurfaceParametrization::check_point_in_polygon(const Point_2_eigen& point) {
+ */
+bool SurfaceParametrization::check_point_in_polygon(const Point_2_eigen& point)
+{
     bool inside = false;
     int n = polygon.size();
-    for (int i = 0; i < n; ++i) {
+    for (int i = 0; i < n; ++i)
+    {
         const Point_2_eigen& p1 = polygon[i];
         const Point_2_eigen& p2 = polygon[(i + 1) % n];
 
         // Check if point is on a vertex
-        if (point == p1 || point == p2) {
+        if (point == p1 || point == p2)
+        {
             return true;
         }
 
         // Check if point is on a horizontal boundary
-        if ((p1[1] == point[1] && p2[1] == point[1]) &&
-            (point[0] > std::min(p1[0], p2[0]) && point[0] < std::max(p1[0], p2[0]))) {
+        if ((p1[1] == point[1] && p2[1] == point[1])
+            && (point[0] > std::min(p1[0], p2[0]) && point[0] < std::max(p1[0], p2[0])))
+        {
             return true;
         }
 
         // Check if point is on a vertical boundary
-        if ((p1[0] == point[0] && p2[0] == point[0]) &&
-            (point[1] > std::min(p1[1], p2[1]) && point[1] < std::max(p1[1], p2[1]))) {
+        if ((p1[0] == point[0] && p2[0] == point[0])
+            && (point[1] > std::min(p1[1], p2[1]) && point[1] < std::max(p1[1], p2[1])))
+        {
             return true;
         }
 
-        if ((p1[1] > point[1]) != (p2[1] > point[1]) &&
-            (point[0] < (p2[0] - p1[0]) * (point[1] - p1[1]) / (p2[1] - p1[1]) + p1[0])) {
+        if ((p1[1] > point[1]) != (p2[1] > point[1])
+            && (point[0] < (p2[0] - p1[0]) * (point[1] - p1[1]) / (p2[1] - p1[1]) + p1[0]))
+        {
             inside = !inside;
         }
     }
     return inside;
 }
 
-
 /**
  * @brief Create the UV surface
-*/
-std::tuple<std::vector<int64_t>, Eigen::MatrixXd, Eigen::MatrixXd, std::string> SurfaceParametrization::create_uv_surface(
-    std::string mesh_path,
-    int32_t start_node_int
-){
+ */
+std::tuple<std::vector<int64_t>, Eigen::MatrixXd, Eigen::MatrixXd, std::string>
+SurfaceParametrization::create_uv_surface(std::string mesh_path, int32_t start_node_int)
+{
     pmp::Vertex start_node(start_node_int);
     mesh_3D_file_path = mesh_path;
     auto h_v_mapping_vector = calculate_uv_surface(start_node);
@@ -94,18 +97,15 @@ std::tuple<std::vector<int64_t>, Eigen::MatrixXd, Eigen::MatrixXd, std::string> 
     return {h_v_mapping_vector, vertice_UV, vertice_3D, mesh_uv_file_path};
 }
 
-
-
 // ========================================
 // Private Functions
 // ========================================
 
 /**
  * @brief Calculate the UV coordinates of the 3D mesh and also return their mapping to the 3D coordinates
-*/
-std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
-    pmp::Vertex start_vertex
-){
+ */
+std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(pmp::Vertex start_vertex)
+{
     pmp::SurfaceMesh mesh;
     pmp::read_off(mesh, mesh_3D_file_path);
 
@@ -123,7 +123,7 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     ParametrizationHelperInterface& parametrization_helper = helper_p;
     parametrization_helper.parameterize_UV_mesh(false);
 
-   // Save the uv mesh
+    // Save the uv mesh
     fs::path mesh_uv_path = MESH_FOLDER / (get_mesh_name(mesh_3D_file_path) + "_uv.off");
     save_uv_as_mesh(mesh, mesh_uv_path);
 
@@ -151,9 +151,9 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
     auto UV_coord = mesh.get_vertex_property<pmp::TexCoord>("v:tex");
     auto points = mesh.get_vertex_property<pmp::Point>("v:point");
 
-
     int i = 0;
-    for (pmp::Vertex vd : mesh.vertices()) {
+    for (pmp::Vertex vd : mesh.vertices())
+    {
         int64_t target_id = vd.idx();
         h_v_mapping_vector.push_back(target_id);
 
@@ -173,7 +173,6 @@ std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(
 
     return h_v_mapping_vector;
 }
-
 
 void SurfaceParametrization::save_uv_as_mesh(const pmp::SurfaceMesh& mesh, const fs::path& filename)
 {
@@ -209,10 +208,8 @@ void SurfaceParametrization::save_uv_as_mesh(const pmp::SurfaceMesh& mesh, const
     pmp::write(uvMesh, filename.string());
 }
 
-
-void SurfaceParametrization::extract_polygon_border_edges(
-    const std::string& mesh_uv_path
-){
+void SurfaceParametrization::extract_polygon_border_edges(const std::string& mesh_uv_path)
+{
     pmp::SurfaceMesh mesh;
     pmp::read_off(mesh, mesh_uv_path);
 
@@ -225,8 +222,10 @@ void SurfaceParametrization::extract_polygon_border_edges(
 
     // find 1st boundary vertex here, as all UV meshes have this as the origin of their parameterization
     pmp::Vertex vh;
-    for (auto v : mesh.vertices()) {
-        if (points[v] == pmp::Point(0, 0, 0)) {
+    for (auto v : mesh.vertices())
+    {
+        if (points[v] == pmp::Point(0, 0, 0))
+        {
             vh = v;
             break;
         }
@@ -234,7 +233,8 @@ void SurfaceParametrization::extract_polygon_border_edges(
 
     // collect boundary edges
     pmp::Halfedge hh = mesh.halfedge(vh);
-    do {
+    do
+    {
         border_edges.push_back(hh);
         hh = mesh.next_halfedge(hh);
     } while (hh != mesh.halfedge(vh));
@@ -247,7 +247,8 @@ void SurfaceParametrization::extract_polygon_border_edges(
     border_v_map[current_border].push_back(first_v);
     border_map[current_border].push_back(first_point);
 
-    for (const auto& h : border_edges) {
+    for (const auto& h : border_edges)
+    {
         auto v = mesh.to_vertex(h);
         polygon_v.push_back(v);
 
@@ -259,8 +260,10 @@ void SurfaceParametrization::extract_polygon_border_edges(
         border_map[current_border].push_back(point);
 
         // Check if we crossed a corner and need to start a new border
-        for (size_t i = 0; i < corners.size(); ++i) {
-            if (point.isApprox(corners[i], 1e-4) && v != first_v) {
+        for (size_t i = 0; i < corners.size(); ++i)
+        {
+            if (point.isApprox(corners[i], 1e-4) && v != first_v)
+            {
                 ++current_border;
                 border_v_map[current_border].push_back(v);
                 border_map[current_border].push_back(point);
@@ -271,7 +274,8 @@ void SurfaceParametrization::extract_polygon_border_edges(
 
     // create the twin border map
     int corner_count = corners.size();
-    for (int i = 0; i < corner_count - 1; ++i) {
+    for (int i = 0; i < corner_count - 1; ++i)
+    {
         twin_border_map[i] = current_border - i;
         twin_border_map[current_border - i] = i;
     }

@@ -3,7 +3,8 @@
  * @brief       Calculate the length distortion of the mesh
  * @details     A parameterization is length-preserving if it is both angle- and area-preserving.
  *              In this case the first fundamental form is the identity, i.e., σ1 = σ2 = 1.
- *              Only developable surfaces, where these surfaces have zero Gaussian curvature everywhere, admit a perfect length-preserving parameterization.
+ *              Only developable surfaces, where these surfaces have zero Gaussian curvature everywhere, admit a perfect
+ * length-preserving parameterization.
  *
  * @author      Jan-Piotraschke
  * @date        2023-Nov-10
@@ -15,13 +16,10 @@
 
 #include "LengthDistortionHelper.h"
 
-LengthDistortionHelper::LengthDistortionHelper(
-    pmp::SurfaceMesh& mesh_open,
-    pmp::SurfaceMesh& mesh_UV
-)
-    : mesh_open(mesh_open),
-      mesh_UV(mesh_UV)
-{}
+LengthDistortionHelper::LengthDistortionHelper(pmp::SurfaceMesh& mesh_open, pmp::SurfaceMesh& mesh_UV)
+    : mesh_open(mesh_open), mesh_UV(mesh_UV)
+{
+}
 
 // ========================================
 // Public Functions
@@ -39,9 +37,8 @@ double LengthDistortionHelper::computeLengthDistortion()
         totalDistortion += std::fabs(lengthOpen - lengthUV);
     }
 
-    return totalDistortion / mesh_open.n_edges();  // Average length distortion
+    return totalDistortion / mesh_open.n_edges(); // Average length distortion
 }
-
 
 // ========================================
 // Private Functions
@@ -55,5 +52,5 @@ double LengthDistortionHelper::edge_length(const pmp::SurfaceMesh& mesh, const p
     pmp::Point p1 = mesh.position(v1);
     pmp::Point p2 = mesh.position(v2);
 
-    return norm(p1 - p2);  // norm computes the magnitude or length
+    return norm(p1 - p2); // norm computes the magnitude or length
 }

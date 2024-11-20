@@ -1,33 +1,38 @@
 #pragma once
 
-#include <iostream>
-#include <fstream>
 #include <Eigen/Dense>
+#include <fstream>
+#include <iostream>
 
+#include "DijkstraDistanceHelper.h"
 #include "GeodesicDistanceHelperInterface.h"
 #include "HeatDistanceHelper.h"
-#include "DijkstraDistanceHelper.h"
 
-class CachedGeodesicDistanceHelper : public GeodesicDistanceHelperInterface {
-public:
+class CachedGeodesicDistanceHelper : public GeodesicDistanceHelperInterface
+{
+  public:
     CachedGeodesicDistanceHelper(fs::path mesh_path);
 
     Eigen::MatrixXd get_mesh_distance_matrix() override;
 
-private:
+  private:
     fs::path mesh_path;
     DijkstraDistanceHelper geodesic_distance_helper;
 
-    template<typename MatrixType>
-    void save_csv(const MatrixType& distance_matrix_v, fs::path cache_file) {
+    template <typename MatrixType>
+    void save_csv(const MatrixType& distance_matrix_v, fs::path cache_file)
+    {
         std::cout << "Saving distance matrix to file..." << std::endl;
         std::ofstream file(cache_file.string());
 
         // Iterate over the lower triangular part and write to the file.
-        for (int i = 0; i < distance_matrix_v.rows(); ++i) {
-            for (int j = 0; j <= i; ++j) {
+        for (int i = 0; i < distance_matrix_v.rows(); ++i)
+        {
+            for (int j = 0; j <= i; ++j)
+            {
                 file << distance_matrix_v(i, j);
-                if (j != i) {
+                if (j != i)
+                {
                     file << ", ";
                 }
             }
@@ -38,18 +43,21 @@ private:
         std::cout << "saved" << std::endl;
     }
 
-    template<typename MatrixType>
-    MatrixType load_csv(fs::path cache_file) {
+    template <typename MatrixType>
+    MatrixType load_csv(fs::path cache_file)
+    {
         std::ifstream indata;
         indata.open(cache_file.string());
         std::string line;
         std::vector<std::vector<double>> values;
 
-        while (std::getline(indata, line)) {
+        while (std::getline(indata, line))
+        {
             std::stringstream lineStream(line);
             std::string cell;
             std::vector<double> rowValues;
-            while (std::getline(lineStream, cell, ',')) {
+            while (std::getline(lineStream, cell, ','))
+            {
                 rowValues.push_back(std::stod(cell));
             }
             values.push_back(rowValues);
@@ -61,8 +69,10 @@ private:
         symmetric_matrix.setZero();
 
         // Fill the symmetric matrix using the triangular data
-        for (int i = 0; i < matrix_size; ++i) {
-            for (int j = 0; j <= i; ++j) {
+        for (int i = 0; i < matrix_size; ++i)
+        {
+            for (int j = 0; j <= i; ++j)
+            {
                 symmetric_matrix(i, j) = values[i][j];
                 symmetric_matrix(j, i) = values[i][j];
             }
@@ -70,5 +80,4 @@ private:
 
         return symmetric_matrix;
     }
-
 };

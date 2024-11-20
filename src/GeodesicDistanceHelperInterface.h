@@ -2,7 +2,8 @@
 
 #include <Eigen/Dense>
 
-class GeodesicDistanceHelperInterface {
-public:
+class GeodesicDistanceHelperInterface
+{
+  public:
     virtual Eigen::MatrixXd get_mesh_distance_matrix() = 0;
 };

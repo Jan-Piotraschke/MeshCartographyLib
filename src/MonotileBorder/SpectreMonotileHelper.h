@@ -1,9 +1,9 @@
 #pragma once
 
-#include <cmath>
-#include <vector>
-#include <utility>
 #include <ceres/ceres.h>
+#include <cmath>
+#include <utility>
+#include <vector>
 
 template <typename T>
 std::pair<std::vector<T>, std::vector<T>> calculate_control_points(const std::pair<T, T>& point, T curve_strength);

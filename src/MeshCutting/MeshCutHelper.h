@@ -1,22 +1,20 @@
 #pragma once
 
-#include <vector>
-#include <string>
 #include <Eigen/Dense>
+#include <string>
+#include <vector>
 
-#include "SurfaceParametrizationHelperInterface.h"
 #include "MeshCuttingHelperInterface.h"
+#include "SurfaceParametrizationHelperInterface.h"
 
-class MeshCutHelper : public MeshCuttingHelperInterface {
-public:
-    MeshCutHelper(
-        pmp::SurfaceMesh& mesh,
-        pmp::Vertex& start_vertex
-    );
+class MeshCutHelper : public MeshCuttingHelperInterface
+{
+  public:
+    MeshCutHelper(pmp::SurfaceMesh& mesh, pmp::Vertex& start_vertex);
 
     void cut_mesh_open() override;
 
-private:
+  private:
     pmp::SurfaceMesh& mesh;
     pmp::Vertex& start_vertex;
     std::vector<pmp::Vertex> cut_line_vertices;

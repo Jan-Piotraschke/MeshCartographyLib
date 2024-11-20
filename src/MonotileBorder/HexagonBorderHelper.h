@@ -2,16 +2,15 @@
 
 #include "MeshDefinition.h"
 
-class HexagonBorderHelper {
-public:
-    HexagonBorderHelper(
-        pmp::SurfaceMesh& mesh,
-        pmp::Vertex& start_vertex
-    );
+class HexagonBorderHelper
+{
+  public:
+    HexagonBorderHelper(pmp::SurfaceMesh& mesh, pmp::Vertex& start_vertex);
 
     void setup_hexagon_boundary_constraints();
 
-    struct Corner {
+    struct Corner
+    {
         Eigen::Vector2d position;
         double sideLength;
 
@@ -19,11 +18,9 @@ public:
         Corner(const Eigen::Vector2d& pos, double length) : position(pos), sideLength(length) {}
     };
 
-    std::vector<Corner> getCorners() {
-        return corners;
-    }
+    std::vector<Corner> getCorners() { return corners; }
 
-private:
+  private:
     pmp::SurfaceMesh& mesh;
     pmp::Vertex& start_vertex;
 

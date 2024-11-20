@@ -2,16 +2,14 @@
 
 #include "MeshDefinition.h"
 
-class FaceDistortionHelper{
-public:
-    FaceDistortionHelper(
-        pmp::SurfaceMesh& mesh_open,
-        pmp::SurfaceMesh& mesh_UV
-    );
+class FaceDistortionHelper
+{
+  public:
+    FaceDistortionHelper(pmp::SurfaceMesh& mesh_open, pmp::SurfaceMesh& mesh_UV);
 
     double computeFaceDistortion();
 
-private:
+  private:
     pmp::SurfaceMesh& mesh_open;
     pmp::SurfaceMesh& mesh_UV;
 

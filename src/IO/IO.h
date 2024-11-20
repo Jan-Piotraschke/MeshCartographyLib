@@ -1,16 +1,10 @@
 #pragma once
 
-#include <string>
 #include <Eigen/Dense>
-#include <pmp/surface_mesh.h>
 #include <pmp/io/read_off.h>
+#include <pmp/surface_mesh.h>
+#include <string>
 
-void loadMeshVertices(
-    const std::string& filepath,
-    Eigen::MatrixXd& vertices
-);
+void loadMeshVertices(const std::string& filepath, Eigen::MatrixXd& vertices);
 
-void loadMeshFaces(
-    const std::string& filepath,
-    Eigen::MatrixXi& faces
-);
+void loadMeshFaces(const std::string& filepath, Eigen::MatrixXi& faces);

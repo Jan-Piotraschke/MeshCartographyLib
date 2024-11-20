@@ -10,14 +10,15 @@
  * @todo        -
  */
 
-#include <math.h>
 #include "TessellationHelper.h"
+#include <math.h>
 
 // ========================================
 // Public Functions
 // ========================================
 
-std::vector<std::vector<int64_t>> Tessellation::create_kachelmuster() {
+std::vector<std::vector<int64_t>> Tessellation::create_kachelmuster()
+{
     std::string mesh_uv_path = parent.meshmeta.mesh_path;
     auto mesh_uv_name = parent.get_mesh_name(mesh_uv_path);
 
@@ -27,7 +28,8 @@ std::vector<std::vector<int64_t>> Tessellation::create_kachelmuster() {
     equivalent_vertices.resize(mesh_original.n_vertices());
 
     size_t size = parent.border_map.size();
-    for (size_t i = 0; i < size; ++i) {
+    for (size_t i = 0; i < size; ++i)
+    {
         docking_side = i;
         size_t nextIndex = (i + 1) % size;
         double rotation_angle = calculateAngle(parent.border_map[nextIndex], parent.border_map[i]);
@@ -46,11 +48,8 @@ std::vector<std::vector<int64_t>> Tessellation::create_kachelmuster() {
     return equivalent_vertices;
 }
 
-
-void Tessellation::rotate_and_shift_mesh(
-    pmp::SurfaceMesh& mesh,
-    double angle_degrees
-) {
+void Tessellation::rotate_and_shift_mesh(pmp::SurfaceMesh& mesh, double angle_degrees)
+{
     double angle_radians = M_PI * angle_degrees / 180.0; // Convert angle to radians
     double threshold = 1e-10;
 
@@ -63,32 +62,36 @@ void Tessellation::rotate_and_shift_mesh(
 
     // collect all points of the twinborder as a Eigen::matrixXd object
     Eigen::MatrixXd main_border_matrix(main_border.size(), 2);
-    for (size_t i = 0; i < main_border.size(); ++i) {
+    for (size_t i = 0; i < main_border.size(); ++i)
+    {
         main_border_matrix(i, 0) = main_border[i](0);
         main_border_matrix(i, 1) = main_border[i](1);
     }
 
     // pre-rotation: rotate only the border_vertices of the main and compare them to its twin border to get the shift
     std::vector<Eigen::Vector2d> vec;
-    for (auto pt_2d : connection_side) {
+    for (auto pt_2d : connection_side)
+    {
         Point_2_eigen transformed_2d = customRotate(pt_2d, angle_radians);
 
         // Remove the memory errors by setting the coordinates to 0
-        if (std::abs(transformed_2d.x()) < threshold) {
+        if (std::abs(transformed_2d.x()) < threshold)
+        {
             transformed_2d = Point_2_eigen(0, transformed_2d.y());
         }
-        if (std::abs(transformed_2d.y()) < threshold) {
+        if (std::abs(transformed_2d.y()) < threshold)
+        {
             transformed_2d = Point_2_eigen(transformed_2d.x(), 0);
         }
         vec.push_back(transformed_2d);
-
     }
 
     order_data(vec);
 
     // transform vec into a Eigen::MatrixXd connection_matrix(connection_side.size(), 2)
     Eigen::MatrixXd connection_matrix(connection_side.size(), 2);
-    for (size_t i = 0; i < vec.size(); ++i) {
+    for (size_t i = 0; i < vec.size(); ++i)
+    {
         connection_matrix(i, 0) = vec[i](0);
         connection_matrix(i, 1) = vec[i](1);
     }
@@ -98,31 +101,35 @@ void Tessellation::rotate_and_shift_mesh(
     shift_y_coordinates = main_border_matrix(0, 1) - connection_matrix(0, 1);
 
     // Rotate and shift the mesh
-    for (auto v : mesh.vertices()){
+    for (auto v : mesh.vertices())
+    {
         Point_3_eigen pt_3d = mesh.position(v);
         Point_2_eigen pt_2d(pt_3d.x(), pt_3d.y());
         Point_2_eigen transformed_2d = customRotate(pt_2d, angle_radians);
 
         // Remove the memory errors by setting the coordinates to 0
-        if (std::abs(transformed_2d.x()) < threshold) {
+        if (std::abs(transformed_2d.x()) < threshold)
+        {
             transformed_2d = Point_2_eigen(0, transformed_2d.y());
         }
-        if (std::abs(transformed_2d.y()) < threshold) {
+        if (std::abs(transformed_2d.y()) < threshold)
+        {
             transformed_2d = Point_2_eigen(transformed_2d.x(), 0);
         }
 
-        Point_3_eigen transformed_3d(transformed_2d.x() + shift_x_coordinates, transformed_2d.y() + shift_y_coordinates, 0.0);
+        Point_3_eigen transformed_3d(
+            transformed_2d.x() + shift_x_coordinates, transformed_2d.y() + shift_y_coordinates, 0.0);
         mesh.position(v) = transformed_3d;
     }
 }
-
-
 
 // ========================================
 // Tessellation - Private Functions
 // ========================================
 
-double Tessellation::calculateAngle(const std::vector<Eigen::Vector2d>& border1, const std::vector<Eigen::Vector2d>& border2) {
+double Tessellation::calculateAngle(
+    const std::vector<Eigen::Vector2d>& border1, const std::vector<Eigen::Vector2d>& border2)
+{
     Eigen::Vector2d dir1 = fitLine(border1);
     Eigen::Vector2d dir2 = fitLine(border2);
 
@@ -136,24 +143,27 @@ double Tessellation::calculateAngle(const std::vector<Eigen::Vector2d>& border1,
     double angleInDegrees = angle * (180.0 / M_PI);
 
     // Normalize to [0, 360)
-    if (angleInDegrees < 0) {
+    if (angleInDegrees < 0)
+    {
         angleInDegrees += 360;
     }
 
     return angleInDegrees;
 }
 
-
-Eigen::Vector2d Tessellation::fitLine(const std::vector<Eigen::Vector2d>& points) {
+Eigen::Vector2d Tessellation::fitLine(const std::vector<Eigen::Vector2d>& points)
+{
     // Calculate the covariance matrix of the points
     Eigen::Vector2d mean = Eigen::Vector2d::Zero();
-    for (const auto& p : points) {
+    for (const auto& p : points)
+    {
         mean += p;
     }
     mean /= points.size();
 
     Eigen::Matrix2d cov = Eigen::Matrix2d::Zero();
-    for (const auto& p : points) {
+    for (const auto& p : points)
+    {
         Eigen::Vector2d centered = p - mean;
         cov += centered * centered.transpose();
     }
@@ -166,11 +176,12 @@ Eigen::Vector2d Tessellation::fitLine(const std::vector<Eigen::Vector2d>& points
     return dir;
 }
 
-
-void Tessellation::order_data(std::vector<Eigen::Vector2d>& vec) {
+void Tessellation::order_data(std::vector<Eigen::Vector2d>& vec)
+{
     Eigen::VectorXd X(vec.size());
     Eigen::VectorXd Y(vec.size());
-    for (size_t i = 0; i < vec.size(); ++i) {
+    for (size_t i = 0; i < vec.size(); ++i)
+    {
         X[i] = vec[i](0);
         Y[i] = vec[i](1);
     }
@@ -185,11 +196,17 @@ void Tessellation::order_data(std::vector<Eigen::Vector2d>& vec) {
     bool verticalLine = (X.maxCoeff() - X.minCoeff()) < std::numeric_limits<double>::epsilon();
 
     // Sort the vector based on the parameter t
-    std::sort(vec.begin(), vec.end(),
-        [m, b, verticalLine](const Eigen::Vector2d& a, const Eigen::Vector2d& c) {
-            if (verticalLine) {
+    std::sort(
+        vec.begin(),
+        vec.end(),
+        [m, b, verticalLine](const Eigen::Vector2d& a, const Eigen::Vector2d& c)
+        {
+            if (verticalLine)
+            {
                 return a[1] < c[1];
-            } else {
+            }
+            else
+            {
                 double ta = (a[0] + m * (a[1] - b)) / std::sqrt(1 + m * m);
                 double tc = (c[0] + m * (c[1] - b)) / std::sqrt(1 + m * m);
                 return ta < tc;
@@ -197,31 +214,29 @@ void Tessellation::order_data(std::vector<Eigen::Vector2d>& vec) {
         });
 }
 
-
-Point_3_eigen Tessellation::get_point_3d(
-    pmp::SurfaceMesh& mesh,
-    pmp::Vertex& v,
-    std::vector<pmp::Vertex>& border_list
-) {
+Point_3_eigen Tessellation::get_point_3d(pmp::SurfaceMesh& mesh, pmp::Vertex& v, std::vector<pmp::Vertex>& border_list)
+{
     Point_3_eigen pt_3d;
-    if (std::find(border_list.begin(), border_list.end(), v) != border_list.end()) {
+    if (std::find(border_list.begin(), border_list.end(), v) != border_list.end())
+    {
         auto it = std::find(border_list.begin(), border_list.end(), v);
         int index = std::distance(border_list.begin(), it);
         pt_3d = mesh.position(border_list[index]);
-    } else {
+    }
+    else
+    {
         pt_3d = mesh.position(v);
     }
 
     return pt_3d;
 }
 
-
-pmp::Vertex Tessellation::find_vertex_by_coordinates(
-    const pmp::SurfaceMesh& m,
-    const Point_3_eigen& pt
-) {
-    for (auto v : m.vertices()) {
-        if (m.position(v) == pt) {
+pmp::Vertex Tessellation::find_vertex_by_coordinates(const pmp::SurfaceMesh& m, const Point_3_eigen& pt)
+{
+    for (auto v : m.vertices())
+    {
+        if (m.position(v) == pt)
+        {
             return v;
         }
     }
@@ -230,15 +245,13 @@ pmp::Vertex Tessellation::find_vertex_by_coordinates(
     return empty_vertex;
 }
 
-
 // Das kann man gut zum Befüllen der Equivalenzliste nutzen
-void Tessellation::add_mesh(
-    pmp::SurfaceMesh& mesh,
-    pmp::SurfaceMesh& mesh_original
-) {
+void Tessellation::add_mesh(pmp::SurfaceMesh& mesh, pmp::SurfaceMesh& mesh_original)
+{
     // A map to relate old vertex descriptors in mesh to new ones in mesh_original
     std::map<pmp::Vertex, pmp::Vertex> reindexed_vertices;
-    for (auto v : mesh.vertices()) {
+    for (auto v : mesh.vertices())
+    {
 
         std::vector<int64_t>& kachelmuster_twin_v = equivalent_vertices[v.idx()];
 
@@ -251,10 +264,13 @@ void Tessellation::add_mesh(
         // Check if the vertex already exists in the mesh
         pmp::Vertex existing_v = find_vertex_by_coordinates(mesh_original, pt_3d);
 
-        if (existing_v == pmp::Vertex(-1)) {
+        if (existing_v == pmp::Vertex(-1))
+        {
             shifted_v = mesh_original.add_vertex(pt_3d);
             kachelmuster_twin_v.push_back(shifted_v.idx());
-        } else {
+        }
+        else
+        {
             shifted_v = existing_v;
         }
 
@@ -262,7 +278,8 @@ void Tessellation::add_mesh(
     }
 
     // Add faces from the rotated mesh to the original mesh
-    for (auto f : mesh.faces()) {
+    for (auto f : mesh.faces())
+    {
         std::vector<pmp::Vertex> face_vertices;
 
         std::vector<pmp::Vertex> vertices_around_face;
@@ -279,7 +296,8 @@ void Tessellation::add_mesh(
         vertices_around_face.push_back(v1);
         vertices_around_face.push_back(v2);
 
-        for (auto v : vertices_around_face) {
+        for (auto v : vertices_around_face)
+        {
             face_vertices.push_back(reindexed_vertices[v]);
         }
 
@@ -287,8 +305,8 @@ void Tessellation::add_mesh(
     }
 }
 
-
-Point_2_eigen Tessellation::customRotate(const Point_2_eigen& pt, double angle_radians) {
+Point_2_eigen Tessellation::customRotate(const Point_2_eigen& pt, double angle_radians)
+{
     double cos_theta = std::cos(angle_radians);
     double sin_theta = std::sin(angle_radians);
 

@@ -2,16 +2,14 @@
 
 #include "MeshDefinition.h"
 
-class GaussianCutLineHelper {
-public:
-    GaussianCutLineHelper(
-        pmp::SurfaceMesh& mesh,
-        pmp::Vertex& start_vertex
-    );
+class GaussianCutLineHelper
+{
+  public:
+    GaussianCutLineHelper(pmp::SurfaceMesh& mesh, pmp::Vertex& start_vertex);
 
     std::vector<pmp::Edge> get_gaussian_cutline();
 
-private:
+  private:
     pmp::SurfaceMesh& mesh;
     pmp::Vertex& start_vertex;
 

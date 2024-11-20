@@ -14,13 +14,10 @@
 
 #include "FaceDistortionHelper.h"
 
-FaceDistortionHelper::FaceDistortionHelper(
-    pmp::SurfaceMesh& mesh_open,
-    pmp::SurfaceMesh& mesh_UV
-)
-    : mesh_open(mesh_open),
-      mesh_UV(mesh_UV)
-{}
+FaceDistortionHelper::FaceDistortionHelper(pmp::SurfaceMesh& mesh_open, pmp::SurfaceMesh& mesh_UV)
+    : mesh_open(mesh_open), mesh_UV(mesh_UV)
+{
+}
 
 // ========================================
 // Public Functions
@@ -37,9 +34,8 @@ double FaceDistortionHelper::computeFaceDistortion()
         totalDistortion += std::fabs(areaOpen - areaUV);
     }
 
-    return totalDistortion / mesh_open.n_faces();  // Average face distortion
+    return totalDistortion / mesh_open.n_faces(); // Average face distortion
 }
-
 
 // ========================================
 // Private Functions
@@ -59,9 +55,9 @@ double FaceDistortionHelper::triangle_area(const pmp::SurfaceMesh& mesh, const p
 
     // Compute the cross product of the two vectors
     pmp::Point crossProduct;
-    crossProduct[0] = v1[1]*v2[2] - v1[2]*v2[1];
-    crossProduct[1] = v1[2]*v2[0] - v1[0]*v2[2];
-    crossProduct[2] = v1[0]*v2[1] - v1[1]*v2[0];
+    crossProduct[0] = v1[1] * v2[2] - v1[2] * v2[1];
+    crossProduct[1] = v1[2] * v2[0] - v1[0] * v2[2];
+    crossProduct[2] = v1[0] * v2[1] - v1[1] * v2[0];
 
-    return 0.5 * norm(crossProduct);  // The magnitude of this cross product is twice the area of the triangle
+    return 0.5 * norm(crossProduct); // The magnitude of this cross product is twice the area of the triangle
 }

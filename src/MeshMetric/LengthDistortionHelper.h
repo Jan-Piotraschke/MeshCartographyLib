@@ -2,16 +2,14 @@
 
 #include "MeshDefinition.h"
 
-class LengthDistortionHelper{
-public:
-    LengthDistortionHelper(
-        pmp::SurfaceMesh& mesh_open,
-        pmp::SurfaceMesh& mesh_UV
-    );
+class LengthDistortionHelper
+{
+  public:
+    LengthDistortionHelper(pmp::SurfaceMesh& mesh_open, pmp::SurfaceMesh& mesh_UV);
 
     double computeLengthDistortion();
 
-private:
+  private:
     pmp::SurfaceMesh& mesh_open;
     pmp::SurfaceMesh& mesh_UV;
 

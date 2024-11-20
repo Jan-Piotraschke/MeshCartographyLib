@@ -13,13 +13,10 @@
 
 #include "AngleDistortionHelper.h"
 
-AngleDistortionHelper::AngleDistortionHelper(
-    pmp::SurfaceMesh& mesh_open,
-    pmp::SurfaceMesh& mesh_UV
-)
-    : mesh_open(mesh_open),
-      mesh_UV(mesh_UV)
-{}
+AngleDistortionHelper::AngleDistortionHelper(pmp::SurfaceMesh& mesh_open, pmp::SurfaceMesh& mesh_UV)
+    : mesh_open(mesh_open), mesh_UV(mesh_UV)
+{
+}
 
 // ========================================
 // Public Functions
@@ -40,9 +37,8 @@ double AngleDistortionHelper::computeAngleDistortion()
         }
     }
 
-    return totalDistortion / (3 * mesh_open.n_faces());  // Average angle distortion
+    return totalDistortion / (3 * mesh_open.n_faces()); // Average angle distortion
 }
-
 
 // ========================================
 // Private Functions
@@ -71,7 +67,7 @@ double AngleDistortionHelper::computeAngle(const pmp::Point& A, const pmp::Point
     pmp::Point CB = B - C;
 
     double dotProduct = CA[0] * CB[0] + CA[1] * CB[1] + CA[2] * CB[2];
-    double magnitudeProduct = norm(CA) * norm(CB);  // norm computes the magnitude
+    double magnitudeProduct = norm(CA) * norm(CB); // norm computes the magnitude
 
     return std::acos(dotProduct / magnitudeProduct);
 }

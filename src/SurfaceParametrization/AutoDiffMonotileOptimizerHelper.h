@@ -1,18 +1,19 @@
 #pragma once
 
+#include <ceres/ceres.h>
+#include <cmath>
 #include <iostream>
 #include <vector>
-#include <cmath>
-#include <ceres/ceres.h>
 
-class AreaCalculator {
-public:
+class AreaCalculator
+{
+  public:
     template <typename T>
     T computeArea(const std::vector<T>& x_vals, const std::vector<T>& y_vals) const;
 };
 
-
-struct MonotileAreaCostFunction {
+struct MonotileAreaCostFunction
+{
     MonotileAreaCostFunction(double a, double b);
 
     template <typename T>
@@ -25,13 +26,13 @@ struct MonotileAreaCostFunction {
     double a_, b_;
 };
 
-
-class OptimizationProblem {
-public:
+class OptimizationProblem
+{
+  public:
     void run(double a, double b, double& curve_strength);
     void setBounds(double lower_bound, double upper_bound);
 
-private:
+  private:
     double lower_bound_ = -18.0;
     double upper_bound_ = 3.0;
 };
