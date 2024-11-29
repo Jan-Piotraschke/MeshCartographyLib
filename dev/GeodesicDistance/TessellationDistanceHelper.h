@@ -3,7 +3,7 @@
 #include <Eigen/Dense>
 
 #include "GeodesicDistanceHelperInterface.h"
-#include "MeshDefinition.h"
+#include "MeshDefinition/pmp.h"
 
 class TessellationDistanceHelper : public GeodesicDistanceHelperInterface
 {

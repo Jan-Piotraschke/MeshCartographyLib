@@ -16,7 +16,7 @@
 #include <Eigen/Dense>
 
 #include "MeshCuttingHelperInterface.h"
-#include "MeshDefinition.h"
+#include "MeshDefinition/pmp.h"
 #include "SurfaceParametrizationHelperInterface.h"
 
 const fs::path PROJECT_PATH_ = MeshCartographyLib_SOURCE_DIR;

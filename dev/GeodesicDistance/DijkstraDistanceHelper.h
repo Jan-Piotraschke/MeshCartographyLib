@@ -4,7 +4,7 @@
 #include <set>
 
 #include "GeodesicDistanceHelperInterface.h"
-#include "MeshDefinition.h"
+#include "MeshDefinition/pmp.h"
 
 class DijkstraDistanceHelper : public GeodesicDistanceHelperInterface
 {
