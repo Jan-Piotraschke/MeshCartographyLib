@@ -1,15 +1,14 @@
-/**
- * @file        SpectreMonotileHelper.cpp
- * @brief       Create the border of the spectre monotile
- *
- * @author      Jan-Piotraschke
- * @date        2024-Nov-20
- * @license     Apache License 2.0
- *
- * @bug         -
- * @todo        -
- */
+---
+output_filename: "SpectreMonotileHelper"
 
+brief: "Create an optimizable border of the spectre monotile"
+---
+
+# Spectre Monotile Helper
+
+The purpose of this module is to provide functions for creating the border of the spectre monotile.
+
+```cpp
 #include "SpectreMonotileHelper.h"
 
 // ! NOTE: just think of "T" as "double", because that's what it is in the end
@@ -86,7 +85,11 @@ template void spectre_border<ceres::Jet<double, 1>>(
 void spectre_border_wrapper(double a, double b, double curve_strength, std::vector<double>& x_vals, std::vector<double>& y_vals) {
     spectre_border<double>(a, b, curve_strength, x_vals, y_vals);
 }
+```
 
+## Draw Spectre Border and Save as Image
+
+```cpp
 std::string drawSpectreBorder(
     const std::string& filename, const std::vector<double>& x_vals, const std::vector<double>& y_vals)
 {
@@ -160,3 +163,4 @@ std::string drawSpectreBorder(
         return file_path.string(); // Return the path to the saved image
     }
 }
+```

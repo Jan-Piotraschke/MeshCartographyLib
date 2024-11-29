@@ -1,15 +1,14 @@
-/**
- * @file        HeatDistanceHelper.cpp
- * @brief       Zuständing für die Berechnung
- *
- * @author      Jan-Piotraschke
- * @date        2024-Nov-20
- * @license     Apache License 2.0
- *
- * @bug         -
- * @todo        - check, ob man nicht hier Eigen:: durch std::vector ersetzen kann
- */
+---
+output_filename: "HeatDistanceHelper"
 
+brief: "Zuständing für die Berechnung der Distanz zwischen Mesh Vertices mittels Heat Method"
+---
+
+# Heat Distance Helper
+
+The purpose of this module is to provide functions for calculating the distance between mesh vertices using the Heat Method.
+
+```cpp
 #include "HeatDistanceHelper.h"
 
 HeatDistanceHelper::HeatDistanceHelper(fs::path mesh_path) : mesh_path(mesh_path)
@@ -39,7 +38,13 @@ Eigen::MatrixXd HeatDistanceHelper::get_mesh_distance_matrix()
 
     return distance_matrix_v;
 }
+```
 
+## Heat Method
+
+Get the distance of all vertices to all other vertices using the Heat Method.
+
+```cpp
 /**
  * @brief Variable to keep track of the current index of the vector of distances, and each thread processes a
  * different index until all the distances have been added to the distance matrix.
@@ -77,3 +82,4 @@ std::vector<double> HeatDistanceHelper::calculate_geodesic_distance(pmp::Surface
 
     return distances;
 }
+```

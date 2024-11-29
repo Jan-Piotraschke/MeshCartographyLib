@@ -1,17 +1,18 @@
-/**
- * @file        AdaptedDijkstraDistanceHelper.cpp
- * @brief       Zuständing für die Berechnung basierend auf den Dijkstra-Algorithmus
- * @details     Dijkstra's algorithm calculates shortest paths in a graph G = (V, E) with non-negative edge weights,
- * yielding real numbers for path lengths. The optimal run-time here is O(|E| + |V|log|V|).
- *
- * @author      Jan-Piotraschke
- * @date        2024-Nov-20
- * @license     Apache License 2.0
- *
- * @bug         -
- * @todo        -
- */
+---
+output_filename: "AdaptedDijkstraDistanceHelper"
 
+brief: "Zuständing für die Berechnung basierend auf den Dijkstra-Algorithmus"
+details: "Dijkstra's algorithm calculates shortest paths in a graph G = (V, E) with non-negative edge weights, yielding real numbers for path lengths.
+            The optimal run-time here is O(|E| + |V|log|V|)."
+---
+
+# Adapted Dijkstra Distance Helper
+
+The purpose of this module is to provide functions for calculating the distance between mesh vertices using an adapted Dijkstra algorithm.
+
+This implementation adapts Dijkstra's algorithm for 3D surface meshes. Instead of simple edge traversal, it considers the geometric distances on the mesh. The shortest_paths object uses an internal priority queue to explore the shortest paths efficiently, respecting the surface's topology. This ensures that distances reflect the true geodesic path over the curved surface rather than merely counting edges.
+
+```cpp
 #include "AdaptedDijkstraDistanceHelper.h"
 
 AdaptedDijkstraDistanceHelper::AdaptedDijkstraDistanceHelper(fs::path mesh_path) : mesh_path(mesh_path)
@@ -57,11 +58,13 @@ void AdaptedDijkstraDistanceHelper::fill_distance_matrix(
             = Eigen::Map<Eigen::VectorXd>(vertices_3D_distance_map.data(), vertices_3D_distance_map.size());
     }
 }
+```
 
-// ========================================
-// Private Functions
-// ========================================
+## Dijkstra Algorithm
 
+Get the distance of all vertices to all other vertices using an adapted Dijkstra algorithm.
+
+```cpp
 std::vector<double> AdaptedDijkstraDistanceHelper::calculate_geodesic_distance(pmp::SurfaceMesh& mesh, pmp::Vertex start_vertex)
 {
     std::vector<pmp::Vertex> seeds{start_vertex};
@@ -110,3 +113,4 @@ std::vector<double> AdaptedDijkstraDistanceHelper::calculate_edge_count_distance
 
     return distances;
 }
+```

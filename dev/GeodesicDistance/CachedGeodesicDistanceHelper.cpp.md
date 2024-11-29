@@ -1,26 +1,25 @@
-/**
- * @file        CachedGeodesicDistanceHelper.cpp
- * @brief       Zuständing für das caching der berechneten Daten des GeodesicDistanceHelper
- *
- * @author      Jan-Piotraschke
- * @date        2024-Nov-20
- * @license     Apache License 2.0
- *
- * @bug         -
- * @todo        -
- */
+---
+output_filename: "CachedGeodesicDistanceHelper"
 
+brief: "Zuständing für das caching der berechneten Daten des HeatDistanceHelper"
+---
+
+# Cached Geodesic Distance Helper
+
+The purpose of this module is to provide functions for caching the calculated data of the HeatDistanceHelper.
+
+```cpp
 #include "CachedGeodesicDistanceHelper.h"
 
 CachedGeodesicDistanceHelper::CachedGeodesicDistanceHelper(fs::path mesh_path)
     : mesh_path(mesh_path), geodesic_distance_helper(mesh_path)
 {
 }
+```
 
-// ========================================
-// Public Functions
-// ========================================
+## Calculate the distance using the Heat Method
 
+```cpp
 /**
  * @brief Calculate the distance using the Heat Method
  */
@@ -39,3 +38,4 @@ Eigen::MatrixXd CachedGeodesicDistanceHelper::get_mesh_distance_matrix()
 
     return distance_matrix;
 }
+```

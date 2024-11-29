@@ -1,15 +1,20 @@
-/**
- * @file        MeshCutHelper.cpp
- * @brief       Calculate the cut line of the mesh
- *
- * @author      Jan-Piotraschke
- * @date        2024-Nov-20
- * @license     Apache License 2.0
- *
- * @bug         -
- * @todo        -
- */
+---
+output_filename: "MeshCutHelper"
 
+brief: "Calculate the cut line of the mesh"
+---
+
+# Mesh Cut Helper
+
+The purpose of this module is to provide functions for calculating the cut line of a mesh model.
+
+## 切り方工芸 - Perfekte Schnitttechnik des 3D Meshes
+
+Nicht nur die Form der Grenzen des Monotiles sind wichtig, sondern vorab auch wie man das 3D Mesh aufschneidet! Manchmal kann es sinnvoll sein, eine dünne Struktur wie ein Kamelbein spiralenförmig aufzuschneiden, damit dieses am flächenerhaltestens in 2D parametrisiert werden kann.
+
+## Cut Mesh Open
+
+```cpp
 #include "MeshCutHelper.h"
 #include "GaussianCutLineHelper.h"
 
@@ -48,7 +53,11 @@ std::map<pmp::Vertex, int> MeshCutHelper::get_vertex_neighbors_count() const
     }
     return vertex_neighbors_count;
 }
+```
 
+We "cut" the 3D mesh by introducing a seam edge along the calculated edge path. This seam edge is used to create the UV mesh.
+
+```cpp
 void MeshCutHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges)
 {
     pmp::SurfaceMesh mesh_uv;
@@ -258,3 +267,4 @@ void MeshCutHelper::open_mesh_along_seam(const std::vector<pmp::Edge>& seamEdges
                   << std::endl;
     }
 }
+```

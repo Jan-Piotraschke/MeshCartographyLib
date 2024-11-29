@@ -1,15 +1,14 @@
-/**
- * @file        SquareBorderHelper.cpp
- * @brief       Create a square border
- *
- * @author      Jan-Piotraschke
- * @date        2024-Nov-20
- * @license     Apache License 2.0
- *
- * @bug         -
- * @todo        -
- */
+---
+output_filename: "SquareBorderHelper"
 
+brief: "Create a square border"
+---
+
+# Square Border Helper
+
+The purpose of this module is to provide functions for creating a square border for an UV mesh model.
+
+```cpp
 #include "SquareBorderHelper.h"
 
 // ========================================
@@ -108,3 +107,4 @@ pmp::TexCoord SquareBorderHelper::mapToSquare(double l)
     }
     return pmp::TexCoord(0.0, 0.0);
 }
+```

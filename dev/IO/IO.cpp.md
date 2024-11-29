@@ -1,15 +1,15 @@
-/**
- * @file        IO.cpp
- * @brief       Loading the mesh model vertices and faces; saving and loading data to/from csv files
- *
- * @author      Jan-Piotraschke
- * @date        2024-Nov-20
- * @license     Apache License 2.0
- *
- * @bug         -
- * @todo        -
- */
+---
+output_filename: "IO"
 
+brief: "Loading the mesh model vertices and faces; saving and loading data to/from csv files"
+license: "Apache License 2.0"
+---
+
+# IO
+
+The purpose of this module is to provide functions for loading the vertices and faces of a surface mesh model from an OFF file into Eigen matrices.
+
+```cpp
 #include "IO.h"
 
 static pmp::SurfaceMesh loadMesh(const std::string& filepath)
@@ -18,7 +18,14 @@ static pmp::SurfaceMesh loadMesh(const std::string& filepath)
     pmp::read_off(mesh, filepath);
     return mesh;
 }
+```
 
+## Load Mesh Vertices
+
+This function reads the vertices coordinates of a surface mesh model from a file and stores them in an Eigen matrix.
+Up to dimension 3 is supported.
+
+```cpp
 void loadMeshVertices(const std::string& filepath, Eigen::MatrixXd& vertices)
 {
     pmp::SurfaceMesh mesh = loadMesh(filepath);
@@ -40,7 +47,14 @@ void loadMeshVertices(const std::string& filepath, Eigen::MatrixXd& vertices)
         i++;
     }
 }
+```
 
+## Load Mesh Faces
+
+This function reads the faces of a surface mesh model from a file and stores them in an Eigen matrix.
+The faces are stored as indices of the vertices.
+
+```cpp
 void loadMeshFaces(const std::string& filepath, Eigen::MatrixXi& faces)
 {
     pmp::SurfaceMesh mesh = loadMesh(filepath);
@@ -64,3 +78,4 @@ void loadMeshFaces(const std::string& filepath, Eigen::MatrixXi& faces)
         i++;
     }
 }
+```

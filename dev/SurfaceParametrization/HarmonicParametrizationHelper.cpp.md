@@ -1,15 +1,19 @@
-/**
- * @file        HarmonicParametrizationHelper.cpp
- * @brief       Parameterize the mesh with the harmonic parametrization
- *
- * @author      Jan-Piotraschke
- * @date        2024-Nov-20
- * @license     Apache License 2.0
- *
- * @bug         - beim Entfalten des Kamels sind manche Knoten dutzendfach vorhanden
- * @todo        -
- */
+---
+output_filename: "HarmonicParametrizationHelper"
 
+brief: "Create a parametrization of the mesh with a square border"
+---
+
+# Harmonic Parametrization Helper
+
+The purpose of this module is to provide functions for creating a parametrization of a closed 3D mesh.
+
+Computes a one-to-one mapping from a 3D triangle surface mesh to a simple 2D domain.
+The mapping is piecewise linear on the triangle mesh. The result is a pair (U,V) of parameter coordinates for each
+vertex of the input mesh. We use discrete conformal mapping to **minimize angle distortion** based on the following paper:
+https://doi.org/10.1145/218380.218440
+
+```cpp
 #include "HarmonicParametrizationHelper.h"
 #include "MonotileBorder/HexagonBorderHelper.h"
 #include "MonotileBorder/SquareBorderHelper.h"
@@ -105,3 +109,4 @@ bool HarmonicParametrizationHelper::has_boundary()
     }
     return false;
 }
+```

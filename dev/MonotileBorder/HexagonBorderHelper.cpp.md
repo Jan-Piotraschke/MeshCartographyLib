@@ -1,15 +1,14 @@
-/**
- * @file        HexagonBorderHelper.cpp
- * @brief       Create a hexagonal border
- *
- * @author      Jan-Piotraschke
- * @date        2024-Nov-20
- * @license     Apache License 2.0
- *
- * @bug         -
- * @todo        -
- */
+---
+output_filename: "HexagonBorderHelper"
 
+brief: "Create a hexagonal border"
+---
+
+# Hexagon Border Helper
+
+The purpose of this module is to provide functions for creating a hexagonal border for an UV mesh model.
+
+```cpp
 #include "HexagonBorderHelper.h"
 
 // ========================================
@@ -78,11 +77,11 @@ void HexagonBorderHelper::setup_hexagon_boundary_constraints()
         tex[loop[vertice_id]] = t;
     }
 }
+```
 
-// ========================================
-// Private Functions
-// ========================================
+## Initialize Hexagon Corners and Map to Hexagon
 
+```cpp
 void HexagonBorderHelper::initializeCorners(double sideLength)
 {
     corners.clear();
@@ -116,3 +115,4 @@ pmp::TexCoord HexagonBorderHelper::mapToHexagon(double l)
     }
     return pmp::TexCoord(0.0, 0.0);
 }
+```

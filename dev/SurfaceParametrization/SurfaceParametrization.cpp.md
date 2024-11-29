@@ -1,15 +1,16 @@
-/**
- * @file        SurfaceParametrization.cpp
- * @brief       Create the 2D maps based on the 3D mesh
- *
- * @author      Jan-Piotraschke
- * @date        2024-Nov-20
- * @license     Apache License 2.0
- *
- * @bug         -
- * @todo        -
- */
+---
+output_filename: "SurfaceParametrization"
 
+brief: "Create the 2D maps based on the 3D mesh"
+---
+
+# Surface Parametrization
+
+The purpose of this module is to provide functions for creating 2D maps based on the 3D mesh model.
+
+## Init
+
+```cpp
 #include "SurfaceParametrization.h"
 
 #include "HarmonicParametrizationHelper.h"
@@ -22,25 +23,23 @@
 SurfaceParametrization::SurfaceParametrization()
 {
 }
+```
 
-// ========================================
-// Public Functions
-// ========================================
+## Public Helper Functions
 
-/**
- * @brief Extract the mesh name (without extension) from its file path
- *
- * @info: Unittested
- */
+Extract the mesh name (without extension) from its file path
+
+```cpp
 std::string SurfaceParametrization::get_mesh_name(const std::string mesh_3D_path)
 {
     fs::path path(mesh_3D_path);
     return path.stem().string();
 }
+```
 
-/**
- * @brief Check if a given point is inside our polygon border
- */
+Check if a given point is inside our polygon border, represented by a monotile shape.
+
+```cpp
 bool SurfaceParametrization::check_point_in_polygon(const Point_2_eigen& point)
 {
     bool inside = false;
@@ -78,10 +77,11 @@ bool SurfaceParametrization::check_point_in_polygon(const Point_2_eigen& point)
     }
     return inside;
 }
+```
 
-/**
- * @brief Create the UV surface
- */
+## Create the UV Map
+
+```cpp
 std::tuple<std::vector<int64_t>, Eigen::MatrixXd, Eigen::MatrixXd, std::string>
 SurfaceParametrization::create_uv_surface(std::string mesh_path, int32_t start_node_int)
 {
@@ -96,14 +96,13 @@ SurfaceParametrization::create_uv_surface(std::string mesh_path, int32_t start_n
 
     return {h_v_mapping_vector, vertice_UV, vertice_3D, mesh_uv_file_path};
 }
+```
 
-// ========================================
-// Private Functions
-// ========================================
+## Calculate the UV Surface
 
-/**
- * @brief Calculate the UV coordinates of the 3D mesh and also return their mapping to the 3D coordinates
- */
+Calculate the UV coordinates of the 3D mesh and also their mapping to the 3D coordinates
+
+```cpp
 std::vector<int64_t> SurfaceParametrization::calculate_uv_surface(pmp::Vertex start_vertex)
 {
     pmp::SurfaceMesh mesh;
@@ -280,3 +279,4 @@ void SurfaceParametrization::extract_polygon_border_edges(const std::string& mes
         twin_border_map[current_border - i] = i;
     }
 }
+```
