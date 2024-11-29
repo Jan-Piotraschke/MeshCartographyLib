@@ -51,3 +51,5 @@ img/*
 pdf/*
 .idea
 vcpkg/*
+python/*
+data.json

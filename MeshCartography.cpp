@@ -20,10 +20,9 @@
 
 const std::filesystem::path PROJECT_PATH = MeshCartographyLib_SOURCE_DIR;
 
-int main()
+double run_mesh_cartography(bool free_boundary)
 {
     std::string mesh_path = PROJECT_PATH.string() + "/meshes/ellipsoid_x4.off";
-    bool free_boundary = false;
 
     SurfaceParametrization surface_parametrization;
     auto result = surface_parametrization.create_uv_surface(mesh_path, 0);
@@ -42,7 +41,6 @@ int main()
 
     MonotileAreaCostFunction cost_function(a, b);
     double initial_area = cost_function.computeArea(curve_strength);
-    std::cout << "Initial area: " << initial_area << "\n";
 
     OptimizationProblem optimization_problem;
     optimization_problem.setBounds(0, 2.0);
@@ -52,5 +50,17 @@ int main()
     spectre_border(a, b, curve_strength, x_vals, y_vals);
     drawSpectreBorder("spectre_border.png", x_vals, y_vals);
 
+    return initial_area;
+}
+
+int main(int argc, char* argv[])
+{
+    bool free_boundary = false;
+    if (argc > 1) {
+        std::string arg = argv[1];
+        free_boundary = (arg == "true" || arg == "1");
+    }
+    double initial_area = run_mesh_cartography(free_boundary);
+    std::cout << "Initial area: " << initial_area << std::endl;
     return 0;
 }

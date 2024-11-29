@@ -25,7 +25,9 @@ or for testing:
 And for all the python enthusiasts:
 
 ```bash
+python3.13 -m venv venv
 python3.13 mesh_cartographer.py
+python3.13 generate_report.py
 ```
 
 ## Develop

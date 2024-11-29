@@ -83,6 +83,10 @@ template void spectre_border<ceres::Jet<double, 1>>(
     std::vector<ceres::Jet<double, 1>>& x_vals,
     std::vector<ceres::Jet<double, 1>>& y_vals);
 
+void spectre_border_wrapper(double a, double b, double curve_strength, std::vector<double>& x_vals, std::vector<double>& y_vals) {
+    spectre_border<double>(a, b, curve_strength, x_vals, y_vals);
+}
+
 std::string drawSpectreBorder(
     const std::string& filename, const std::vector<double>& x_vals, const std::vector<double>& y_vals)
 {

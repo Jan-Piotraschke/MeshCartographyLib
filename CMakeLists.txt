@@ -28,6 +28,7 @@ find_package(GTest REQUIRED)
 find_package(glog CONFIG REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(Ceres CONFIG REQUIRED)
+find_package(pybind11 CONFIG REQUIRED)
 
 include_directories(${GTEST_INCLUDE_DIRS})
 
@@ -53,6 +54,20 @@ add_executable(MeshCartography MeshCartography.cpp)
 target_link_libraries(MeshCartography PUBLIC
     MeshCartographyLib
     Ceres::ceres
+)
+
+# Create the Python module using pybind11
+pybind11_add_module(mesh_cartography_module bindings.cpp MeshCartography.cpp)
+
+target_link_libraries(mesh_cartography_module PRIVATE
+    MeshCartographyLib
+    Ceres::ceres
+    ${OpenCV_LIBS}
+)
+
+# Set the output directory for the Python module
+set_target_properties(mesh_cartography_module PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/python
 )
 
 # Collect all test source files

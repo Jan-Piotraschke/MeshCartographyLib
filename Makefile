@@ -16,7 +16,7 @@ OS := $(shell uname -s)
 ifeq ($(OS), Darwin)
     C_COMPILER=$(shell brew --prefix llvm)/bin/clang
     CXX_COMPILER=$(shell brew --prefix llvm)/bin/clang++
-	VCPKG_DEFAULT_TRIPLET := x64-osx
+	VCPKG_DEFAULT_TRIPLET := arm64-osx
 else ifeq ($(OS), Linux)
     C_COMPILER=/usr/bin/gcc
     CXX_COMPILER=/usr/bin/g++
@@ -27,7 +27,7 @@ VCPKG_ROOT := $(PROJECT_DIR)/vcpkg
 VCPKG_TOOLCHAIN := $(VCPKG_ROOT)/scripts/buildsystems/vcpkg.cmake
 
 .PHONY: all
-all: init_vcpkg build
+all: init_vcpkg run_leli build
 
 .PHONY: update_submodule
 update_submodule:
@@ -42,9 +42,14 @@ init_vcpkg:
 	@echo "Integrating vcpkg with system..."
 	$(VCPKG_ROOT)/vcpkg integrate install
 	@echo "Installing libraries via vcpkg..."
-	$(VCPKG_ROOT)/vcpkg install boost-filesystem opencv4 glog pmp-library ceres
+	$(VCPKG_ROOT)/vcpkg install boost-filesystem opencv4 glog cgal pmp-library ceres pybind11 --triplet $(VCPKG_DEFAULT_TRIPLET)
 	@echo "vcpkg initialization and library installation complete."
 
+.PHONY: run_leli
+run_leli:
+	@echo "Running leli from $(PROJECT_DIR)..."
+	@ls -l $(PROJECT_DIR)/leli
+	$(PROJECT_DIR)/leli extract --folder src --protocol AImM --output .src
 
 .PHONY: build
 build:
@@ -57,6 +62,8 @@ build:
 			-DCMAKE_CXX_STANDARD=20 \
 			-DCMAKE_OSX_ARCHITECTURES=$(ARCHITECTURE) \
 			-DCMAKE_TOOLCHAIN_FILE=$(VCPKG_TOOLCHAIN) \
+			-DVCPKG_TARGET_TRIPLET=$(VCPKG_DEFAULT_TRIPLET) \
+			-DPYTHON_EXECUTABLE=$(shell which python3) \
 			-GNinja
 	ninja -C $(PROJECT_DIR)/build -j $(shell sysctl -n hw.logicalcpu || nproc)
 
