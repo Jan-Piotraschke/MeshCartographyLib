@@ -21,7 +21,9 @@ if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
 endif()
 
 # Find required packages
+find_package(CGAL REQUIRED)
 find_package(pmp CONFIG REQUIRED)
+find_package(Boost REQUIRED)
 find_package(boost_filesystem REQUIRED CONFIG)
 find_package(Eigen3 REQUIRED)
 find_package(GTest REQUIRED)
@@ -30,6 +32,7 @@ find_package(OpenCV REQUIRED)
 find_package(Ceres CONFIG REQUIRED)
 find_package(pybind11 CONFIG REQUIRED)
 
+include(CGAL_Eigen3_support)
 include_directories(${GTEST_INCLUDE_DIRS})
 
 # Include directories
@@ -43,8 +46,10 @@ add_library(MeshCartographyLib STATIC ${SIMULATION_SOURCES})
 
 # Link the library with the required packages
 target_link_libraries(MeshCartographyLib PUBLIC
+    CGAL::CGAL
     pmp
     Boost::filesystem
+    CGAL::Eigen3_support
     glog::glog
     Ceres::ceres
     ${OpenCV_LIBS}
