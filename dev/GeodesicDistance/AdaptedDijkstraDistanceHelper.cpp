@@ -1,5 +1,5 @@
 /**
- * @file        DijkstraDistanceHelper.cpp
+ * @file        AdaptedDijkstraDistanceHelper.cpp
  * @brief       Zuständing für die Berechnung basierend auf den Dijkstra-Algorithmus
  * @details     Dijkstra's algorithm calculates shortest paths in a graph G = (V, E) with non-negative edge weights,
  * yielding real numbers for path lengths. The optimal run-time here is O(|E| + |V|log|V|).
@@ -12,9 +12,9 @@
  * @todo        -
  */
 
-#include "DijkstraDistanceHelper.h"
+#include "AdaptedDijkstraDistanceHelper.h"
 
-DijkstraDistanceHelper::DijkstraDistanceHelper(fs::path mesh_path) : mesh_path(mesh_path)
+AdaptedDijkstraDistanceHelper::AdaptedDijkstraDistanceHelper(fs::path mesh_path) : mesh_path(mesh_path)
 {
 }
 
@@ -25,7 +25,7 @@ DijkstraDistanceHelper::DijkstraDistanceHelper(fs::path mesh_path) : mesh_path(m
 /**
  * @brief Calculate the distance using the Heat Method
  */
-Eigen::MatrixXd DijkstraDistanceHelper::get_mesh_distance_matrix()
+Eigen::MatrixXd AdaptedDijkstraDistanceHelper::get_mesh_distance_matrix()
 {
     pmp::SurfaceMesh mesh;
     pmp::read_off(mesh, mesh_path.string());
@@ -46,7 +46,7 @@ Eigen::MatrixXd DijkstraDistanceHelper::get_mesh_distance_matrix()
  * @brief Variable to keep track of the current index of the vector of distances, and each thread processes a
  * different index until all the distances have been added to the distance matrix.
  */
-void DijkstraDistanceHelper::fill_distance_matrix(
+void AdaptedDijkstraDistanceHelper::fill_distance_matrix(
     pmp::SurfaceMesh& mesh, Eigen::MatrixXd& distance_matrix, pmp::Vertex vertex)
 {
     if (distance_matrix.row(vertex.idx()).head(2).isZero())
@@ -62,7 +62,7 @@ void DijkstraDistanceHelper::fill_distance_matrix(
 // Private Functions
 // ========================================
 
-std::vector<double> DijkstraDistanceHelper::calculate_geodesic_distance(pmp::SurfaceMesh& mesh, pmp::Vertex start_vertex)
+std::vector<double> AdaptedDijkstraDistanceHelper::calculate_geodesic_distance(pmp::SurfaceMesh& mesh, pmp::Vertex start_vertex)
 {
     std::vector<pmp::Vertex> seeds{start_vertex};
     pmp::geodesics(mesh, seeds);
@@ -78,7 +78,7 @@ std::vector<double> DijkstraDistanceHelper::calculate_geodesic_distance(pmp::Sur
     return distances;
 }
 
-std::vector<double> DijkstraDistanceHelper::calculate_edge_count_distance(
+std::vector<double> AdaptedDijkstraDistanceHelper::calculate_edge_count_distance(
     pmp::SurfaceMesh& mesh, pmp::Vertex start_vertex)
 {
     std::vector<double> distances(mesh.n_vertices(), std::numeric_limits<double>::max());

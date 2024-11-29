@@ -11,7 +11,7 @@
  */
 
 #include "TessellationDistanceHelper.h"
-#include "DijkstraDistanceHelper.h"
+#include "AdaptedDijkstraDistanceHelper.h"
 #include "HeatDistanceHelper.h"
 
 TessellationDistanceHelper::TessellationDistanceHelper(
@@ -36,7 +36,7 @@ Eigen::MatrixXd TessellationDistanceHelper::get_mesh_distance_matrix()
     const size_t original_vertices_num = equivalent_vertices.size();
     Eigen::MatrixXd distance_matrix_v(original_vertices_num, numVerts);
     HeatDistanceHelper heat_distance_helper(mesh_path);
-    DijkstraDistanceHelper dijkstra_distance_helper(mesh_path);
+    AdaptedDijkstraDistanceHelper dijkstra_distance_helper(mesh_path);
 
     // loop over the original vertices and fill the distance matrix
     for (int i = 0; i < original_vertices_num; ++i)

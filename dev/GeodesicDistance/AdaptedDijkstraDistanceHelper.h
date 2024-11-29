@@ -6,10 +6,10 @@
 #include "GeodesicDistanceHelperInterface.h"
 #include "MeshDefinition/pmp.h"
 
-class DijkstraDistanceHelper : public GeodesicDistanceHelperInterface
+class AdaptedDijkstraDistanceHelper : public GeodesicDistanceHelperInterface
 {
   public:
-    DijkstraDistanceHelper(fs::path mesh_path);
+    AdaptedDijkstraDistanceHelper(fs::path mesh_path);
 
     Eigen::MatrixXd get_mesh_distance_matrix() override;
 
